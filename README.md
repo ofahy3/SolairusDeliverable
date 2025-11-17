@@ -74,7 +74,7 @@ The system produces a two-page executive report:
 
 1. **Clone the repository**
 ```bash
-git clone [your-repo-url]
+git clone https://github.com/ofahy3/SolairusDeliverable.git
 cd solairus-intelligence
 ```
 
@@ -98,13 +98,13 @@ Note: The system will work without GTA/FRED API keys but will only use ErgoMind 
 
 4. **Run the web application**
 ```bash
-python web_app.py
+python3 -m solairus_intelligence.web.app
 ```
 
-4. **Open your browser**
+5. **Open your browser**
 Navigate to `http://localhost:8080`
 
-5. **Generate a report**
+6. **Generate a report**
 - Click "Generate Intelligence Report"
 - Use "Test Mode" for faster generation with limited queries
 - Wait for processing (1-5 minutes depending on mode)
@@ -116,13 +116,13 @@ For direct command-line generation:
 
 ```bash
 # Full production report
-python main.py
+python3 -m solairus_intelligence.cli
 
 # Test mode (limited queries)
-python main.py --test
+python3 -m solairus_intelligence.cli --test
 
 # Focus on specific areas
-python main.py --focus technology finance
+python3 -m solairus_intelligence.cli --focus technology finance
 ```
 
 ## ☁️ Google Cloud Deployment
@@ -169,11 +169,11 @@ steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/solairus-intelligence', '.']
-  
+
   # Push to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/solairus-intelligence']
-  
+
   # Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
@@ -217,7 +217,7 @@ gcloud builds submit --config cloudbuild.yaml
 
 ### Modifying ErgoMind Connection
 
-Edit `ergomind_client.py`:
+Edit `solairus_intelligence/clients/ergomind_client.py`:
 ```python
 @dataclass
 class ErgoMindConfig:
@@ -228,7 +228,7 @@ class ErgoMindConfig:
 
 ### Adding Client Sectors
 
-Edit `intelligence_processor.py` to add new sectors:
+Edit `solairus_intelligence/core/processor.py` to add new sectors:
 ```python
 ClientSector.NEW_SECTOR: {
     'companies': ['Company1', 'Company2'],
@@ -239,7 +239,7 @@ ClientSector.NEW_SECTOR: {
 
 ### Customizing Queries
 
-Edit `query_orchestrator.py` to modify or add query templates:
+Edit `solairus_intelligence/core/orchestrator.py` to modify or add query templates:
 ```python
 QueryTemplate(
     category="your_category",
@@ -270,7 +270,7 @@ Target: <25% rewrite rate (core success metric)
 - Test mode bypasses most queries
 
 ### Report Generation Fails
-- Check `/mnt/user-data/outputs/last_run_status.json` for details
+- Check `outputs/last_run_status.json` for details
 - Ensure sufficient memory (2GB+)
 - Verify all Python dependencies installed
 
@@ -308,7 +308,7 @@ Following "Stop Coding and Start Planning" methodology:
 ## 📧 Support
 
 For issues or questions:
-- Check logs in `/mnt/user-data/outputs/`
+- Check logs in `outputs/`
 - Review ErgoMind connection status
 - Verify API credentials
 - Test with limited queries first
