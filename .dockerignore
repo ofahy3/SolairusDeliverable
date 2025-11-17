@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+docs/
+LICENSE
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.tox/
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+
+# Testing
+tests/
+.coveragerc
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Output files
+outputs/
+*.docx
+*.pdf
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Development dependencies
+requirements-dev.txt
+pyproject.toml
+setup.py
+Makefile
+
+# Deployment scripts
+scripts/
+deploy.sh
+
+# Project planning
+PROJECT_PLAN.md
+IMPLEMENTATION_STRATEGY.md
+DEPLOYMENT_NOTES.md
+ERGOMIND_API_ISSUE.md
+GTA_INTEGRATION_STATUS.md

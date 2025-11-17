@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solairus-intelligence-web
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8080
+    volumes:
+      # Mount outputs directory for local development
+      - ./outputs:/mnt/user-data/outputs
+      # Optional: Mount source code for development (hot reload)
+      # - ./solairus_intelligence:/app/solairus_intelligence
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Development container with hot reload
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solairus-intelligence-dev
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8080
+      - ENVIRONMENT=development
+    volumes:
+      - ./solairus_intelligence:/app/solairus_intelligence
+      - ./outputs:/mnt/user-data/outputs
+    command: uvicorn solairus_intelligence.web.app:app --reload --host 0.0.0.0 --port 8080
+    profiles:
+      - dev
+
+networks:
+  default:
+    name: solairus-intelligence-network
