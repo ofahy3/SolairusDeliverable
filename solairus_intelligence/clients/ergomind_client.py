@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ErgoMindConfig:
-    """Configuration for ErgoMind API - Uses environment variables with secure fallbacks"""
+    """Configuration for ErgoMind API - Requires environment variables"""
     base_url: str = field(default_factory=lambda: os.getenv(
         "ERGOMIND_BASE_URL",
         "https://bl373-ergo-api.toolbox.bluelabellabs.io"
@@ -31,17 +31,21 @@ class ErgoMindConfig:
         "ERGOMIND_WS_URL",
         "wss://bl373-ergo-api.toolbox.bluelabellabs.io/ws/chat"
     ))
-    api_key: str = field(default_factory=lambda: os.getenv(
-        "ERGOMIND_API_KEY",
-        "7YBp4W2AjAp0"  # Fallback for development only
-    ))
-    user_id: str = field(default_factory=lambda: os.getenv(
-        "ERGOMIND_USER_ID",
-        "overwatch@ergo.net"
-    ))
+    api_key: str = field(default_factory=lambda: os.getenv("ERGOMIND_API_KEY", ""))
+    user_id: str = field(default_factory=lambda: os.getenv("ERGOMIND_USER_ID", ""))
     max_retries: int = 5
     timeout: int = 120
     backoff_factor: float = 2.0
+
+    def validate(self) -> bool:
+        """Validate that required configuration is present"""
+        if not self.api_key:
+            logger.error("ERGOMIND_API_KEY environment variable is required")
+            return False
+        if not self.user_id:
+            logger.error("ERGOMIND_USER_ID environment variable is required")
+            return False
+        return True
 
 
 @dataclass
@@ -98,8 +102,10 @@ class ErgoMindClient:
         Create a new conversation and return the conversation ID
         """
         url = f"{self.config.base_url}/api/v1/conversations"
+        # ErgoMind API requires Bearer token authentication
         headers = {
-            "X-API-Key": self.config.api_key,
+            "Authorization": f"Bearer {self.config.api_key}",
+            "X-API-Key": self.config.api_key,  # Also include X-API-Key as fallback
             "Content-Type": "application/json"
         }
         data = {
@@ -312,7 +318,10 @@ class ErgoMindClient:
         try:
             # Test REST API
             url = f"{self.config.base_url}/api/v1/health"
-            headers = {"X-API-Key": self.config.api_key}
+            headers = {
+                "Authorization": f"Bearer {self.config.api_key}",
+                "X-API-Key": self.config.api_key
+            }
             
             async with self.session.get(url, headers=headers) as response:
                 if response.status == 200:

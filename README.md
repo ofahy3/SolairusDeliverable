@@ -215,16 +215,26 @@ gcloud builds submit --config cloudbuild.yaml
 
 ## 🔧 Configuration
 
-### Modifying ErgoMind Connection
+### Configuring API Credentials
 
-Edit `solairus_intelligence/clients/ergomind_client.py`:
-```python
-@dataclass
-class ErgoMindConfig:
-    base_url: str = "https://bl373-ergo-api.toolbox.bluelabellabs.io"
-    api_key: str = "7YBp4W2AjAp0"  # Update if needed
-    user_id: str = "overwatch@ergo.net"
+All API credentials are configured via environment variables in your `.env` file:
+
+```bash
+# ErgoMind API
+ERGOMIND_API_KEY=your_api_key
+ERGOMIND_USER_ID=your_user_id
+
+# Global Trade Alert
+GTA_API_KEY=your_gta_key
+
+# FRED Economic Data
+FRED_API_KEY=your_fred_key
+
+# Claude AI (optional)
+ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+See `.env.example` for a complete template with all available options.
 
 ### Adding Client Sectors
 

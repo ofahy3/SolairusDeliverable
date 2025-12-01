@@ -67,10 +67,10 @@ async def test_imports():
 async def test_ergomind_connection():
     """Test ErgoMind API connection"""
     print(f"\n{Colors.HEADER}Testing ErgoMind Connection{Colors.ENDC}")
-    
+
     try:
-        from ergomind_client import ErgoMindClient
-        
+        from solairus_intelligence.clients.ergomind_client import ErgoMindClient
+
         client = ErgoMindClient()
         async with client:
             # Test health endpoint
@@ -91,10 +91,10 @@ async def test_ergomind_connection():
 async def test_intelligence_processor():
     """Test intelligence processing"""
     print(f"\n{Colors.HEADER}Testing Intelligence Processor{Colors.ENDC}")
-    
+
     try:
-        from intelligence_processor import IntelligenceProcessor, ClientSector
-        
+        from solairus_intelligence.core.processor import IntelligenceProcessor, ClientSector
+
         processor = IntelligenceProcessor()
         
         # Test with sample text
@@ -125,10 +125,10 @@ async def test_intelligence_processor():
 async def test_document_generator():
     """Test document generation"""
     print(f"\n{Colors.HEADER}Testing Document Generator{Colors.ENDC}")
-    
+
     try:
-        from document_generator import DocumentGenerator
-        from intelligence_processor import IntelligenceItem, SectorIntelligence, ClientSector
+        from solairus_intelligence.core.document_generator import DocumentGenerator
+        from solairus_intelligence.core.processor import IntelligenceItem, SectorIntelligence, ClientSector
         
         generator = DocumentGenerator()
         
@@ -174,9 +174,9 @@ async def test_document_generator():
 async def test_query_orchestrator():
     """Test query orchestration"""
     print(f"\n{Colors.HEADER}Testing Query Orchestrator{Colors.ENDC}")
-    
+
     try:
-        from query_orchestrator import QueryOrchestrator
+        from solairus_intelligence.core.orchestrator import QueryOrchestrator
         
         orchestrator = QueryOrchestrator()
         
@@ -197,9 +197,9 @@ async def test_query_orchestrator():
 async def test_full_pipeline():
     """Test the complete pipeline in test mode"""
     print(f"\n{Colors.HEADER}Testing Complete Pipeline (Test Mode){Colors.ENDC}")
-    
+
     try:
-        from main import SolairusIntelligenceGenerator
+        from solairus_intelligence.cli import SolairusIntelligenceGenerator
         
         print_test("Initializing report generator...")
         generator = SolairusIntelligenceGenerator()
@@ -258,14 +258,14 @@ async def run_all_tests():
         print(f"{Colors.OKGREEN}{Colors.BOLD}✅ ALL TESTS PASSED!{Colors.ENDC}")
         print(f"\nYour system is ready to generate intelligence reports.")
         print(f"\nNext steps:")
-        print(f"1. Run the web app: python web_app.py")
-        print(f"2. Or generate directly: python main.py --test")
+        print(f"1. Run the web app: python -m solairus_intelligence.web.app")
+        print(f"2. Or generate directly: python -m solairus_intelligence.cli --test")
     else:
         print(f"{Colors.FAIL}{Colors.BOLD}❌ SOME TESTS FAILED{Colors.ENDC}")
         print(f"\nPlease fix the issues above before proceeding.")
         print(f"Common solutions:")
         print(f"- Install missing dependencies: pip install -r requirements.txt")
-        print(f"- Check ErgoMind API credentials in ergomind_client.py")
+        print(f"- Check API credentials in .env file")
         print(f"- Ensure you have internet connectivity")
     
     print(f"{Colors.BOLD}{Colors.HEADER}{'='*60}{Colors.ENDC}")

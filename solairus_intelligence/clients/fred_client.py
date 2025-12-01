@@ -84,10 +84,22 @@ class FREDClient:
         if self.session:
             await self.session.close()
 
+    @backoff.on_exception(
+        backoff.expo,
+        (aiohttp.ClientError, asyncio.TimeoutError),
+        max_tries=3,
+        max_time=30
+    )
     async def test_connection(self) -> bool:
-        """Test FRED API connectivity"""
+        """Test FRED API connectivity with retry logic"""
         try:
             logger.info("Testing FRED API connection...")
+
+            # Check if API key is configured
+            if not self.config.api_key:
+                logger.error("FRED API key not configured - set FRED_API_KEY environment variable")
+                return False
+
             # Test with a simple series request
             url = f"{self.config.base_url}/series"
             params = {
@@ -100,6 +112,10 @@ class FREDClient:
                 if response.status == 200:
                     logger.info("✓ FRED API connection successful")
                     return True
+                elif response.status == 400:
+                    error_text = await response.text()
+                    logger.error(f"FRED API bad request (check API key): {error_text[:200]}")
+                    return False
                 else:
                     logger.error(f"FRED API connection failed: HTTP {response.status}")
                     return False

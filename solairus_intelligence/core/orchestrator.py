@@ -590,7 +590,8 @@ class QueryOrchestrator:
         self,
         test_mode: bool = False,
         gta_days_back: int = 60,
-        fred_days_back: int = 90
+        fred_days_back: int = 90,
+        use_cache: bool = True
     ) -> Dict[str, Any]:
         """
         Execute ErgoMind, GTA, and FRED queries in parallel
@@ -599,25 +600,62 @@ class QueryOrchestrator:
             test_mode: If True, uses limited queries for testing
             gta_days_back: Number of days to look back for GTA interventions
             fred_days_back: Number of days to look back for FRED data
+            use_cache: If True, use cached results when available
 
         Returns:
             Dictionary with 'ergomind', 'gta', and 'fred' results
         """
+        from solairus_intelligence.utils.cache import get_cache
+        cache = get_cache()
+
         logger.info("=" * 60)
         logger.info("MULTI-SOURCE INTELLIGENCE GATHERING (ErgoMind + GTA + FRED)")
         logger.info("=" * 60)
 
-        # Execute all three sources in parallel
-        ergomind_task = self.execute_monthly_intelligence_gathering()
-        gta_task = self.execute_gta_intelligence_gathering(days_back=gta_days_back)
-        fred_task = self.execute_fred_data_gathering(days_back=fred_days_back)
+        # Check cache for each source
+        cache_params = {'gta_days': gta_days_back, 'fred_days': fred_days_back, 'test_mode': test_mode}
 
-        ergomind_results, gta_results, fred_results = await asyncio.gather(
-            ergomind_task,
-            gta_task,
-            fred_task,
-            return_exceptions=True
-        )
+        ergomind_results = None
+        gta_results = None
+        fred_results = None
+
+        if use_cache:
+            ergomind_results = cache.get('ergomind', cache_params)
+            gta_results = cache.get('gta', cache_params)
+            fred_results = cache.get('fred', cache_params)
+
+            cache_hits = sum(1 for r in [ergomind_results, gta_results, fred_results] if r is not None)
+            if cache_hits > 0:
+                logger.info(f"Cache: {cache_hits}/3 sources loaded from cache")
+
+        # Execute only non-cached sources
+        tasks_to_run = []
+        task_names = []
+
+        if ergomind_results is None:
+            tasks_to_run.append(self.execute_monthly_intelligence_gathering())
+            task_names.append('ergomind')
+        if gta_results is None:
+            tasks_to_run.append(self.execute_gta_intelligence_gathering(days_back=gta_days_back))
+            task_names.append('gta')
+        if fred_results is None:
+            tasks_to_run.append(self.execute_fred_data_gathering(days_back=fred_days_back))
+            task_names.append('fred')
+
+        # Execute pending tasks in parallel
+        if tasks_to_run:
+            results = await asyncio.gather(*tasks_to_run, return_exceptions=True)
+
+            # Map results back to sources
+            result_idx = 0
+            if 'ergomind' in task_names:
+                ergomind_results = results[result_idx]
+                result_idx += 1
+            if 'gta' in task_names:
+                gta_results = results[result_idx]
+                result_idx += 1
+            if 'fred' in task_names:
+                fred_results = results[result_idx]
 
         # Handle exceptions gracefully and track source status
         source_status = {
@@ -632,6 +670,9 @@ class QueryOrchestrator:
             source_status['ergomind'] = 'failed'
         else:
             logger.info(f"✓ ErgoMind: {sum(len(v) for v in ergomind_results.values())} responses")
+            # Cache successful results (only if freshly fetched)
+            if use_cache and 'ergomind' in task_names and ergomind_results:
+                cache.set('ergomind', cache_params, ergomind_results)
 
         if isinstance(gta_results, Exception):
             logger.error(f"❌ GTA gathering failed: {gta_results}")
@@ -639,6 +680,9 @@ class QueryOrchestrator:
             source_status['gta'] = 'failed'
         else:
             logger.info(f"✓ GTA: {sum(len(v) for v in gta_results.values())} interventions")
+            # Cache successful results (only if freshly fetched)
+            if use_cache and 'gta' in task_names and gta_results:
+                cache.set('gta', cache_params, gta_results)
 
         if isinstance(fred_results, Exception):
             logger.error(f"❌ FRED gathering failed: {fred_results}")
@@ -646,6 +690,9 @@ class QueryOrchestrator:
             source_status['fred'] = 'failed'
         else:
             logger.info(f"✓ FRED: {sum(len(v) for v in fred_results.values())} economic indicators")
+            # Cache successful results (only if freshly fetched)
+            if use_cache and 'fred' in task_names and fred_results:
+                cache.set('fred', cache_params, fred_results)
 
         # Log overall source status
         logger.info(f"\nSource Status: ErgoMind {'✓' if source_status['ergomind'] == 'success' else '✗'}, " +

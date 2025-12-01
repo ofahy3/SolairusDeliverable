@@ -133,6 +133,24 @@ class SolairusIntelligenceGenerator:
             logger.info(f"  ├─ FRED: {len(fred_items)} items")
             logger.info(f"  └─ Merged: {len(processed_items)} unique items")
 
+            # Check for empty results and warn user
+            if len(processed_items) == 0:
+                warning_msg = "WARNING: No intelligence items collected from any source!"
+                logger.warning(warning_msg)
+                status['errors'].append(warning_msg)
+
+                # Provide specific source failure info
+                if len(ergomind_items) == 0:
+                    status['errors'].append("ErgoMind returned no usable data - check API connection")
+                if len(gta_items) == 0:
+                    status['errors'].append("GTA returned no usable data - check API key")
+                if len(fred_items) == 0:
+                    status['errors'].append("FRED returned no usable data - check API key")
+            elif len(processed_items) < 5:
+                warning_msg = f"WARNING: Only {len(processed_items)} intelligence items collected - report may be sparse"
+                logger.warning(warning_msg)
+                status['errors'].append(warning_msg)
+
             # Step 2: Intelligence quality validation
             logger.info("\n🔍 Phase 2: Intelligence Quality Validation")
             status['items_processed'] = len(processed_items)
@@ -155,6 +173,13 @@ class SolairusIntelligenceGenerator:
                 sector_intelligence,
                 datetime.now().strftime("%B %Y")
             )
+
+            # Capture AI usage stats if available
+            if self.generator.ai_generator:
+                ai_usage = self.generator.ai_generator.get_usage_summary()
+                status['ai_usage'] = ai_usage
+                if ai_usage.get('total_requests', 0) > 0:
+                    logger.info(f"✓ AI-enhanced generation used {ai_usage['total_requests']} API calls (${ai_usage['total_cost_usd']:.4f})")
             
             # Step 5: Save document
             filepath = self.generator.save_report(doc)
@@ -272,6 +297,14 @@ class SolairusIntelligenceGenerator:
             print(f"   ErgoMind: {'✓ Success' if source_status.get('ergomind') == 'success' else '✗ Failed'}")
             print(f"   GTA:      {'✓ Success' if source_status.get('gta') == 'success' else '✗ Failed'}")
             print(f"   FRED:     {'✓ Success' if source_status.get('fred') == 'success' else '✗ Failed'}")
+
+        # Display AI usage if available
+        if 'ai_usage' in status and status['ai_usage'].get('total_requests', 0) > 0:
+            ai_usage = status['ai_usage']
+            print(f"\n🤖 AI Enhancement:")
+            print(f"   API Calls: {ai_usage['total_requests']} ({ai_usage['successful_requests']} successful)")
+            print(f"   Tokens: {ai_usage['total_input_tokens']:,} in / {ai_usage['total_output_tokens']:,} out")
+            print(f"   Cost: ${ai_usage['total_cost_usd']:.4f}")
 
         if status['report_path']:
             print(f"\n📄 Report Location:")

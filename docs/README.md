@@ -6,13 +6,11 @@ This directory contains comprehensive documentation for the Solairus Intelligenc
 
 - [architecture.md](architecture.md) - System architecture and design decisions
 - [deployment.md](deployment.md) - Deployment guide for various environments
-- [archive/](archive/) - Historical documentation and project planning
 
 ## Quick Links
 
 - [Main README](../README.md) - Project overview and quick start
 - [CHANGELOG](../CHANGELOG.md) - Version history
-- [LICENSE](../LICENSE) - License information
 
 ## For Developers
 

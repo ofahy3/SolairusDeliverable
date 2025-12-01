@@ -3,12 +3,23 @@ Web Interface for Solairus Intelligence Report Generator
 Simple, elegant FastAPI application for generating reports
 """
 
+# Load environment variables from .env file BEFORE any other imports
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Find and load .env file from project root
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    # Try current working directory
+    load_dotenv()
+
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import asyncio
-from pathlib import Path
 from datetime import datetime
 import json
 

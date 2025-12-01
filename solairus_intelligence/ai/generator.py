@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class AIConfig:
     """Configuration for AI generation"""
     api_key: str
-    model: str = "claude-opus-4-1-20250805"
+    model: str = "claude-opus-4-5-20251101"
     enabled: bool = True
     max_tokens: int = 4000
     temperature: float = 0.3  # Lower temperature for more consistent, factual output
@@ -110,7 +110,7 @@ class SecureAIGenerator:
         """Load AI configuration from environment variables"""
         api_key = os.getenv('ANTHROPIC_API_KEY', '')
         enabled = os.getenv('AI_ENABLED', 'true').lower() == 'true'
-        model = os.getenv('AI_MODEL', 'claude-opus-4-1-20250805')
+        model = os.getenv('AI_MODEL', 'claude-opus-4-5-20251101')
 
         if not api_key and enabled:
             logger.warning("ANTHROPIC_API_KEY not set - AI generation disabled")

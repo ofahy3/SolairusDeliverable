@@ -137,3 +137,12 @@ exclude = [
     ".venv",
     "venv",
 ]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101"]  # Allow assert statements in tests
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["solairus_intelligence"]

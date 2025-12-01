@@ -22,7 +22,7 @@ class EnvironmentConfig:
     # AI configuration
     anthropic_api_key: Optional[str] = None
     ai_enabled: bool = True
-    ai_model: str = "claude-opus-4-1-20250805"
+    ai_model: str = "claude-opus-4-5-20251101"
 
     @classmethod
     def detect(cls) -> 'EnvironmentConfig':
@@ -61,7 +61,7 @@ class EnvironmentConfig:
         # Load AI configuration from environment
         anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
         ai_enabled = os.getenv('AI_ENABLED', 'true').lower() == 'true'
-        ai_model = os.getenv('AI_MODEL', 'claude-opus-4-1-20250805')
+        ai_model = os.getenv('AI_MODEL', 'claude-opus-4-5-20251101')
 
         # Disable AI if no API key provided
         if not anthropic_api_key and ai_enabled:

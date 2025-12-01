@@ -646,7 +646,7 @@ class IntelligenceProcessor:
             IntelligenceItem with GTA-specific fields populated
         """
         # Import here to avoid circular dependency
-        from gta_client import GTAIntervention
+        from solairus_intelligence.clients.gta_client import GTAIntervention
 
         # Extract raw and processed content
         raw_content = intervention.description
@@ -715,8 +715,29 @@ class IntelligenceProcessor:
         if intervention.date_implemented:
             try:
                 from datetime import datetime
-                impl_date = datetime.fromisoformat(intervention.date_implemented.replace('Z', '+00:00'))
-                days_old = (datetime.now() - impl_date.replace(tzinfo=None)).days
+                date_str = intervention.date_implemented
+
+                # Handle various date formats
+                impl_date = None
+                for fmt in [
+                    "%Y-%m-%dT%H:%M:%S.%fZ",  # ISO with microseconds
+                    "%Y-%m-%dT%H:%M:%SZ",      # ISO without microseconds
+                    "%Y-%m-%dT%H:%M:%S%z",     # ISO with timezone
+                    "%Y-%m-%d",                 # Simple date
+                    "%d/%m/%Y",                 # European format
+                    "%m/%d/%Y",                 # US format
+                ]:
+                    try:
+                        impl_date = datetime.strptime(date_str.replace('Z', '').split('+')[0].split('.')[0], fmt.replace('.%f', '').replace('Z', '').replace('%z', ''))
+                        break
+                    except ValueError:
+                        continue
+
+                # Fallback: try fromisoformat for ISO-like strings
+                if impl_date is None:
+                    impl_date = datetime.fromisoformat(date_str.replace('Z', '+00:00').replace('+00:00', ''))
+
+                days_old = (datetime.now() - impl_date).days
 
                 if days_old < 30:
                     score += 0.3  # Very recent - highly relevant
@@ -733,8 +754,10 @@ class IntelligenceProcessor:
                     # Data older than 1 year: softened from -0.5 to -0.2
                     # Aviation-relevant items get no penalty
                     score += 0.0 if is_aviation_relevant else -0.2
-            except:
-                pass
+            except (ValueError, TypeError, AttributeError) as e:
+                # Log parsing failures for debugging but don't crash
+                import logging
+                logging.getLogger(__name__).debug(f"Could not parse GTA date '{intervention.date_implemented}': {e}")
 
         return min(score, 1.0)
 
@@ -890,7 +913,7 @@ class IntelligenceProcessor:
         Returns:
             IntelligenceItem with economic data
         """
-        from fred_client import FREDObservation
+        from solairus_intelligence.clients.fred_client import FREDObservation
 
         # Format value based on category and units
         formatted_value = self._format_fred_value(observation)

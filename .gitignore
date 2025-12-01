@@ -1,6 +1,14 @@
-# Environment variables
+# Environment variables (NEVER commit these)
 .env
 .env.local
+.env.production
+.env.*.local
+
+# Secrets and credentials
+*.pem
+*.key
+secrets/
+credentials/
 
 # Python
 __pycache__/
@@ -55,6 +63,17 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
+.tox/
 
 # Status files
 last_run_status.json
+
+# Cache
+.cache/
+*.cache
+
+# Editor/IDE
+*.sublime-*
+.project
+.pydevproject

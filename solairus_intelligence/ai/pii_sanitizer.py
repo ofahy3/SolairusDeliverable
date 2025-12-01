@@ -27,10 +27,27 @@ class PIISanitizer:
         self.company_patterns = self._build_company_patterns()
 
     def _get_default_client_mapping(self) -> Dict[ClientSector, Dict]:
-        """Get default client mapping from IntelligenceProcessor"""
-        from solairus_intelligence.core.processor import IntelligenceProcessor
-        processor = IntelligenceProcessor()
-        return processor.client_mapping
+        """Get default client mapping for PII sanitization"""
+        # Define client mapping directly to avoid circular import with IntelligenceProcessor
+        return {
+            ClientSector.TECHNOLOGY: {
+                'companies': ['Cisco', 'Palantir', 'NantWorks', 'Pluralsight'],
+            },
+            ClientSector.FINANCE: {
+                'companies': ['ICONIQ Capital', 'Vista Equity', 'Affinius Capital',
+                            'Ribbit Management', 'ArcLight Capital'],
+            },
+            ClientSector.REAL_ESTATE: {
+                'companies': ['Presidium Development', 'Restoration Hardware',
+                            'Grassy Creek', 'Bay Grove Capital'],
+            },
+            ClientSector.ENTERTAINMENT: {
+                'companies': ['WME IMG', 'Anheuser-Busch InBev'],
+            },
+            ClientSector.ENERGY: {
+                'companies': ['ArcLight Capital Partners'],
+            }
+        }
 
     def _build_company_patterns(self) -> Dict[str, str]:
         """
