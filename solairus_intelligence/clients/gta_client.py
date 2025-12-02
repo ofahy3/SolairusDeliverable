@@ -84,10 +84,11 @@ class GTAClient:
 
     async def __aenter__(self):
         """Async context manager entry"""
-        # GTA API uses API key in request body, not header authentication
+        # GTA API requires Authorization header with format: APIKey [YOUR_API_KEY]
         self.session = aiohttp.ClientSession(
             headers={
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": f"APIKey {self.config.api_key}"
             },
             timeout=aiohttp.ClientTimeout(total=self.config.timeout)
         )
@@ -143,16 +144,11 @@ class GTAClient:
             raise RuntimeError("GTAClient session not initialized. Use 'async with' context manager.")
 
         try:
-            # Include API key in request body for authentication
-            request_with_auth = {
-                "api_key": self.config.api_key,
-                **request_data
-            }
             logger.info(f"GTA API Request: {json.dumps(request_data, indent=2)}")
 
             async with self.session.post(
                 self.config.base_url,
-                json=request_with_auth
+                json=request_data
             ) as response:
                 response.raise_for_status()
                 data = await response.json()

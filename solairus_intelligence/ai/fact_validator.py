@@ -153,8 +153,23 @@ class FactValidator:
             if not section_items:
                 continue
 
-            # Combine all items in section
-            section_text = ' '.join(section_items)
+            # Combine all items in section - handle both string items and structured dicts
+            text_parts = []
+            for item in section_items:
+                if isinstance(item, str):
+                    text_parts.append(item)
+                elif isinstance(item, dict):
+                    # Handle structured key findings with subheader, content, bullets
+                    if 'content' in item:
+                        text_parts.append(item.get('subheader', ''))
+                        text_parts.append(item.get('content', ''))
+                        text_parts.extend(item.get('bullets', []))
+                    # Handle structured watch factors with indicator, what, why
+                    elif 'indicator' in item:
+                        text_parts.append(item.get('indicator', ''))
+                        text_parts.append(item.get('what_to_watch', ''))
+                        text_parts.append(item.get('why_it_matters', ''))
+            section_text = ' '.join(text_parts)
 
             # Validate
             is_valid, unsupported = self.validate_ai_output(section_text, source_items, strict=True)

@@ -291,8 +291,16 @@ class QueryOrchestrator:
 
         for category, results in raw_results.items():
             for result in results:
-                if result.success and result.response:
-                    response_text = result.response
+                # Handle both QueryResult objects and cached dict data
+                if isinstance(result, dict):
+                    success = result.get('success', True)
+                    response = result.get('response', '')
+                else:
+                    success = result.success
+                    response = result.response
+
+                if success and response:
+                    response_text = response
 
                     # Split long responses into multiple items
                     # ErgoMind often returns multiple topics in one response
