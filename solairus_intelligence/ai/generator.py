@@ -4,21 +4,23 @@ Provides AI-enhanced writing for Executive Summaries and "So What" statements
 with security, validation, and graceful degradation
 """
 
+import asyncio
 import logging
 import os
-from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
-import asyncio
+from typing import Dict, List, Optional
 
-from solairus_intelligence.core.processor import IntelligenceItem, ClientSector
-from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
 from solairus_intelligence.ai.fact_validator import FactValidator
+from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
+from solairus_intelligence.core.processor import ClientSector, IntelligenceItem
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class AIConfig:
     """Configuration for AI generation"""
+
     api_key: str
     model: str = "claude-opus-4-5-20251101"
     enabled: bool = True
@@ -47,24 +49,23 @@ class AIUsageTracker:
             self.total_output_tokens += output_tokens
 
             # Claude Opus 4 pricing: $15/MTok input, $75/MTok output
-            self.total_cost += (
-                input_tokens / 1_000_000 * 15.0 +
-                output_tokens / 1_000_000 * 75.0
-            )
+            self.total_cost += input_tokens / 1_000_000 * 15.0 + output_tokens / 1_000_000 * 75.0
         else:
             self.failed_requests += 1
 
     def get_summary(self) -> Dict:
         """Get usage summary"""
         return {
-            'total_requests': self.total_requests,
-            'successful_requests': self.total_requests - self.failed_requests,
-            'failed_requests': self.failed_requests,
-            'total_input_tokens': self.total_input_tokens,
-            'total_output_tokens': self.total_output_tokens,
-            'total_cost_usd': round(self.total_cost, 4),
-            'avg_input_tokens': self.total_input_tokens // max(1, self.total_requests - self.failed_requests),
-            'avg_output_tokens': self.total_output_tokens // max(1, self.total_requests - self.failed_requests),
+            "total_requests": self.total_requests,
+            "successful_requests": self.total_requests - self.failed_requests,
+            "failed_requests": self.failed_requests,
+            "total_input_tokens": self.total_input_tokens,
+            "total_output_tokens": self.total_output_tokens,
+            "total_cost_usd": round(self.total_cost, 4),
+            "avg_input_tokens": self.total_input_tokens
+            // max(1, self.total_requests - self.failed_requests),
+            "avg_output_tokens": self.total_output_tokens
+            // max(1, self.total_requests - self.failed_requests),
         }
 
 
@@ -97,6 +98,7 @@ class SecureAIGenerator:
         if self.config.enabled:
             try:
                 from anthropic import AsyncAnthropic
+
                 self.client = AsyncAnthropic(api_key=self.config.api_key)
                 logger.info(f"✓ AI generation enabled with model: {self.config.model}")
             except ImportError:
@@ -108,24 +110,18 @@ class SecureAIGenerator:
 
     def _load_config_from_env(self) -> AIConfig:
         """Load AI configuration from environment variables"""
-        api_key = os.getenv('ANTHROPIC_API_KEY', '')
-        enabled = os.getenv('AI_ENABLED', 'true').lower() == 'true'
-        model = os.getenv('AI_MODEL', 'claude-opus-4-5-20251101')
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        enabled = os.getenv("AI_ENABLED", "true").lower() == "true"
+        model = os.getenv("AI_MODEL", "claude-opus-4-5-20251101")
 
         if not api_key and enabled:
             logger.warning("ANTHROPIC_API_KEY not set - AI generation disabled")
             enabled = False
 
-        return AIConfig(
-            api_key=api_key,
-            model=model,
-            enabled=enabled
-        )
+        return AIConfig(api_key=api_key, model=model, enabled=enabled)
 
     async def generate_executive_summary(
-        self,
-        items: List[IntelligenceItem],
-        fallback_generator=None
+        self, items: List[IntelligenceItem], fallback_generator=None
     ) -> Dict[str, List[str]]:
         """
         Generate Executive Summary using AI with validation and fallback
@@ -178,9 +174,7 @@ class SecureAIGenerator:
             return fallback_generator(items) if fallback_generator else {}
 
     async def generate_so_what_statement(
-        self,
-        item: IntelligenceItem,
-        fallback_generator=None
+        self, item: IntelligenceItem, fallback_generator=None
     ) -> str:
         """
         Generate "So What" statement using AI with validation
@@ -214,7 +208,7 @@ class SecureAIGenerator:
             )
 
             if not is_valid:
-                logger.warning(f"'So What' statement validation failed - using fallback")
+                logger.warning("'So What' statement validation failed - using fallback")
                 return fallback_generator(item) if fallback_generator else ""
 
             return ai_response.strip()
@@ -224,9 +218,7 @@ class SecureAIGenerator:
             return fallback_generator(item) if fallback_generator else ""
 
     async def _call_claude_api(
-        self,
-        prompt: str,
-        max_tokens: Optional[int] = None
+        self, prompt: str, max_tokens: Optional[int] = None
     ) -> Optional[str]:
         """
         Call Claude API with error handling and retries
@@ -246,19 +238,18 @@ class SecureAIGenerator:
 
         while retries <= self.config.max_retries:
             try:
-                logger.debug(f"Calling Claude API (attempt {retries + 1}/{self.config.max_retries + 1})")
+                logger.debug(
+                    f"Calling Claude API (attempt {retries + 1}/{self.config.max_retries + 1})"
+                )
 
                 response = await asyncio.wait_for(
                     self.client.messages.create(
                         model=self.config.model,
                         max_tokens=max_tokens,
                         temperature=self.config.temperature,
-                        messages=[{
-                            "role": "user",
-                            "content": prompt
-                        }]
+                        messages=[{"role": "user", "content": prompt}],
                     ),
-                    timeout=self.config.timeout
+                    timeout=self.config.timeout,
                 )
 
                 # Extract text from response
@@ -268,10 +259,12 @@ class SecureAIGenerator:
                 self.usage_tracker.log_request(
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
-                    success=True
+                    success=True,
                 )
 
-                logger.debug(f"AI API call successful: {response.usage.input_tokens} in, {response.usage.output_tokens} out")
+                logger.debug(
+                    f"AI API call successful: {response.usage.input_tokens} in, {response.usage.output_tokens} out"
+                )
 
                 return text
 
@@ -285,7 +278,7 @@ class SecureAIGenerator:
                 retries += 1
 
             if retries <= self.config.max_retries:
-                await asyncio.sleep(2 ** retries)  # Exponential backoff
+                await asyncio.sleep(2**retries)  # Exponential backoff
 
         return None
 
@@ -293,24 +286,30 @@ class SecureAIGenerator:
         """Build prompt for Executive Summary generation"""
 
         # Select top 20 items by composite score
-        top_items = sorted(
-            items,
-            key=lambda x: x.relevance_score * x.confidence,
-            reverse=True
-        )[:20]
+        top_items = sorted(items, key=lambda x: x.relevance_score * x.confidence, reverse=True)[:20]
 
         # Format intelligence items
         items_text = []
         for i, item in enumerate(top_items, 1):
+            # Handle sectors that may be ClientSector enums or strings/dicts
+            sectors = []
+            for s in item.affected_sectors:
+                if hasattr(s, "value"):
+                    sectors.append(s.value)
+                elif isinstance(s, dict):
+                    sectors.append(s.get("name", str(s)))
+                else:
+                    sectors.append(str(s))
+
             items_text.append(
                 f"[ITEM {i}]\n"
                 f"Content: {item.processed_content}\n"
                 f"Source Type: {item.source_type}\n"
                 f"Relevance: {item.relevance_score:.2f}\n"
-                f"Sectors: {', '.join([s.value for s in item.affected_sectors])}\n"
+                f"Sectors: {', '.join(sectors)}\n"
             )
 
-        intelligence_block = '\n'.join(items_text)
+        intelligence_block = "\n".join(items_text)
 
         prompt = f"""You are writing the Executive Summary for a monthly intelligence report for Solairus Aviation, a business aviation operator serving high-net-worth clients in technology, finance, real estate, and entertainment sectors.
 
@@ -324,14 +323,23 @@ TASK: Generate an Executive Summary with these three sections:
    - Lead with analytical judgment, support with evidence
    - Example: "Ergo assesses that [specific development] creates [specific risk] for [affected clients]."
 
-2. KEY FINDINGS (3-5 items): Specific, actionable intelligence judgments
-   - Geopolitical developments, economic indicators, regulatory changes
+2. KEY FINDINGS (3-5 items): Each finding must have a SUBHEADER, main paragraph, and supporting bullets
+   - Subheader: Short thematic title (e.g., "US-China relations", "Sanctions & compliance risk")
+   - Content: 2-3 sentence paragraph with analytical judgment and evidence
+   - Bullets: 2-3 supporting points with operational implications
    - Include probability language: "likely", "probable", "expects"
-   - Example: "Ergo believes [event] will [outcome] through [timeframe], affecting [sector] clients."
+   - Example format:
+     [SUBHEADER: US-China strategic truce]
+     [CONTENT: Ergo assesses the October 30 strategic truce will hold through Q1 2026. This stabilizes cross-Pacific routing but underlying export controls remain in force.]
+     [BULLET: Technology sector clients face heightened compliance requirements.]
+     [BULLET: Routing adjustments may be required for Asia-Pacific destinations.]
 
-3. WATCH FACTORS (2-3 items): Forward-looking indicators to monitor
-   - Emerging trends, signals requiring monitoring
-   - Example: "Monitor [indicator] - [reason why it matters for aviation]."
+3. WATCH FACTORS (at least 3 items): Forward-looking indicators formatted for table display
+   - Each factor must have: INDICATOR (short name), WHAT TO WATCH (specific metric/event), WHY IT MATTERS (aviation impact)
+   - Example format:
+     [INDICATOR: Supply Chain Decoupling]
+     [WHAT: US-China supply chain separation velocity]
+     [WHY: Accelerating separation drives increased site visit requirements for tech clients]
 
 STYLE REQUIREMENTS (Ergo Analytical Voice):
 - Lead with judgment, support with evidence
@@ -348,22 +356,42 @@ STRICT RULES:
 - Do not use first-person language ("I think", "I believe")
 - Maintain professional aviation industry terminology
 
-FORMAT YOUR RESPONSE AS:
+FORMAT YOUR RESPONSE EXACTLY AS:
+
 BOTTOM LINE:
 - [Statement 1]
 - [Statement 2]
 
 KEY FINDINGS:
-- [Finding 1]
-- [Finding 2]
-- [Finding 3]
-- [Finding 4]
-- [Finding 5]
+
+[SUBHEADER: Theme title 1]
+[CONTENT: Main analytical paragraph for finding 1]
+[BULLET: Supporting point 1]
+[BULLET: Supporting point 2]
+
+[SUBHEADER: Theme title 2]
+[CONTENT: Main analytical paragraph for finding 2]
+[BULLET: Supporting point 1]
+[BULLET: Supporting point 2]
+
+[SUBHEADER: Theme title 3]
+[CONTENT: Main analytical paragraph for finding 3]
+[BULLET: Supporting point 1]
+[BULLET: Supporting point 2]
 
 WATCH FACTORS:
-- [Factor 1]
-- [Factor 2]
-- [Factor 3]
+
+[INDICATOR: Short indicator name 1]
+[WHAT: What to watch for factor 1]
+[WHY: Why it matters for aviation 1]
+
+[INDICATOR: Short indicator name 2]
+[WHAT: What to watch for factor 2]
+[WHY: Why it matters for aviation 2]
+
+[INDICATOR: Short indicator name 3]
+[WHAT: What to watch for factor 3]
+[WHY: Why it matters for aviation 3]
 """
 
         return prompt
@@ -371,7 +399,19 @@ WATCH FACTORS:
     def _build_so_what_prompt(self, item: IntelligenceItem) -> str:
         """Build prompt for 'So What' statement generation"""
 
-        sectors_text = ', '.join([s.value for s in item.affected_sectors]) if item.affected_sectors else 'general'
+        # Handle sectors that may be ClientSector enums or strings/dicts
+        if item.affected_sectors:
+            sectors = []
+            for s in item.affected_sectors:
+                if hasattr(s, "value"):
+                    sectors.append(s.value)
+                elif isinstance(s, dict):
+                    sectors.append(s.get("name", str(s)))
+                else:
+                    sectors.append(str(s))
+            sectors_text = ", ".join(sectors)
+        else:
+            sectors_text = "general"
 
         prompt = f"""Generate a concise "So What" statement explaining the business aviation impact of this intelligence item.
 
@@ -402,17 +442,19 @@ Generate ONLY the "So What" statement (no labels, no extra text):
 
         return prompt
 
-    def _parse_executive_summary_response(self, ai_response: str) -> Dict[str, List[str]]:
-        """Parse AI response into structured executive summary"""
+    def _parse_executive_summary_response(self, ai_response: str) -> Dict[str, List]:
+        """Parse AI response into structured executive summary with new format support"""
 
-        result = {
-            'bottom_line': [],
-            'key_findings': [],
-            'watch_factors': []
-        }
+        result = {"bottom_line": [], "key_findings": [], "watch_factors": []}
 
         current_section = None
-        lines = ai_response.strip().split('\n')
+        lines = ai_response.strip().split("\n")
+
+        # For structured key findings
+        current_finding = None
+
+        # For structured watch factors
+        current_watch_factor = None
 
         for line in lines:
             line = line.strip()
@@ -421,21 +463,86 @@ Generate ONLY the "So What" statement (no labels, no extra text):
                 continue
 
             # Detect section headers
-            if 'BOTTOM LINE' in line.upper():
-                current_section = 'bottom_line'
+            if "BOTTOM LINE" in line.upper():
+                current_section = "bottom_line"
+                current_finding = None
+                current_watch_factor = None
                 continue
-            elif 'KEY FINDING' in line.upper():
-                current_section = 'key_findings'
+            elif "KEY FINDING" in line.upper():
+                current_section = "key_findings"
+                current_finding = None
+                current_watch_factor = None
                 continue
-            elif 'WATCH FACTOR' in line.upper():
-                current_section = 'watch_factors'
+            elif "WATCH FACTOR" in line.upper():
+                current_section = "watch_factors"
+                current_finding = None
+                current_watch_factor = None
                 continue
 
-            # Extract bullet points
-            if line.startswith('-') or line.startswith('•'):
-                statement = line.lstrip('- •').strip()
-                if statement and current_section:
-                    result[current_section].append(statement)
+            # Parse structured Key Findings
+            if current_section == "key_findings":
+                if line.startswith("[SUBHEADER:"):
+                    # Save previous finding if exists
+                    if current_finding and current_finding.get("content"):
+                        result["key_findings"].append(current_finding)
+                    # Start new finding
+                    subheader = line.replace("[SUBHEADER:", "").rstrip("]").strip()
+                    current_finding = {"subheader": subheader, "content": "", "bullets": []}
+                elif line.startswith("[CONTENT:") and current_finding:
+                    content = line.replace("[CONTENT:", "").rstrip("]").strip()
+                    current_finding["content"] = content
+                elif line.startswith("[BULLET:") and current_finding:
+                    bullet = line.replace("[BULLET:", "").rstrip("]").strip()
+                    current_finding["bullets"].append(bullet)
+                elif line.startswith("-") or line.startswith("•"):
+                    # Legacy format bullet
+                    statement = line.lstrip("- •").strip()
+                    if statement:
+                        if current_finding:
+                            current_finding["bullets"].append(statement)
+                        else:
+                            # Legacy format - just a string
+                            result["key_findings"].append(statement)
+                continue
+
+            # Parse structured Watch Factors
+            if current_section == "watch_factors":
+                if line.startswith("[INDICATOR:"):
+                    # Save previous factor if exists
+                    if current_watch_factor and current_watch_factor.get("indicator"):
+                        result["watch_factors"].append(current_watch_factor)
+                    # Start new factor
+                    indicator = line.replace("[INDICATOR:", "").rstrip("]").strip()
+                    current_watch_factor = {
+                        "indicator": indicator,
+                        "what_to_watch": "",
+                        "why_it_matters": "",
+                    }
+                elif line.startswith("[WHAT:") and current_watch_factor:
+                    what = line.replace("[WHAT:", "").rstrip("]").strip()
+                    current_watch_factor["what_to_watch"] = what
+                elif line.startswith("[WHY:") and current_watch_factor:
+                    why = line.replace("[WHY:", "").rstrip("]").strip()
+                    current_watch_factor["why_it_matters"] = why
+                elif line.startswith("-") or line.startswith("•"):
+                    # Legacy format
+                    statement = line.lstrip("- •").strip()
+                    if statement:
+                        result["watch_factors"].append(statement)
+                continue
+
+            # Parse Bottom Line (simple bullet format)
+            if current_section == "bottom_line":
+                if line.startswith("-") or line.startswith("•"):
+                    statement = line.lstrip("- •").strip()
+                    if statement:
+                        result["bottom_line"].append(statement)
+
+        # Save final finding and watch factor if they exist
+        if current_finding and current_finding.get("content"):
+            result["key_findings"].append(current_finding)
+        if current_watch_factor and current_watch_factor.get("indicator"):
+            result["watch_factors"].append(current_watch_factor)
 
         return result
 
@@ -451,14 +558,14 @@ def test_ai_generator():
     print("=" * 60)
 
     # Check if API key is set
-    api_key = os.getenv('ANTHROPIC_API_KEY')
+    api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         print("\n⚠️  ANTHROPIC_API_KEY not set - skipping AI tests")
         print("Set environment variable: export ANTHROPIC_API_KEY=your_key_here")
         print("=" * 60)
         return
 
-    print(f"\n✓ API key configured")
+    print("\n✓ API key configured")
 
     # Create test intelligence items
     test_items = [
@@ -470,7 +577,7 @@ def test_ai_generator():
             confidence=0.85,
             so_what_statement="Higher operating costs for aviation",
             affected_sectors=[ClientSector.GENERAL],
-            source_type="fred"
+            source_type="fred",
         ),
         IntelligenceItem(
             raw_content="China export controls semiconductors",
@@ -480,8 +587,8 @@ def test_ai_generator():
             confidence=0.9,
             so_what_statement="Supply chain risks for tech sector clients",
             affected_sectors=[ClientSector.TECHNOLOGY],
-            source_type="ergomind"
-        )
+            source_type="ergomind",
+        ),
     ]
 
     async def run_tests():
@@ -497,9 +604,9 @@ def test_ai_generator():
 
         def template_fallback(items):
             return {
-                'bottom_line': ["Template fallback bottom line"],
-                'key_findings': ["Template fallback finding"],
-                'watch_factors': ["Template fallback factor"]
+                "bottom_line": ["Template fallback bottom line"],
+                "key_findings": ["Template fallback finding"],
+                "watch_factors": ["Template fallback factor"],
             }
 
         summary = await generator.generate_executive_summary(test_items, template_fallback)

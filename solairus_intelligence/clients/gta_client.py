@@ -8,8 +8,9 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 import aiohttp
 import backoff
 
@@ -17,24 +18,30 @@ import backoff
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class GTAConfig:
     """Configuration for GTA API"""
-    base_url: str = field(default_factory=lambda: os.getenv(
-        "GTA_BASE_URL",
-        "https://api.globaltradealert.org/api/v1/data/"
-    ))
-    api_key: str = field(default_factory=lambda: os.getenv(
-        "GTA_API_KEY",
-        ""  # Must be provided via environment variable
-    ))
+
+    base_url: str = field(
+        default_factory=lambda: os.getenv(
+            "GTA_BASE_URL", "https://api.globaltradealert.org/api/v1/data/"
+        )
+    )
+    api_key: str = field(
+        default_factory=lambda: os.getenv(
+            "GTA_API_KEY", ""  # Must be provided via environment variable
+        )
+    )
     timeout: int = 30
     max_retries: int = 3
     max_results_per_query: int = 100  # Balance between data richness and performance
 
+
 @dataclass
 class GTAIntervention:
     """Structured GTA intervention data"""
+
     intervention_id: int
     title: str
     description: str
@@ -60,11 +67,12 @@ class GTAIntervention:
 
     def get_implementing_countries(self) -> List[str]:
         """Extract list of implementing country names"""
-        return [j.get('name', 'Unknown') for j in self.implementing_jurisdictions]
+        return [j.get("name", "Unknown") for j in self.implementing_jurisdictions]
 
     def get_affected_countries(self) -> List[str]:
         """Extract list of affected country names"""
-        return [j.get('name', 'Unknown') for j in self.affected_jurisdictions]
+        return [j.get("name", "Unknown") for j in self.affected_jurisdictions]
+
 
 class GTAClient:
     """
@@ -78,18 +86,21 @@ class GTAClient:
 
         # Warn if using fallback API key
         if self.config.api_key == "24f03ce8ff0ebf8155033d867de5cec5f7be2b01":
-            logger.warning("Using fallback GTA API key - set GTA_API_KEY environment variable for production")
+            logger.warning(
+                "Using fallback GTA API key - set GTA_API_KEY environment variable for production"
+            )
 
         logger.info(f"GTAClient initialized with API endpoint: {self.config.base_url}")
 
     async def __aenter__(self):
         """Async context manager entry"""
-        # GTA API uses API key in request body, not header authentication
+        # GTA API requires Authorization header with format: APIKey [YOUR_API_KEY]
         self.session = aiohttp.ClientSession(
             headers={
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": f"APIKey {self.config.api_key}",
             },
-            timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+            timeout=aiohttp.ClientTimeout(total=self.config.timeout),
         )
         return self
 
@@ -104,16 +115,12 @@ class GTAClient:
             logger.info("Testing GTA API connection...")
             # Test with a simple query for recent US interventions
             url = f"{self.config.base_url}interventions"
-            params = {
-                'implementing': 'United States',
-                'limit': 1,
-                'is_in_force': 'true'
-            }
+            params = {"implementing": "United States", "limit": 1, "is_in_force": "true"}
 
             async with self.session.get(url, params=params) as response:
                 if response.status == 200:
                     data = await response.json()
-                    if 'data' in data:
+                    if "data" in data:
                         logger.info("✓ GTA API connection successful")
                         return True
                     else:
@@ -129,31 +136,18 @@ class GTAClient:
             logger.error(f"GTA API connection test failed: {str(e)}")
             return False
 
-    @backoff.on_exception(
-        backoff.expo,
-        (aiohttp.ClientError, asyncio.TimeoutError),
-        max_tries=3
-    )
-    async def _make_request(
-        self,
-        request_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    @backoff.on_exception(backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError), max_tries=3)
+    async def _make_request(self, request_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Make authenticated request to GTA API with retry logic"""
         if not self.session:
-            raise RuntimeError("GTAClient session not initialized. Use 'async with' context manager.")
+            raise RuntimeError(
+                "GTAClient session not initialized. Use 'async with' context manager."
+            )
 
         try:
-            # Include API key in request body for authentication
-            request_with_auth = {
-                "api_key": self.config.api_key,
-                **request_data
-            }
             logger.info(f"GTA API Request: {json.dumps(request_data, indent=2)}")
 
-            async with self.session.post(
-                self.config.base_url,
-                json=request_with_auth
-            ) as response:
+            async with self.session.post(self.config.base_url, json=request_data) as response:
                 response.raise_for_status()
                 data = await response.json()
 
@@ -161,10 +155,10 @@ class GTAClient:
                 if isinstance(data, list):
                     logger.info(f"GTA API Response: Retrieved {len(data)} interventions")
                     return data
-                elif isinstance(data, dict) and 'data' in data:
+                elif isinstance(data, dict) and "data" in data:
                     # Fallback for alternate response format
                     logger.info(f"GTA API Response: Retrieved {len(data['data'])} interventions")
-                    return data['data']
+                    return data["data"]
                 else:
                     logger.warning(f"Unexpected GTA API response format: {type(data)}")
                     return []
@@ -179,28 +173,26 @@ class GTAClient:
     def _parse_intervention(self, raw_data: Dict[str, Any]) -> GTAIntervention:
         """Parse raw GTA API response into GTAIntervention object"""
         return GTAIntervention(
-            intervention_id=raw_data.get('intervention_id'),
-            title=raw_data.get('title', 'Untitled Intervention'),
-            description=raw_data.get('description', ''),
-            gta_evaluation=raw_data.get('gta_evaluation', 'Unclear'),
-            implementing_jurisdictions=raw_data.get('implementing_jurisdictions', []),
-            affected_jurisdictions=raw_data.get('affected_jurisdictions', []),
-            intervention_type=raw_data.get('intervention_type', 'Unknown'),
-            intervention_type_id=raw_data.get('intervention_type_id', 0),
-            mast_chapter=raw_data.get('mast_chapter'),
-            affected_sectors=raw_data.get('affected_sectors', []),
-            date_announced=raw_data.get('date_announced'),
-            date_implemented=raw_data.get('date_implemented'),
-            date_removed=raw_data.get('date_removed'),
-            is_in_force=raw_data.get('in_force', True),
-            intervention_url=raw_data.get('intervention_url'),
-            sources=raw_data.get('sources', [])
+            intervention_id=raw_data.get("intervention_id"),
+            title=raw_data.get("title", "Untitled Intervention"),
+            description=raw_data.get("description", ""),
+            gta_evaluation=raw_data.get("gta_evaluation", "Unclear"),
+            implementing_jurisdictions=raw_data.get("implementing_jurisdictions", []),
+            affected_jurisdictions=raw_data.get("affected_jurisdictions", []),
+            intervention_type=raw_data.get("intervention_type", "Unknown"),
+            intervention_type_id=raw_data.get("intervention_type_id", 0),
+            mast_chapter=raw_data.get("mast_chapter"),
+            affected_sectors=raw_data.get("affected_sectors", []),
+            date_announced=raw_data.get("date_announced"),
+            date_implemented=raw_data.get("date_implemented"),
+            date_removed=raw_data.get("date_removed"),
+            is_in_force=raw_data.get("in_force", True),
+            intervention_url=raw_data.get("intervention_url"),
+            sources=raw_data.get("sources", []),
         )
 
     async def query_interventions(
-        self,
-        request_data: Dict[str, Any],
-        limit: Optional[int] = None
+        self, request_data: Dict[str, Any], limit: Optional[int] = None
     ) -> List[GTAIntervention]:
         """
         Query GTA interventions with custom filters
@@ -217,16 +209,13 @@ class GTAClient:
             limit = self.config.max_results_per_query
 
         # Add limit to request
-        request_data['limit'] = min(limit, 1000)  # GTA API max is 1000
-        request_data['offset'] = 0
+        request_data["limit"] = min(limit, 1000)  # GTA API max is 1000
+        request_data["offset"] = 0
 
         try:
             raw_interventions = await self._make_request(request_data)
 
-            interventions = [
-                self._parse_intervention(raw)
-                for raw in raw_interventions
-            ]
+            interventions = [self._parse_intervention(raw) for raw in raw_interventions]
 
             logger.info(f"Parsed {len(interventions)} GTA interventions")
             return interventions[:limit]  # Enforce client-side limit
@@ -236,10 +225,7 @@ class GTAClient:
             return []
 
     async def get_recent_harmful_interventions(
-        self,
-        days: int = 30,
-        sectors: Optional[List[str]] = None,
-        limit: int = 50
+        self, days: int = 30, sectors: Optional[List[str]] = None, limit: int = 50
     ) -> List[GTAIntervention]:
         """
         Get recent harmful trade interventions
@@ -259,10 +245,10 @@ class GTAClient:
             "gta_evaluation": [1, 4],  # Red (1) and Harmful (4)
             "implementation_period": [
                 start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+                end_date.strftime("%Y-%m-%d"),
             ],
             "in_force_on_date": end_date.strftime("%Y-%m-%d"),
-            "keep_in_force_on_date": True
+            "keep_in_force_on_date": True,
         }
 
         if sectors:
@@ -271,9 +257,7 @@ class GTAClient:
         return await self.query_interventions(request_data, limit=limit)
 
     async def get_sanctions_and_export_controls(
-        self,
-        days: int = 60,
-        limit: int = 50
+        self, days: int = 60, limit: int = 50
     ) -> List[GTAIntervention]:
         """
         Get recent sanctions and export controls (critical for aviation)
@@ -289,23 +273,25 @@ class GTAClient:
         start_date = end_date - timedelta(days=days)
 
         request_data = {
-            "intervention_types": [47, 18, 51, 52],  # Export tariffs, import tariffs, anti-dumping, sanctions
+            "intervention_types": [
+                47,
+                18,
+                51,
+                52,
+            ],  # Export tariffs, import tariffs, anti-dumping, sanctions
             "gta_evaluation": [1, 4],  # Harmful
             "implementation_period": [
                 start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+                end_date.strftime("%Y-%m-%d"),
             ],
             "in_force_on_date": end_date.strftime("%Y-%m-%d"),
-            "keep_in_force_on_date": True
+            "keep_in_force_on_date": True,
         }
 
         return await self.query_interventions(request_data, limit=limit)
 
     async def get_capital_controls(
-        self,
-        days: int = 60,
-        affected_countries: Optional[List[int]] = None,
-        limit: int = 30
+        self, days: int = 60, affected_countries: Optional[List[int]] = None, limit: int = 30
     ) -> List[GTAIntervention]:
         """
         Get capital controls and financial restrictions
@@ -325,9 +311,9 @@ class GTAClient:
             "mast_chapters": [3],  # Capital controls chapter
             "implementation_period": [
                 start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+                end_date.strftime("%Y-%m-%d"),
             ],
-            "gta_evaluation": [1, 4]  # Harmful
+            "gta_evaluation": [1, 4],  # Harmful
         }
 
         if affected_countries:
@@ -336,9 +322,7 @@ class GTAClient:
         return await self.query_interventions(request_data, limit=limit)
 
     async def get_technology_restrictions(
-        self,
-        days: int = 60,
-        limit: int = 40
+        self, days: int = 60, limit: int = 40
     ) -> List[GTAIntervention]:
         """
         Get technology sector restrictions (export controls, local content)
@@ -358,17 +342,15 @@ class GTAClient:
             "affected_sectors": ["software", "semiconductors", "telecommunications", "computers"],
             "implementation_period": [
                 start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+                end_date.strftime("%Y-%m-%d"),
             ],
-            "gta_evaluation": [1, 4]
+            "gta_evaluation": [1, 4],
         }
 
         return await self.query_interventions(request_data, limit=limit)
 
     async def get_aviation_sector_interventions(
-        self,
-        days: int = 90,
-        limit: int = 30
+        self, days: int = 90, limit: int = 30
     ) -> List[GTAIntervention]:
         """
         Get interventions specifically affecting aviation and aerospace sectors
@@ -387,38 +369,13 @@ class GTAClient:
             "affected_sectors": ["aviation", "aerospace", "aircraft", "air transport"],
             "implementation_period": [
                 start_date.strftime("%Y-%m-%d"),
-                end_date.strftime("%Y-%m-%d")
+                end_date.strftime("%Y-%m-%d"),
             ],
             "in_force_on_date": end_date.strftime("%Y-%m-%d"),
-            "keep_in_force_on_date": True
+            "keep_in_force_on_date": True,
         }
 
         return await self.query_interventions(request_data, limit=limit)
-
-    async def test_connection(self) -> bool:
-        """Test GTA API connection and authentication"""
-        try:
-            logger.info("Testing GTA API connection...")
-
-            # Simple query for recent interventions
-            test_request = {
-                "limit": 1,
-                "offset": 0,
-                "gta_evaluation": [1]  # Just harmful interventions
-            }
-
-            response = await self._make_request(test_request)
-
-            if response and isinstance(response, list):
-                logger.info("✓ GTA API connection successful")
-                return True
-            else:
-                logger.error("✗ GTA API connection failed: Invalid response format")
-                return False
-
-        except Exception as e:
-            logger.error(f"✗ GTA API connection test failed: {str(e)}")
-            return False
 
 
 async def test_gta_client():

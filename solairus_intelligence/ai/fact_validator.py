@@ -6,9 +6,11 @@ Detects hallucinations and unsupported claims in AI-generated content
 import logging
 import re
 from typing import List, Set, Tuple
+
 from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)
+
 
 class FactValidator:
     """
@@ -27,12 +29,21 @@ class FactValidator:
             Dictionary of pattern types and their regexes
         """
         return {
-            'percentages': re.compile(r'\d+(\.\d+)?%'),
-            'dollar_amounts': re.compile(r'\$\d+(\.\d+)?\s*(billion|million|trillion)?', re.IGNORECASE),
-            'dates': re.compile(r'\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}/\d{1,2}/\d{2,4}\b|\bQ[1-4]\s+\d{4}\b'),
-            'numbers': re.compile(r'\b\d{1,3}(,\d{3})*(\.\d+)?\b'),
-            'specific_countries': re.compile(r'\b(United States|China|Russia|EU|European Union|Japan|India|Saudi Arabia|Iran|Israel)\b', re.IGNORECASE),
-            'specific_companies': re.compile(r'\b[A-Z][a-z]+\s+(Technologies|Corporation|Inc\.|Ltd\.|Capital|Group|Partners)\b'),
+            "percentages": re.compile(r"\d+(\.\d+)?%"),
+            "dollar_amounts": re.compile(
+                r"\$\d+(\.\d+)?\s*(billion|million|trillion)?", re.IGNORECASE
+            ),
+            "dates": re.compile(
+                r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}/\d{1,2}/\d{2,4}\b|\bQ[1-4]\s+\d{4}\b"
+            ),
+            "numbers": re.compile(r"\b\d{1,3}(,\d{3})*(\.\d+)?\b"),
+            "specific_countries": re.compile(
+                r"\b(United States|China|Russia|EU|European Union|Japan|India|Saudi Arabia|Iran|Israel)\b",
+                re.IGNORECASE,
+            ),
+            "specific_companies": re.compile(
+                r"\b[A-Z][a-z]+\s+(Technologies|Corporation|Inc\.|Ltd\.|Capital|Group|Partners)\b"
+            ),
         }
 
     def extract_factual_claims(self, text: str) -> Set[str]:
@@ -54,7 +65,7 @@ class FactValidator:
                 # Flatten tuples from regex groups
                 for match in matches:
                     if isinstance(match, tuple):
-                        claim = ' '.join(str(m) for m in match if m).strip()
+                        claim = " ".join(str(m) for m in match if m).strip()
                     else:
                         claim = str(match).strip()
 
@@ -64,10 +75,7 @@ class FactValidator:
         return claims
 
     def validate_ai_output(
-        self,
-        ai_text: str,
-        source_items: List[IntelligenceItem],
-        strict: bool = True
+        self, ai_text: str, source_items: List[IntelligenceItem], strict: bool = True
     ) -> Tuple[bool, List[str]]:
         """
         Validate that AI output is supported by source intelligence items
@@ -89,20 +97,22 @@ class FactValidator:
             return True, []
 
         # Build corpus of source content
-        source_corpus = ' '.join([
-            item.processed_content + ' ' + item.raw_content + ' ' + item.so_what_statement
-            for item in source_items
-        ]).lower()
+        source_corpus = " ".join(
+            [
+                item.processed_content + " " + item.raw_content + " " + item.so_what_statement
+                for item in source_items
+            ]
+        ).lower()
 
         # Check each claim
         unsupported_claims = []
 
         for claim in ai_claims:
-            claim_type, claim_value = claim.split(':', 1)
+            claim_type, claim_value = claim.split(":", 1)
             claim_lower = claim_value.lower()
 
             # Skip very common numbers that might appear in general language
-            if claim_type == 'numbers' and len(claim_value) <= 2:
+            if claim_type == "numbers" and len(claim_value) <= 2:
                 continue
 
             # Check if claim appears in source corpus
@@ -119,16 +129,16 @@ class FactValidator:
             is_valid = len(unsupported_claims) <= threshold
 
         if not is_valid:
-            logger.warning(f"AI output validation FAILED: {len(unsupported_claims)} unsupported claims")
+            logger.warning(
+                f"AI output validation FAILED: {len(unsupported_claims)} unsupported claims"
+            )
         else:
             logger.info(f"AI output validation PASSED: All {len(ai_claims)} claims supported")
 
         return is_valid, unsupported_claims
 
     def validate_executive_summary(
-        self,
-        summary_dict: dict,
-        source_items: List[IntelligenceItem]
+        self, summary_dict: dict, source_items: List[IntelligenceItem]
     ) -> Tuple[bool, dict]:
         """
         Validate an executive summary dictionary structure
@@ -141,32 +151,47 @@ class FactValidator:
             Tuple of (is_valid, validation_report)
         """
         validation_report = {
-            'bottom_line': {'valid': True, 'unsupported_claims': []},
-            'key_findings': {'valid': True, 'unsupported_claims': []},
-            'watch_factors': {'valid': True, 'unsupported_claims': []},
-            'overall_valid': True
+            "bottom_line": {"valid": True, "unsupported_claims": []},
+            "key_findings": {"valid": True, "unsupported_claims": []},
+            "watch_factors": {"valid": True, "unsupported_claims": []},
+            "overall_valid": True,
         }
 
-        for section_name in ['bottom_line', 'key_findings', 'watch_factors']:
+        for section_name in ["bottom_line", "key_findings", "watch_factors"]:
             section_items = summary_dict.get(section_name, [])
 
             if not section_items:
                 continue
 
-            # Combine all items in section
-            section_text = ' '.join(section_items)
+            # Combine all items in section - handle both string items and structured dicts
+            text_parts = []
+            for item in section_items:
+                if isinstance(item, str):
+                    text_parts.append(item)
+                elif isinstance(item, dict):
+                    # Handle structured key findings with subheader, content, bullets
+                    if "content" in item:
+                        text_parts.append(item.get("subheader", ""))
+                        text_parts.append(item.get("content", ""))
+                        text_parts.extend(item.get("bullets", []))
+                    # Handle structured watch factors with indicator, what, why
+                    elif "indicator" in item:
+                        text_parts.append(item.get("indicator", ""))
+                        text_parts.append(item.get("what_to_watch", ""))
+                        text_parts.append(item.get("why_it_matters", ""))
+            section_text = " ".join(text_parts)
 
             # Validate
             is_valid, unsupported = self.validate_ai_output(section_text, source_items, strict=True)
 
-            validation_report[section_name]['valid'] = is_valid
-            validation_report[section_name]['unsupported_claims'] = unsupported
+            validation_report[section_name]["valid"] = is_valid
+            validation_report[section_name]["unsupported_claims"] = unsupported
 
             if not is_valid:
-                validation_report['overall_valid'] = False
+                validation_report["overall_valid"] = False
                 logger.error(f"Executive Summary {section_name} validation FAILED")
 
-        return validation_report['overall_valid'], validation_report
+        return validation_report["overall_valid"], validation_report
 
     def check_for_prohibited_content(self, text: str) -> Tuple[bool, List[str]]:
         """
@@ -182,16 +207,25 @@ class FactValidator:
 
         # Prohibited patterns indicating fabrication
         prohibited_patterns = [
-            (r'I believe|I think|In my opinion|From my perspective', 'First-person language detected'),
-            (r'Based on my analysis of|My assessment shows', 'Personal assessment language'),
-            (r'According to sources not provided|External research indicates', 'Reference to unavailable sources'),
-            (r'It is unclear|Information not available|Data missing', 'Acknowledgment of missing data (acceptable)'),
+            (
+                r"I believe|I think|In my opinion|From my perspective",
+                "First-person language detected",
+            ),
+            (r"Based on my analysis of|My assessment shows", "Personal assessment language"),
+            (
+                r"According to sources not provided|External research indicates",
+                "Reference to unavailable sources",
+            ),
+            (
+                r"It is unclear|Information not available|Data missing",
+                "Acknowledgment of missing data (acceptable)",
+            ),
         ]
 
         for pattern, violation_type in prohibited_patterns:
             if re.search(pattern, text, re.IGNORECASE):
                 # Exception: "Information not available" is actually good (honest)
-                if 'Information not available' in violation_type:
+                if "Information not available" in violation_type:
                     continue
 
                 violations.append(violation_type)
@@ -219,7 +253,7 @@ def test_validator():
             category="economic",
             relevance_score=0.9,
             so_what_statement="Higher operational costs for aviation operators",
-            affected_sectors=[]
+            affected_sectors=[],
         )
     ]
 
@@ -234,7 +268,9 @@ def test_validator():
     # Test 2: Invalid AI output (fabricated data)
     print("\nTest 2: Invalid AI Output (Hallucination)")
 
-    ai_output_invalid = "Ergo expects inflation to reach 5.8% by March 2026, based on Federal Reserve projections."
+    ai_output_invalid = (
+        "Ergo expects inflation to reach 5.8% by March 2026, based on Federal Reserve projections."
+    )
 
     is_valid, unsupported = validator.validate_ai_output(ai_output_invalid, source_items)
     print(f"AI Output: {ai_output_invalid}")
@@ -254,7 +290,9 @@ def test_validator():
     # Test 4: Prohibited content detection
     print("\nTest 4: Prohibited Content Detection")
 
-    prohibited_text = "I believe that inflation will continue to rise based on my analysis of the situation."
+    prohibited_text = (
+        "I believe that inflation will continue to rise based on my analysis of the situation."
+    )
 
     is_safe, violations = validator.check_for_prohibited_content(prohibited_text)
     print(f"Text: {prohibited_text}")
@@ -266,22 +304,16 @@ def test_validator():
     print("\nTest 5: Executive Summary Validation")
 
     summary = {
-        'bottom_line': [
-            "US inflation at 3.5% creates immediate cost pressures for operators"
-        ],
-        'key_findings': [
-            "Q4 2025 inflation data shows sustained pressure on aviation costs"
-        ],
-        'watch_factors': [
-            "Monitor Federal Reserve policy changes affecting fuel prices"
-        ]
+        "bottom_line": ["US inflation at 3.5% creates immediate cost pressures for operators"],
+        "key_findings": ["Q4 2025 inflation data shows sustained pressure on aviation costs"],
+        "watch_factors": ["Monitor Federal Reserve policy changes affecting fuel prices"],
     }
 
     is_valid, report = validator.validate_executive_summary(summary, source_items)
     print(f"Executive Summary Validation: {'✓ PASS' if is_valid else '✗ FAIL'}")
     for section, result in report.items():
-        if section != 'overall_valid':
-            status = '✓' if result['valid'] else '✗'
+        if section != "overall_valid":
+            status = "✓" if result["valid"] else "✗"
             print(f"  {section}: {status}")
 
     print("\n" + "=" * 60)
