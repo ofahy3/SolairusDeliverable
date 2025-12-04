@@ -113,24 +113,40 @@ class GTAClient:
         """Test GTA API connectivity and key validity"""
         try:
             logger.info("Testing GTA API connection...")
-            # Test with a simple query for recent US interventions
-            url = f"{self.config.base_url}interventions"
-            params = {"implementing": "United States", "limit": 1, "is_in_force": "true"}
 
-            async with self.session.get(url, params=params) as response:
+            # Check if API key is configured
+            if not self.config.api_key:
+                logger.error("GTA API key not configured - set GTA_API_KEY environment variable")
+                return False
+
+            # Test with a simple POST query (GTA API requires POST, not GET)
+            request_data = {
+                "limit": 1,
+                "offset": 0,
+            }
+
+            async with self.session.post(self.config.base_url, json=request_data) as response:
                 if response.status == 200:
                     data = await response.json()
-                    if "data" in data:
+                    # GTA API returns a list directly
+                    if isinstance(data, list):
+                        logger.info("✓ GTA API connection successful")
+                        return True
+                    elif isinstance(data, dict) and "data" in data:
                         logger.info("✓ GTA API connection successful")
                         return True
                     else:
-                        logger.error("GTA API returned unexpected format")
+                        logger.error(f"GTA API returned unexpected format: {type(data)}")
                         return False
                 elif response.status == 401:
                     logger.error("GTA API authentication failed - check API key")
                     return False
+                elif response.status == 403:
+                    logger.error("GTA API access forbidden - API key may be invalid or expired")
+                    return False
                 else:
-                    logger.error(f"GTA API connection failed: HTTP {response.status}")
+                    error_text = await response.text()
+                    logger.error(f"GTA API connection failed: HTTP {response.status} - {error_text[:200]}")
                     return False
         except Exception as e:
             logger.error(f"GTA API connection test failed: {str(e)}")
@@ -172,21 +188,46 @@ class GTAClient:
 
     def _parse_intervention(self, raw_data: Dict[str, Any]) -> GTAIntervention:
         """Parse raw GTA API response into GTAIntervention object"""
+        # Build title from state_act_title (actual API field)
+        title = raw_data.get("state_act_title", "Untitled Intervention")
+
+        # Build description from available fields since API doesn't provide one
+        impl_countries = ", ".join(
+            j.get("name", "") for j in raw_data.get("implementing_jurisdictions", [])
+        )
+        affected_countries = ", ".join(
+            j.get("name", "") for j in raw_data.get("affected_jurisdictions", [])
+        )
+        intervention_type = raw_data.get("intervention_type", "Unknown")
+        mast_chapter = raw_data.get("mast_chapter", "")
+
+        description = f"{intervention_type}"
+        if impl_countries:
+            description += f" implemented by {impl_countries}"
+        if affected_countries:
+            description += f" affecting {affected_countries}"
+        if mast_chapter:
+            description += f". Category: {mast_chapter}"
+
+        # Handle is_in_force as 0/1 integer
+        is_in_force_raw = raw_data.get("is_in_force", 1)
+        is_in_force = bool(is_in_force_raw) if isinstance(is_in_force_raw, int) else is_in_force_raw
+
         return GTAIntervention(
             intervention_id=raw_data.get("intervention_id"),
-            title=raw_data.get("title", "Untitled Intervention"),
-            description=raw_data.get("description", ""),
+            title=title,
+            description=description,
             gta_evaluation=raw_data.get("gta_evaluation", "Unclear"),
             implementing_jurisdictions=raw_data.get("implementing_jurisdictions", []),
             affected_jurisdictions=raw_data.get("affected_jurisdictions", []),
-            intervention_type=raw_data.get("intervention_type", "Unknown"),
-            intervention_type_id=raw_data.get("intervention_type_id", 0),
-            mast_chapter=raw_data.get("mast_chapter"),
+            intervention_type=intervention_type,
+            intervention_type_id=raw_data.get("state_act_id", 0),
+            mast_chapter=mast_chapter,
             affected_sectors=raw_data.get("affected_sectors", []),
             date_announced=raw_data.get("date_announced"),
             date_implemented=raw_data.get("date_implemented"),
             date_removed=raw_data.get("date_removed"),
-            is_in_force=raw_data.get("in_force", True),
+            is_in_force=is_in_force,
             intervention_url=raw_data.get("intervention_url"),
             sources=raw_data.get("sources", []),
         )
@@ -376,6 +417,63 @@ class GTAClient:
         }
 
         return await self.query_interventions(request_data, limit=limit)
+
+    async def get_immigration_visa_restrictions(
+        self, days: int = 365, limit: int = 30
+    ) -> List[GTAIntervention]:
+        """
+        Get immigration, visa, and labor mobility restrictions.
+        Critical for business aviation clients planning international travel.
+
+        Args:
+            days: Number of days to look back (default 365 - migration measures are less frequent)
+            limit: Maximum number of results
+
+        Returns:
+            List of immigration/visa-related interventions
+        """
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+
+        # Fetch broader dataset and filter client-side for migration measures
+        # GTA API filter parameters don't consistently work, so we fetch more and filter
+        request_data = {
+            "implementation_period": [
+                start_date.strftime("%Y-%m-%d"),
+                end_date.strftime("%Y-%m-%d"),
+            ],
+            "in_force_on_date": end_date.strftime("%Y-%m-%d"),
+            "keep_in_force_on_date": True,
+        }
+
+        # Request more results since we'll filter client-side
+        all_interventions = await self.query_interventions(request_data, limit=500)
+
+        # Filter for migration-related interventions by MAST chapter and keywords
+        migration_keywords = [
+            "migration", "visa", "immigration", "work permit", "labour market",
+            "labor market", "travel ban", "entry restriction", "residence",
+            "mobility", "foreign worker", "skilled worker"
+        ]
+
+        migration_interventions = []
+        for intervention in all_interventions:
+            # Check MAST chapter
+            is_migration = "migration" in (intervention.mast_chapter or "").lower()
+
+            # Check title for keywords
+            title_lower = intervention.title.lower()
+            has_keyword = any(kw in title_lower for kw in migration_keywords)
+
+            # Check intervention type
+            type_lower = intervention.intervention_type.lower()
+            type_match = any(kw in type_lower for kw in ["migration", "labour", "labor", "visa"])
+
+            if is_migration or has_keyword or type_match:
+                migration_interventions.append(intervention)
+
+        logger.info(f"Filtered {len(migration_interventions)} migration interventions from {len(all_interventions)} total")
+        return migration_interventions[:limit]
 
 
 async def test_gta_client():

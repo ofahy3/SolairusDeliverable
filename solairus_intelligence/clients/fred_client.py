@@ -39,31 +39,20 @@ class FREDClient:
     Provides economic indicators to quantify ErgoMind's narrative intelligence
     """
 
-    # Key economic series organized by category
+    # Key economic series for business aviation - focused indicators
     SERIES = {
-        'inflation': {
-            'CPIAUCSL': 'US Consumer Price Index (CPI)',
-            'CPILFESL': 'US Core CPI (Less Food & Energy)',
-            'PCEPI': 'Personal Consumption Expenditures Price Index'
+        'fuel_costs': {
+            'WJFUELUSGULF': 'US Gulf Coast Kerosene-Type Jet Fuel Price',
+            'DCOILWTICO': 'Crude Oil Prices: West Texas Intermediate (WTI)',
         },
         'interest_rates': {
             'DFF': 'Federal Funds Effective Rate',
             'DGS10': '10-Year Treasury Constant Maturity Rate',
             'MORTGAGE30US': '30-Year Fixed Rate Mortgage Average'
         },
-        'fuel_costs': {
-            'WJFUELUSGULF': 'US Gulf Coast Kerosene-Type Jet Fuel Price',
-            'DCOILWTICO': 'Crude Oil Prices: West Texas Intermediate (WTI)',
-            'GASREGW': 'US Regular All Formulations Gas Price'
+        'business_confidence': {
+            'BSCICP02USM460S': 'Business Confidence Index: Manufacturing for United States',
         },
-        'gdp_growth': {
-            'GDPC1': 'Real Gross Domestic Product',
-            'A191RL1Q225SBEA': 'Real GDP Percent Change from Preceding Period'
-        },
-        'employment': {
-            'UNRATE': 'Unemployment Rate',
-            'PAYEMS': 'All Employees, Total Nonfarm'
-        }
     }
 
     def __init__(self, config: Optional[FREDConfig] = None):
@@ -182,6 +171,25 @@ class FREDClient:
             List of employment observations
         """
         return await self._get_series_category('employment', days_back)
+
+    async def get_business_confidence_data(self, days_back: int = 365) -> List[FREDObservation]:
+        """
+        Get business confidence indicators (OECD Manufacturing Confidence Index).
+        This series is centered around 0:
+        - Positive values indicate optimism (confidence above neutral)
+        - Negative values indicate pessimism (confidence below neutral)
+        - The magnitude shows strength of sentiment
+
+        This is a leading indicator for corporate travel and charter demand.
+        When business confidence is high, corporate travel typically increases.
+
+        Args:
+            days_back: Number of days to look back (default 365 for monthly OECD data)
+
+        Returns:
+            List of business confidence observations
+        """
+        return await self._get_series_category('business_confidence', days_back)
 
     async def _get_series_category(self, category: str, days_back: int) -> List[FREDObservation]:
         """

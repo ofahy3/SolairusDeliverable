@@ -1388,156 +1388,288 @@ class DocumentGenerator:
     def _craft_regional_assessment(
         self, region: str, primary_item: IntelligenceItem, all_items: List[IntelligenceItem]
     ) -> str:
-        """Craft a clean, professional regional assessment in Ergo analytical voice"""
-        # Strip markdown and clean the content
-        content = self._strip_markdown(primary_item.processed_content)
-        content_lower = content.lower()
-
-        # Region-specific assessment templates based on content analysis
-        if region == "North America":
-            if "tariff" in content_lower or "trade" in content_lower:
-                return self._build_assessment_sentence(
-                    "Trade policy developments continue to shape the business environment.",
-                    content,
-                    primary_item,
-                )
-            elif "sanction" in content_lower or "restriction" in content_lower:
-                return self._build_assessment_sentence(
-                    "Regulatory changes require ongoing compliance monitoring for operators.",
-                    content,
-                    primary_item,
-                )
-            elif (
-                "inflation" in content_lower
-                or "economic" in content_lower
-                or "fed" in content_lower
-            ):
-                return self._build_assessment_sentence(
-                    "Economic conditions remain a key factor for business aviation demand.",
-                    content,
-                    primary_item,
-                )
-            else:
-                return self._build_assessment_sentence(
-                    "Market conditions present both opportunities and considerations for operators.",
-                    content,
-                    primary_item,
-                )
-
-        elif region == "Europe":
-            if "eu" in content_lower or "regulation" in content_lower:
-                return self._build_assessment_sentence(
-                    "EU regulatory developments warrant attention from operators serving European destinations.",
-                    content,
-                    primary_item,
-                )
-            elif "fiscal" in content_lower or "budget" in content_lower:
-                return self._build_assessment_sentence(
-                    "Fiscal constraints across the region may affect corporate travel budgets.",
-                    content,
-                    primary_item,
-                )
-            else:
-                return self._build_assessment_sentence(
-                    "Regional dynamics continue to evolve with implications for aviation operations.",
-                    content,
-                    primary_item,
-                )
-
-        elif region == "Asia-Pacific":
-            if "china" in content_lower:
-                if "stimulus" in content_lower or "growth" in content_lower:
-                    return self._build_assessment_sentence(
-                        "Chinese economic policy developments influence regional business aviation demand.",
-                        content,
-                        primary_item,
-                    )
-                elif "trade" in content_lower or "export" in content_lower:
-                    return self._build_assessment_sentence(
-                        "US-China trade dynamics continue to affect cross-Pacific business operations.",
-                        content,
-                        primary_item,
-                    )
-            elif "technology" in content_lower or "semiconductor" in content_lower:
-                return self._build_assessment_sentence(
-                    "Technology sector developments shape travel patterns across the region.",
-                    content,
-                    primary_item,
-                )
-            else:
-                return self._build_assessment_sentence(
-                    "Regional economic activity presents opportunities for business aviation growth.",
-                    content,
-                    primary_item,
-                )
-
-        elif region == "Middle East":
-            if "oil" in content_lower or "energy" in content_lower:
-                return self._build_assessment_sentence(
-                    "Energy market dynamics continue to influence regional aviation activity.",
-                    content,
-                    primary_item,
-                )
-            elif "conflict" in content_lower or "security" in content_lower:
-                return self._build_assessment_sentence(
-                    "Security considerations require ongoing route assessment for regional operations.",
-                    content,
-                    primary_item,
-                )
-            else:
-                return self._build_assessment_sentence(
-                    "Regional developments present evolving considerations for aviation operations.",
-                    content,
-                    primary_item,
-                )
-
-        # Default fallback - extract clean first sentence
-        return self._build_assessment_sentence(
-            "Developments in this region warrant continued monitoring.", content, primary_item
-        )
-
-    def _build_assessment_sentence(
-        self, template: str, content: str, item: IntelligenceItem
-    ) -> str:
-        """Build a clean assessment sentence, incorporating source content when appropriate"""
+        """Craft a specific, data-driven regional assessment using actual intelligence details"""
         import re
 
-        # Try to extract a clean, complete sentence from the content
-        sentences = content.split(". ")
-        clean_sentence = None
+        # Strip markdown and clean the content
+        content = self._strip_markdown(primary_item.processed_content)
+        # Extract first sentence as a title-like summary (IntelligenceItem has no title field)
+        first_sentence = ""
+        if content:
+            sentences = content.split(". ")
+            if sentences:
+                first_sentence = sentences[0].strip()
 
-        for sent in sentences:
-            sent = sent.strip()
-            # Skip if too short, starts with lowercase (fragment), or has artifacts
-            if len(sent) < 40:
+        # Extract specific details from the content
+        specifics = self._extract_specifics(content, first_sentence)
+
+        # Build a specific assessment based on extracted details
+        assessment = self._build_specific_assessment(region, specifics, content, primary_item)
+
+        return assessment
+
+    def _extract_specifics(self, content: str, title: str) -> dict:
+        """Extract specific data points from intelligence content"""
+        import re
+
+        combined = f"{title} {content}"
+        specifics = {
+            "percentages": [],
+            "currencies": [],
+            "countries": [],
+            "companies": [],
+            "dates": [],
+            "policies": [],
+            "numbers": [],
+        }
+
+        # Extract percentages (e.g., "25%", "10-15%", "up to 50%")
+        pct_matches = re.findall(r"(\d+(?:\.\d+)?(?:-\d+(?:\.\d+)?)?%)", combined)
+        specifics["percentages"] = pct_matches[:3]
+
+        # Extract currency amounts (e.g., "$50 billion", "€100 million", "¥500 billion")
+        currency_matches = re.findall(
+            r"[\$€£¥]\s*\d+(?:\.\d+)?\s*(?:billion|million|trillion|bn|mn|B|M|T)?",
+            combined,
+            re.IGNORECASE,
+        )
+        specifics["currencies"] = currency_matches[:3]
+
+        # Extract specific country names
+        country_patterns = [
+            "United States",
+            "China",
+            "Russia",
+            "Japan",
+            "Germany",
+            "France",
+            "United Kingdom",
+            "UK",
+            "India",
+            "Brazil",
+            "Canada",
+            "Australia",
+            "South Korea",
+            "Mexico",
+            "Italy",
+            "Spain",
+            "Saudi Arabia",
+            "UAE",
+            "Israel",
+            "Iran",
+            "Taiwan",
+            "Singapore",
+            "Hong Kong",
+            "Indonesia",
+            "Turkey",
+            "Poland",
+            "Netherlands",
+            "Switzerland",
+            "Sweden",
+            "Norway",
+        ]
+        for country in country_patterns:
+            if country.lower() in combined.lower():
+                if country not in specifics["countries"]:
+                    specifics["countries"].append(country)
+
+        # Extract company names (capitalized multi-word phrases that look like companies)
+        company_matches = re.findall(
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:Inc|Corp|Ltd|LLC|Co)\.?)?)\b", combined
+        )
+        for match in company_matches[:5]:
+            if len(match) > 3 and match not in country_patterns:
+                specifics["companies"].append(match)
+
+        # Extract dates and timeframes
+        date_matches = re.findall(
+            r"(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|\d{4}|Q[1-4]\s+\d{4}|(?:first|second|third|fourth)\s+quarter",
+            combined,
+            re.IGNORECASE,
+        )
+        specifics["dates"] = date_matches[:2]
+
+        # Extract policy/regulation names (phrases in quotes or with specific keywords)
+        policy_matches = re.findall(r'"([^"]+)"', combined)
+        specifics["policies"] = [p for p in policy_matches if len(p) > 5 and len(p) < 80][:2]
+
+        # Extract large numbers (millions, billions)
+        num_matches = re.findall(
+            r"\b(\d+(?:\.\d+)?\s*(?:million|billion|trillion))\b", combined, re.IGNORECASE
+        )
+        specifics["numbers"] = num_matches[:3]
+
+        return specifics
+
+    def _build_specific_assessment(
+        self, region: str, specifics: dict, content: str, item: IntelligenceItem
+    ) -> str:
+        """Build a specific assessment using extracted data points - NEVER use generic templates"""
+        import re
+
+        content_lower = content.lower()
+
+        # Metadata prefixes to filter out from sentences
+        metadata_prefixes = [
+            "Baseline:",
+            "Background:",
+            "Context:",
+            "Note:",
+            "Source:",
+            "Reference:",
+            "Update:",
+            "Summary:",
+            "Overview:",
+            "Key Point:",
+            "Action:",
+            "Status:",
+        ]
+
+        def is_metadata_sentence(sentence: str) -> bool:
+            """Check if sentence starts with a metadata prefix"""
+            for prefix in metadata_prefixes:
+                if sentence.startswith(prefix) or sentence.startswith(prefix.lower()):
+                    return True
+            return False
+
+        # Extract all sentences for later use, filtering out metadata
+        all_sentences = [
+            s.strip() for s in content.split(". ")
+            if s.strip() and not is_metadata_sentence(s.strip())
+        ]
+
+        # Get extracted specifics
+        countries = specifics.get("countries", [])
+        percentages = specifics.get("percentages", [])
+        currencies = specifics.get("currencies", [])
+
+        # PRIORITY 1: Find a sentence from content that contains actual data
+        for sent in all_sentences:
+            if len(sent) < 30 or len(sent) > 350:
                 continue
             if sent and sent[0].islower():
                 continue
-            if re.search(r"\[\d+\]|\(\d+\)|^\d+\s", sent):
+            # Skip metadata-like sentences
+            if is_metadata_sentence(sent):
                 continue
-            # Check for complete sentence structure
-            if sent and sent[0].isupper():
-                # Ensure it ends properly
+            # Look for sentences with numbers, percentages, dollar amounts, or specific countries
+            has_data = bool(
+                re.search(r"\d+%|\$\d+|€\d+|£\d+|\d+\s*(?:billion|million|trillion)", sent, re.IGNORECASE)
+            )
+            has_country = any(c.lower() in sent.lower() for c in countries) if countries else False
+            if has_data or has_country:
                 if not sent.endswith("."):
                     sent = sent + "."
-                clean_sentence = sent
-                break
+                return sent
 
-        # If we found a good sentence from source, use it
-        if clean_sentence and len(clean_sentence) > 50 and len(clean_sentence) < 250:
-            return clean_sentence
+        # PRIORITY 2: Build assessment from extracted specifics
+        parts = []
 
-        # Otherwise, use the template with so_what if available
-        if item.so_what_statement and len(item.so_what_statement) > 30:
-            so_what = self._strip_markdown(item.so_what_statement)
-            # Ensure proper capitalization and punctuation
-            if so_what and so_what[0].islower():
-                so_what = so_what[0].upper() + so_what[1:]
-            if so_what and not so_what.endswith("."):
-                so_what = so_what + "."
-            return so_what
+        # Determine the primary topic and build specific sentence
+        if "tariff" in content_lower:
+            if percentages:
+                tariff_rate = percentages[0]
+                if countries:
+                    parts.append(f"{tariff_rate} tariffs on {countries[0]} goods")
+                else:
+                    parts.append(f"New {tariff_rate} tariffs")
+            elif countries:
+                parts.append(f"Tariff measures targeting {countries[0]}")
 
-        return template
+        elif "sanction" in content_lower or "restriction" in content_lower:
+            if countries:
+                parts.append(f"Sanctions affecting {', '.join(countries[:2])}")
+            if specifics.get("policies"):
+                parts.append(f"under {specifics['policies'][0]}")
+
+        elif "export control" in content_lower or "export restriction" in content_lower:
+            if countries:
+                parts.append(f"Export controls targeting {countries[0]}")
+            if "semiconductor" in content_lower or "chip" in content_lower:
+                parts.append("in the semiconductor sector")
+            elif "technology" in content_lower:
+                parts.append("on technology products")
+
+        elif currencies:
+            if "stimulus" in content_lower or "spending" in content_lower:
+                parts.append(f"{currencies[0]} stimulus package")
+            elif "investment" in content_lower:
+                parts.append(f"{currencies[0]} investment")
+            elif "deficit" in content_lower or "debt" in content_lower:
+                parts.append(f"{currencies[0]} fiscal impact")
+
+        elif percentages and ("growth" in content_lower or "gdp" in content_lower):
+            parts.append(f"{percentages[0]} GDP growth")
+            if countries:
+                parts.append(f"in {countries[0]}")
+
+        elif percentages and "inflation" in content_lower:
+            parts.append(f"Inflation at {percentages[0]}")
+            if countries:
+                parts.append(f"in {countries[0]}")
+
+        # If we have specific parts, build the assessment
+        if parts:
+            base = " ".join(parts)
+            # Add aviation/business context
+            if "tariff" in content_lower or "trade" in content_lower:
+                assessment = (
+                    f"{base} may affect supply chains and client travel to affected regions."
+                )
+            elif "sanction" in content_lower:
+                assessment = f"{base} require compliance review for operations involving these jurisdictions."
+            elif "growth" in content_lower or "stimulus" in content_lower:
+                assessment = f"{base} signals potential increase in business aviation demand."
+            elif "inflation" in content_lower or "recession" in content_lower:
+                assessment = f"{base} may impact corporate travel budgets in the near term."
+            else:
+                assessment = f"{base} warrants monitoring for aviation operational impacts."
+
+            # Ensure proper formatting
+            if assessment[0].islower():
+                assessment = assessment[0].upper() + assessment[1:]
+            if not assessment.endswith("."):
+                assessment = assessment + "."
+            return assessment
+
+        # PRIORITY 3: Try to extract ANY meaningful sentence from content (not just data-heavy ones)
+        for sent in all_sentences:
+            sent = sent.strip()
+            if len(sent) < 40 or len(sent) > 300:
+                continue
+            if sent and sent[0].islower():
+                continue
+            # Accept any sentence that looks like a complete thought
+            if not sent.endswith("."):
+                sent = sent + "."
+            return sent
+
+        # PRIORITY 4: Use first sentence if it's minimally informative
+        if all_sentences and len(all_sentences[0]) > 20:
+            first = all_sentences[0].strip()
+            if first and first[0].isupper():
+                if not first.endswith("."):
+                    first = first + "."
+                return first
+
+        # PRIORITY 5: Build from whatever specifics we have, even without topic context
+        if countries:
+            return f"Developments in {', '.join(countries[:2])} warrant monitoring for operational impacts."
+        if percentages:
+            return f"Economic indicators showing {percentages[0]} changes may affect regional operations."
+        if currencies:
+            return f"{currencies[0]} fiscal developments may impact business activity in the region."
+
+        # Final fallback - generic but region-specific (avoid so_what_statement which has template text)
+        fallbacks = {
+            "North America": "Monitor US regulatory and trade policy developments for operational impact.",
+            "Europe": "Track EU regulatory changes affecting aviation operations.",
+            "Asia-Pacific": "Assess regional trade dynamics for impact on cross-Pacific operations.",
+            "Middle East": "Monitor security and energy developments affecting regional operations.",
+            "Latin America": "Track economic and political developments in key markets.",
+            "Africa": "Monitor regulatory environment in emerging aviation markets.",
+        }
+        return fallbacks.get(region, "Continue monitoring regional developments.")
 
     def _add_regulatory_outlook(self, doc: Document, reg_items: List[IntelligenceItem]):
         """Add regulatory outlook section"""
@@ -1555,8 +1687,7 @@ class DocumentGenerator:
         unique_actions = list(dict.fromkeys(all_actions))
         for action in unique_actions[:4]:
             p = doc.add_paragraph()
-            p.add_run(action)
-            p.paragraph_format.left_indent = Inches(0.5)
+            p.add_run(f"• {action}")
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
 
     def _add_sector_section(
@@ -1583,9 +1714,35 @@ class DocumentGenerator:
         run.font.color.rgb = self.ergo_colors["dark_gray"]
 
         # Add top 2 items for this sector - complete sentences only
-        for item in intelligence.items[:2]:
-            p = doc.add_paragraph()
-            content = item.processed_content
+        # Track what we've added to avoid duplicates
+        added_content = set()
+        items_added = 0
+
+        for item in intelligence.items[:5]:  # Check up to 5 items to find 2 unique ones
+            if items_added >= 2:
+                break
+
+            content = self._strip_markdown(item.processed_content)
+
+            # Skip empty or too short content
+            if not content or len(content) < 50:
+                continue
+
+            # Skip generic/filler content
+            generic_phrases = [
+                "you can already see which indicators",
+                "what to watch for as",
+                "will be most informative",
+                "based on Ergo's current macro work",
+            ]
+            if any(phrase.lower() in content.lower() for phrase in generic_phrases):
+                continue
+
+            # Skip if we've already added very similar content
+            content_key = content[:100].lower()
+            if content_key in added_content:
+                continue
+            added_content.add(content_key)
 
             # Truncate to complete sentences if needed
             if len(content) > 250:
@@ -1598,65 +1755,16 @@ class DocumentGenerator:
                         break
                 content = truncated.rstrip() if truncated else sentences[0] + "."
 
-            p.add_run(content)
-            p.paragraph_format.left_indent = Inches(0.5)
-            p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-
-            # Add source citation for sector items - differentiate sources
             p = doc.add_paragraph()
-            p.paragraph_format.left_indent = Inches(0.75)
+            p.add_run(f"• {content}")
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
+            items_added += 1
 
-            if item.source_type == "gta":
-                source_text = "   📊 GTA"
-                if item.gta_intervention_id:
-                    source_text += f" (ID: {item.gta_intervention_id})"
-                run = p.add_run(source_text)
-                run.font.size = Pt(9)
-                run.font.color.rgb = self.ergo_colors["secondary_blue"]
-                run.font.italic = True
-            elif item.sources:
-                source_count = len(item.sources)
-                run = p.add_run(
-                    f"   Based on {source_count} source{'s' if source_count > 1 else ''}"
-                )
-                run.font.size = Pt(9)
-                run.font.color.rgb = self.ergo_colors["dark_gray"]
-                run.font.italic = True
-
-        # Action Items - enhanced with sector-specific filtering
-        if any(item.action_items for item in intelligence.items):
+        # If no items were added, add a placeholder message
+        if items_added == 0:
             p = doc.add_paragraph()
-            run = p.add_run("Action Items:")
-            run.font.bold = True
-            run.font.color.rgb = self.ergo_colors["dark_gray"]
-
-            # Collect unique action items - filter out generic ones
-            generic_patterns = [
-                "Monitor situation and prepare briefing",
-                "Update market intelligence briefings",
-                "Conduct immediate review of affected routes and file alternative flight plans",
-            ]
-
-            all_actions = []
-            for item in intelligence.items[:3]:  # Top 3 items only
-                for action in item.action_items:
-                    # Skip generic actions
-                    is_generic = any(
-                        pattern.lower() in action.lower() for pattern in generic_patterns
-                    )
-                    if not is_generic and action not in all_actions:
-                        all_actions.append(action)
-
-            # If we filtered out everything, generate sector-specific actions
-            if not all_actions:
-                all_actions = self._generate_sector_specific_actions(sector, intelligence.items[:2])
-
-            for action in all_actions[:3]:
-                p = doc.add_paragraph()
-                p.add_run(action)
-                p.paragraph_format.left_indent = Inches(0.5)
-                p.paragraph_format.space_after = Pt(self.spacing["bullet"])
+            p.add_run("No significant sector-specific developments this period.")
+            p.paragraph_format.space_after = Pt(self.spacing["bullet"])
 
         # Add spacing between sectors
         doc.add_paragraph()

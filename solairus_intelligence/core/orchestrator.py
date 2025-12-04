@@ -461,6 +461,9 @@ class QueryOrchestrator:
                 "harmful_interventions": gta_client.get_recent_harmful_interventions(
                     days=days_back, limit=20
                 ),
+                "immigration_visa": gta_client.get_immigration_visa_restrictions(
+                    days=days_back, limit=15
+                ),
             }
 
             # Execute all queries in parallel
@@ -563,9 +566,11 @@ class QueryOrchestrator:
                 rates_task = fred_client.get_interest_rate_data(days_back=days_back)
                 fuel_task = fred_client.get_aviation_fuel_costs(days_back=days_back)
                 gdp_task = fred_client.get_gdp_growth_data(days_back=180)  # Quarterly data
+                confidence_task = fred_client.get_business_confidence_data(days_back=365)  # Monthly OECD data
 
-                inflation, rates, fuel, gdp = await asyncio.gather(
-                    inflation_task, rates_task, fuel_task, gdp_task, return_exceptions=True
+                inflation, rates, fuel, gdp, confidence = await asyncio.gather(
+                    inflation_task, rates_task, fuel_task, gdp_task, confidence_task,
+                    return_exceptions=True
                 )
 
                 # Store results
@@ -581,6 +586,9 @@ class QueryOrchestrator:
                 if not isinstance(gdp, Exception):
                     results["gdp_growth"] = gdp
                     logger.info(f"FRED GDP growth: Retrieved {len(gdp)} indicators")
+                if not isinstance(confidence, Exception):
+                    results["business_confidence"] = confidence
+                    logger.info(f"FRED business confidence: Retrieved {len(confidence)} indicators")
 
             except Exception as e:
                 logger.error(f"FRED data gathering error: {str(e)}")
