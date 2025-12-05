@@ -46,7 +46,6 @@ generator = SolairusIntelligenceGenerator()
 # Track generation status per session (supports multiple concurrent users)
 sessions: Dict[str, dict] = {}
 
-
 class GenerationRequest(BaseModel):
     """Request model for report generation"""
 
@@ -450,7 +449,6 @@ async def generate_report(request: GenerationRequest, background_tasks: Backgrou
         "session_id": session_id,
     }
 
-
 async def run_generation(session_id: str, test_mode: bool, focus_areas: Optional[List[str]]):
     """Run the report generation process for a specific session"""
     try:
@@ -476,15 +474,12 @@ async def run_generation(session_id: str, test_mode: bool, focus_areas: Optional
             ]
             for key in oldest_keys:
                 del sessions[key]
-
-
 @app.get("/status/{session_id}")
 async def get_status(session_id: str):
     """Get generation status for a specific session"""
     if session_id not in sessions:
         raise HTTPException(status_code=404, detail="Session not found")
     return sessions[session_id]
-
 
 @app.get("/status")
 async def get_global_status():
@@ -496,7 +491,6 @@ async def get_global_status():
     # Get the most recent session
     recent_session = max(sessions.values(), key=lambda s: s.get("created_at", ""))
     return recent_session
-
 
 @app.get("/download/{filename}")
 async def download_report(filename: str):

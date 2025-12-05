@@ -456,6 +456,12 @@ Generate ONLY the "So What" statement (no labels, no extra text):
         # For structured watch factors
         current_watch_factor = None
 
+        # For structured key findings
+        current_finding = None
+
+        # For structured watch factors
+        current_watch_factor = None
+
         for line in lines:
             line = line.strip()
 

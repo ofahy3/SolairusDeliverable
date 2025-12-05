@@ -42,8 +42,7 @@ class DocumentGenerator:
             # Base colors
             "dark_gray": RGBColor(100, 100, 100),
             "black": RGBColor(0, 0, 0),
-            "white": RGBColor(255, 255, 255),
-        }
+            "white": RGBColor(255, 255, 255),        }
 
         # Standardized spacing constants (in points) for consistent document layout
         self.spacing = {
@@ -61,7 +60,6 @@ class DocumentGenerator:
         self.logo_path = (
             Path(__file__).parent.parent / "web" / "static" / "images" / "ergo_logo.png"
         )
-
         # Initialize AI generator if enabled
         self.ai_generator = None
         if ENV_CONFIG.ai_enabled:
@@ -145,7 +143,6 @@ class DocumentGenerator:
             paragraph_format = style.paragraph_format
             paragraph_format.space_before = Pt(self.spacing["section_before"])
             paragraph_format.space_after = Pt(self.spacing["section_after"])
-
     def _create_page_1(self, doc: Document, items: List[IntelligenceItem], month: str):
         """Create Page 1: Solairus Business Intelligence"""
 
@@ -166,7 +163,6 @@ class DocumentGenerator:
             or "market" in item.category
         ]
         self._add_economic_indicators_table(doc, econ_items)
-
         # Regional Risk Assessments
         self._add_section_heading(doc, "REGIONAL RISK ASSESSMENTS")
         regional_items = [
@@ -217,7 +213,6 @@ class DocumentGenerator:
                 p.paragraph_format.space_after = Pt(self.spacing["table_after"])
             except Exception as e:
                 import logging
-
                 logging.getLogger(__name__).warning(f"Could not add logo to document: {e}")
 
         # Title
@@ -227,19 +222,16 @@ class DocumentGenerator:
         run.font.size = Pt(18)
         run.font.bold = True
         run.font.color.rgb = self.ergo_colors["primary_blue"]
-
         # Subtitle (Month Year)
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run = p.add_run(subtitle)
         run.font.size = Pt(14)
         run.font.color.rgb = self.ergo_colors["secondary_blue"]
-
         # Add a subtle line using orange accent
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.add_run("_" * 50).font.color.rgb = self.ergo_colors["orange"]
-
     def _add_section_heading(self, doc: Document, heading: str):
         """Add a section heading"""
         p = doc.add_paragraph()
@@ -266,12 +258,10 @@ class DocumentGenerator:
             run.font.size = Pt(11)
             run.font.color.rgb = self.ergo_colors["primary_blue"]
             p.space_after = Pt(self.spacing["header_after"])
-
             for item_text in bottom_line_items:
                 p = doc.add_paragraph()
                 p.add_run(item_text)
                 p.paragraph_format.space_after = Pt(self.spacing["paragraph"])
-
         # Add KEY FINDINGS section
         if key_findings:
             p = doc.add_paragraph()
@@ -280,14 +270,12 @@ class DocumentGenerator:
             run.font.size = Pt(11)
             run.font.color.rgb = self.ergo_colors["primary_blue"]
             p.space_after = Pt(self.spacing["header_after"])
-
             for finding in key_findings:
                 # Extract subheader and content from structured finding
                 if isinstance(finding, dict):
                     subheader = finding.get("subheader", "")
                     content = finding.get("content", "")
-                    bullets = finding.get("bullets", [])
-                else:
+                    bullets = finding.get("bullets", [])                else:
                     # Legacy format - parse or use as-is
                     subheader, content, bullets = self._parse_key_finding(finding)
 
@@ -300,13 +288,11 @@ class DocumentGenerator:
                     run.font.color.rgb = self.ergo_colors["secondary_blue"]
                     p.paragraph_format.space_before = Pt(self.spacing["paragraph"])
                     p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-
                 # Add main paragraph content
                 if content:
                     p = doc.add_paragraph()
                     p.add_run(content)
                     p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-
                 # Add supporting bullets
                 for bullet in bullets:
                     p = doc.add_paragraph()
@@ -317,7 +303,6 @@ class DocumentGenerator:
                 # Add spacing after each finding
                 if bullets:
                     doc.add_paragraph().paragraph_format.space_after = Pt(self.spacing["bullet"])
-
         # Add WATCH FACTORS section as a table
         if watch_factors:
             p = doc.add_paragraph()
@@ -326,13 +311,11 @@ class DocumentGenerator:
             run.font.size = Pt(11)
             run.font.color.rgb = self.ergo_colors["primary_blue"]
             p.space_after = Pt(self.spacing["header_after"])
-
             # Create table with columns: Indicator | What to Watch | Why It Matters
             # Ensure at least 3 rows
             num_rows = max(3, len(watch_factors))
             table = doc.add_table(rows=num_rows + 1, cols=3)  # +1 for header row
             table.style = "Table Grid"
-
             # Set column widths
             for row in table.rows:
                 row.cells[0].width = Inches(1.8)
@@ -341,8 +324,7 @@ class DocumentGenerator:
 
             # Header row
             header_cells = table.rows[0].cells
-            headers = ["Indicator", "What to Watch", "Why It Matters"]
-            for i, header_text in enumerate(headers):
+            headers = ["Indicator", "What to Watch", "Why It Matters"]            for i, header_text in enumerate(headers):
                 header_cells[i].text = header_text
                 # Style header
                 for paragraph in header_cells[i].paragraphs:
@@ -353,7 +335,6 @@ class DocumentGenerator:
                 # Set header background color
                 from docx.oxml import parse_xml
                 from docx.oxml.ns import nsdecls
-
                 shading_elm = parse_xml(f'<w:shd {nsdecls("w")} w:fill="1B2946"/>')
                 header_cells[i]._tc.get_or_add_tcPr().append(shading_elm)
 
@@ -365,8 +346,7 @@ class DocumentGenerator:
                 if isinstance(factor, dict):
                     indicator = factor.get("indicator", "")
                     what_to_watch = factor.get("what_to_watch", "")
-                    why_it_matters = factor.get("why_it_matters", "")
-                else:
+                    why_it_matters = factor.get("why_it_matters", "")                else:
                     # Legacy format - parse the string
                     indicator, what_to_watch, why_it_matters = self._parse_watch_factor(factor)
 
@@ -394,7 +374,6 @@ class DocumentGenerator:
                         data_row.cells[2].text = placeholder.get(
                             "why_it_matters", "Analysis pending"
                         )
-
             # Add spacing after table
             doc.add_paragraph()
 
@@ -419,22 +398,19 @@ class DocumentGenerator:
                     asyncio.get_running_loop()
                     # If there's a running loop, use a thread pool
                     import concurrent.futures
-
                     with concurrent.futures.ThreadPoolExecutor() as executor:
                         future = executor.submit(
                             asyncio.run,
                             self.ai_generator.generate_executive_summary(
                                 items,
                                 fallback_generator=lambda x: self._extract_insights_template(x),
-                            ),
-                        )
+                            ),                        )
                         ai_summary = future.result(timeout=120)
                 except RuntimeError:
                     # No running event loop - safe to use asyncio.run
                     ai_summary = asyncio.run(
                         self.ai_generator.generate_executive_summary(
-                            items, fallback_generator=lambda x: self._extract_insights_template(x)
-                        )
+                            items, fallback_generator=lambda x: self._extract_insights_template(x)                        )
                     )
 
                 if ai_summary and any(ai_summary.values()):
@@ -653,8 +629,7 @@ class DocumentGenerator:
         # ALWAYS return content - use the processed content directly if no specific pattern matches
         # Truncate at sentence boundary if needed
         if len(original_text) > 300:
-            sentences = original_text.split(". ")
-            truncated = ""
+            sentences = original_text.split(". ")            truncated = ""
             for sent in sentences:
                 if len(truncated) + len(sent) + 2 < 280:
                     truncated += sent + ". "
@@ -696,8 +671,7 @@ class DocumentGenerator:
         if "tariff" in text or "trade" in text:
             return "Track trade policy developments and tariff announcements - affects supply chain patterns and client travel requirements."
 
-        if "technology" in text or "semiconductor" in text:
-            return "Monitor tech sector export controls and regulatory changes - impacts Silicon Valley client compliance and travel patterns."
+        if "technology" in text or "semiconductor" in text:            return "Monitor tech sector export controls and regulatory changes - impacts Silicon Valley client compliance and travel patterns."
 
         # Fallback: Create generic watch factor from content
         # Extract first sentence and format as watch factor
@@ -707,7 +681,6 @@ class DocumentGenerator:
         return (
             f"Monitor: {first_sentence} - potential implications for business aviation operations."
         )
-
     def _parse_key_finding(self, finding_text: str) -> tuple:
         """
         Parse a legacy key finding string into structured components.
@@ -745,8 +718,7 @@ class DocumentGenerator:
             subheader = "Fiscal policy & economic stimulus"
         elif "aviation" in text_lower or "aircraft" in text_lower or "fuel" in text_lower:
             subheader = "Aviation industry outlook"
-        elif "regulation" in text_lower or "compliance" in text_lower or "policy" in text_lower:
-            subheader = "Regulatory developments"
+        elif "regulation" in text_lower or "compliance" in text_lower or "policy" in text_lower:            subheader = "Regulatory developments"
         else:
             # Extract first key phrase as subheader
             subheader = "Strategic development"
@@ -768,8 +740,7 @@ class DocumentGenerator:
             content = sentences[0] + "."
             bullets = [
                 sentences[1].strip() + ("." if not sentences[1].strip().endswith(".") else "")
-            ]
-        else:
+            ]        else:
             content = text
             bullets = []
 
@@ -778,7 +749,6 @@ class DocumentGenerator:
             bullets.extend(
                 self._generate_contextual_bullets(text_lower, subheader, 2 - len(bullets))
             )
-
         return (subheader, content, bullets[:3])  # Limit to 3 bullets max
 
     def _generate_contextual_bullets(self, text_lower: str, subheader: str, count: int) -> list:
@@ -833,7 +803,6 @@ class DocumentGenerator:
                     "Coordinate with operations team on contingency planning.",
                 ]
             )
-
         return bullets[:count]
 
     def _parse_watch_factor(self, factor_text: str) -> tuple:
@@ -875,15 +844,13 @@ class DocumentGenerator:
             indicator = "China Policy Signals"
             what_to_watch = "Beijing policy announcements and US diplomatic engagement"
             why_it_matters = "Sets tone for cross-Pacific business climate and travel demand"
-        elif "oil" in text_lower or "fuel" in text_lower:
-            indicator = "Fuel Price Volatility"
+        elif "oil" in text_lower or "fuel" in text_lower:            indicator = "Fuel Price Volatility"
             what_to_watch = "Crude oil prices and refining capacity indicators"
             why_it_matters = "Direct impact on operating costs and charter pricing"
         else:
             # Generic parsing - try to split on common delimiters
             if " - " in text:
-                parts = text.split(" - ", 1)
-                indicator = parts[0][:30]  # Truncate indicator
+                parts = text.split(" - ", 1)                indicator = parts[0][:30]  # Truncate indicator
                 remainder = parts[1] if len(parts) > 1 else ""
                 what_to_watch = remainder[:80] if remainder else "Monitor for developments"
                 why_it_matters = "Potential impact on business aviation operations"
@@ -911,8 +878,7 @@ class DocumentGenerator:
                 "indicator": "Geopolitical Developments",
                 "what_to_watch": "Regional stability indicators and diplomatic developments",
                 "why_it_matters": "Route availability and client travel safety assessments",
-            },
-        ]
+            },        ]
 
         # Try to generate based on available intelligence items
         if items and index < len(items):
@@ -929,8 +895,7 @@ class DocumentGenerator:
                 return {
                     "indicator": "Financial Sector Health",
                     "what_to_watch": "Banking sector stability and M&A activity levels",
-                    "why_it_matters": "Financial sector client demand signals",
-                }
+                    "why_it_matters": "Financial sector client demand signals",                }
 
         return placeholders[index] if index < len(placeholders) else placeholders[0]
 
@@ -942,20 +907,17 @@ class DocumentGenerator:
 
         # Filter to get FRED economic data items
         fred_items = [item for item in items if item.source_type == "fred"]
-
         # If no FRED items, use any economic items
         if not fred_items:
             fred_items = items[:5]
 
         if not fred_items:
             p = doc.add_paragraph("No economic indicator data available for this period.")
-            p.paragraph_format.space_after = Pt(self.spacing["header_after"])
-            return
+            p.paragraph_format.space_after = Pt(self.spacing["header_after"])            return
 
         # Create table with 4 columns: Indicator, Current Value, Trend, Aviation Impact
         table = doc.add_table(rows=1, cols=4)
-        table.style = "Table Grid"
-        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        table.style = "Table Grid"        table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Set column widths
         widths = [Inches(1.8), Inches(1.2), Inches(1.0), Inches(2.5)]
@@ -964,8 +926,7 @@ class DocumentGenerator:
 
         # Header row
         header_cells = table.rows[0].cells
-        headers = ["Indicator", "Current Value", "Trend", "Aviation Impact"]
-        for i, header in enumerate(headers):
+        headers = ["Indicator", "Current Value", "Trend", "Aviation Impact"]        for i, header in enumerate(headers):
             header_cells[i].text = header
             # Style header
             for paragraph in header_cells[i].paragraphs:
@@ -1001,8 +962,7 @@ class DocumentGenerator:
                 item.so_what_statement
                 if item.so_what_statement
                 else self._generate_economic_impact(item)
-            )
-            # Truncate if too long
+            )            # Truncate if too long
             if len(impact) > 120:
                 impact = impact[:117] + "..."
             cells[3].text = impact
@@ -1076,8 +1036,7 @@ class DocumentGenerator:
         text = re.sub(r"\s+-\s+", " - ", text)
 
         # Clean up extra whitespace
-        text = re.sub(r"\s+", " ", text)
-        text = text.strip()
+        text = re.sub(r"\s+", " ", text)        text = text.strip()
 
         return text
 
@@ -1110,7 +1069,6 @@ class DocumentGenerator:
             # Use first few words of category or content
             words = item.processed_content.split()[:3]
             return " ".join(words)[:25]
-
     def _extract_value(self, item: IntelligenceItem) -> str:
         """Extract the current value from content"""
         import re
@@ -1118,8 +1076,7 @@ class DocumentGenerator:
         content = item.processed_content
 
         # Look for percentage patterns
-        pct_match = re.search(r"(\d+\.?\d*)\s*%", content)
-        if pct_match:
+        pct_match = re.search(r"(\d+\.?\d*)\s*%", content)        if pct_match:
             return f"{pct_match.group(1)}%"
 
         # Look for dollar amounts
@@ -1132,8 +1089,7 @@ class DocumentGenerator:
             return f"${amount}{unit[0].upper() if unit else ''}"
 
         # Look for just numbers with context
-        num_match = re.search(r"(\d+\.?\d*)\s*(points?|bps|basis points)?", content)
-        if num_match:
+        num_match = re.search(r"(\d+\.?\d*)\s*(points?|bps|basis points)?", content)        if num_match:
             return num_match.group(0)
 
         return "See details"
@@ -1145,7 +1101,6 @@ class DocumentGenerator:
         up_words = ["increase", "rose", "rising", "grew", "growth", "higher", "up", "gain", "surge"]
         down_words = ["decrease", "fell", "falling", "decline", "lower", "down", "drop", "slump"]
         stable_words = ["stable", "unchanged", "flat", "steady", "maintained"]
-
         if any(word in content for word in up_words):
             return "Rising"
         elif any(word in content for word in down_words):
@@ -1173,8 +1128,7 @@ class DocumentGenerator:
             return "Signals leisure charter demand patterns"
         elif "dollar" in content or "currency" in content:
             return "Affects international charter competitiveness"
-        elif "trade" in content:
-            return "Influences cross-border business travel needs"
+        elif "trade" in content:            return "Influences cross-border business travel needs"
         else:
             return "Monitor for potential aviation sector impact"
 
@@ -1218,12 +1172,10 @@ class DocumentGenerator:
             p.add_run(content)
             p.paragraph_format.left_indent = Inches(0.25)
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-
             # Add source citation - differentiate between ErgoMind and GTA
             p = doc.add_paragraph()
             p.paragraph_format.left_indent = Inches(0.5)
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-
             if item.source_type == "gta":
                 # GTA source with intervention ID and dates
                 source_text = "   📊 GTA Data"
@@ -1255,8 +1207,7 @@ class DocumentGenerator:
                     run.font.color.rgb = self.ergo_colors["dark_gray"]
                     run.font.italic = True
                     p.paragraph_format.left_indent = Inches(0.5)
-                    p.paragraph_format.space_after = Pt(self.spacing["bullet"])
-            elif item.source_type == "fred":
+                    p.paragraph_format.space_after = Pt(self.spacing["bullet"])            elif item.source_type == "fred":
                 # FRED source with series ID and observation date
                 source_text = "   📊 FRED Economic Data"
                 if item.fred_series_id:
@@ -1289,7 +1240,6 @@ class DocumentGenerator:
                 run2.font.size = Pt(10)
                 p.paragraph_format.left_indent = Inches(0.5)
                 p.paragraph_format.space_after = Pt(self.spacing["paragraph"])
-
     def _add_regional_assessment(self, doc: Document, regional_items: List[IntelligenceItem]):
         """Add regional risk assessments with actual content"""
         regions = {"North America": [], "Europe": [], "Asia-Pacific": [], "Middle East": []}
@@ -1388,8 +1338,7 @@ class DocumentGenerator:
     def _craft_regional_assessment(
         self, region: str, primary_item: IntelligenceItem, all_items: List[IntelligenceItem]
     ) -> str:
-        """Craft a specific, data-driven regional assessment using actual intelligence details"""
-        import re
+        """Craft a specific, data-driven regional assessment using actual intelligence details"""        import re
 
         # Strip markdown and clean the content
         content = self._strip_markdown(primary_item.processed_content)
@@ -1670,7 +1619,6 @@ class DocumentGenerator:
             "Africa": "Monitor regulatory environment in emerging aviation markets.",
         }
         return fallbacks.get(region, "Continue monitoring regional developments.")
-
     def _add_regulatory_outlook(self, doc: Document, reg_items: List[IntelligenceItem]):
         """Add regulatory outlook section"""
         if not reg_items:
@@ -1692,8 +1640,7 @@ class DocumentGenerator:
 
     def _add_sector_section(
         self, doc: Document, sector: ClientSector, intelligence: SectorIntelligence
-    ):
-        """Add a section for a specific client sector"""
+    ):        """Add a section for a specific client sector"""
         # Sector heading
         sector_name = sector.value.replace("_", " ").upper()
         if sector == ClientSector.TECHNOLOGY:
@@ -1759,13 +1706,36 @@ class DocumentGenerator:
             p.add_run(f"• {content}")
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
             items_added += 1
-
         # If no items were added, add a placeholder message
         if items_added == 0:
             p = doc.add_paragraph()
             p.add_run("No significant sector-specific developments this period.")
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
 
+        # Collect unique action items - filter out generic ones
+        generic_patterns = [
+            "Monitor situation and prepare briefing",
+            "Update market intelligence briefings",
+            "Conduct immediate review of affected routes and file alternative flight plans"
+        ]
+
+        all_actions = []
+        for item in intelligence.items[:3]:  # Top 3 items only
+            for action in item.action_items:
+                # Skip generic actions
+                is_generic = any(pattern.lower() in action.lower() for pattern in generic_patterns)
+                if not is_generic and action not in all_actions:
+                    all_actions.append(action)
+
+        # If we filtered out everything, generate sector-specific actions
+        if not all_actions:
+            all_actions = self._generate_sector_specific_actions(sector, intelligence.items[:2])
+
+        for action in all_actions[:3]:
+            p = doc.add_paragraph()
+            p.add_run(action)
+            p.paragraph_format.left_indent = Inches(0.5)
+            p.paragraph_format.space_after = Pt(self.spacing["bullet"])
         # Add spacing between sectors
         doc.add_paragraph()
 
