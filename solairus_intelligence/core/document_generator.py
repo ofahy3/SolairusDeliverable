@@ -42,7 +42,8 @@ class DocumentGenerator:
             # Base colors
             "dark_gray": RGBColor(100, 100, 100),
             "black": RGBColor(0, 0, 0),
-            "white": RGBColor(255, 255, 255),        }
+            "white": RGBColor(255, 255, 255),
+        }
 
         # Standardized spacing constants (in points) for consistent document layout
         self.spacing = {
@@ -98,11 +99,7 @@ class DocumentGenerator:
         # Page 1: Solairus Business Intelligence
         self._create_page_1(doc, solairus_items, report_month)
 
-        # Page break
-        doc.add_page_break()
-
-        # Page 2: Client Sector Intelligence
-        self._create_page_2(doc, sector_intelligence, report_month)
+        # Client Sector Intelligence section removed per user request
 
         return doc
 
@@ -163,25 +160,6 @@ class DocumentGenerator:
             or "market" in item.category
         ]
         self._add_economic_indicators_table(doc, econ_items)
-        # Regional Risk Assessments
-        self._add_section_heading(doc, "REGIONAL RISK ASSESSMENTS")
-        regional_items = [
-            item
-            for item in items
-            if any(region in item.category for region in ["america", "europe", "asia", "middle"])
-        ]
-        self._add_regional_assessment(doc, regional_items)
-
-        # Regulatory Horizon
-        self._add_section_heading(doc, "REGULATORY HORIZON")
-        reg_items = [
-            item
-            for item in items
-            if "regulation" in item.category
-            or "compliance" in item.category
-            or "policy" in item.category
-        ]
-        self._add_regulatory_outlook(doc, reg_items)
 
     def _create_page_2(
         self, doc: Document, sector_intel: Dict[ClientSector, SectorIntelligence], month: str
@@ -275,7 +253,8 @@ class DocumentGenerator:
                 if isinstance(finding, dict):
                     subheader = finding.get("subheader", "")
                     content = finding.get("content", "")
-                    bullets = finding.get("bullets", [])                else:
+                    bullets = finding.get("bullets", [])
+                else:
                     # Legacy format - parse or use as-is
                     subheader, content, bullets = self._parse_key_finding(finding)
 
@@ -311,20 +290,22 @@ class DocumentGenerator:
             run.font.size = Pt(11)
             run.font.color.rgb = self.ergo_colors["primary_blue"]
             p.space_after = Pt(self.spacing["header_after"])
-            # Create table with columns: Indicator | What to Watch | Why It Matters
-            # Ensure at least 3 rows
-            num_rows = max(3, len(watch_factors))
-            table = doc.add_table(rows=num_rows + 1, cols=3)  # +1 for header row
+            # Create table with columns: Indicator | Current Status | What to Watch | Why It Matters
+            # Ensure at least 5 rows for comprehensive watch factors
+            num_rows = max(5, len(watch_factors))
+            table = doc.add_table(rows=num_rows + 1, cols=4)  # +1 for header row
             table.style = "Table Grid"
-            # Set column widths
+            # Set column widths for 4 columns
             for row in table.rows:
-                row.cells[0].width = Inches(1.8)
-                row.cells[1].width = Inches(2.5)
-                row.cells[2].width = Inches(2.2)
+                row.cells[0].width = Inches(1.5)
+                row.cells[1].width = Inches(1.5)
+                row.cells[2].width = Inches(2.0)
+                row.cells[3].width = Inches(1.8)
 
             # Header row
             header_cells = table.rows[0].cells
-            headers = ["Indicator", "What to Watch", "Why It Matters"]            for i, header_text in enumerate(headers):
+            headers = ["Indicator", "Current Status", "What to Watch", "Why It Matters"]
+            for i, header_text in enumerate(headers):
                 header_cells[i].text = header_text
                 # Style header
                 for paragraph in header_cells[i].paragraphs:
@@ -338,42 +319,47 @@ class DocumentGenerator:
                 shading_elm = parse_xml(f'<w:shd {nsdecls("w")} w:fill="1B2946"/>')
                 header_cells[i]._tc.get_or_add_tcPr().append(shading_elm)
 
+            # Helper function to set cell text with consistent font styling
+            def set_cell_text_with_style(cell, text, font_size=9):
+                """Set cell text and apply consistent font styling"""
+                # Clear existing paragraphs
+                cell.text = ""
+                # Add text as a run so we can style it
+                p = cell.paragraphs[0]
+                run = p.add_run(text)
+                run.font.size = Pt(font_size)
+
             # Data rows
             for row_idx, factor in enumerate(watch_factors[:num_rows]):
                 data_row = table.rows[row_idx + 1]  # +1 to skip header
 
-                # Parse watch factor into components
+                # Parse watch factor into components (now 4 fields)
                 if isinstance(factor, dict):
                     indicator = factor.get("indicator", "")
+                    current_status = factor.get("current_status", "Monitoring")
                     what_to_watch = factor.get("what_to_watch", "")
-                    why_it_matters = factor.get("why_it_matters", "")                else:
+                    why_it_matters = factor.get("why_it_matters", "")
+                else:
                     # Legacy format - parse the string
                     indicator, what_to_watch, why_it_matters = self._parse_watch_factor(factor)
+                    current_status = "Monitoring"
 
-                data_row.cells[0].text = indicator
-                data_row.cells[1].text = what_to_watch
-                data_row.cells[2].text = why_it_matters
+                set_cell_text_with_style(data_row.cells[0], indicator)
+                set_cell_text_with_style(data_row.cells[1], current_status)
+                set_cell_text_with_style(data_row.cells[2], what_to_watch)
+                set_cell_text_with_style(data_row.cells[3], why_it_matters)
 
-                # Style data cells
-                for cell in data_row.cells:
-                    for paragraph in cell.paragraphs:
-                        for run in paragraph.runs:
-                            run.font.size = Pt(9)
-
-            # Fill empty rows if we have fewer than 3 watch factors
-            if len(watch_factors) < 3:
-                for row_idx in range(len(watch_factors), 3):
+            # Fill empty rows if we have fewer than 5 watch factors
+            if len(watch_factors) < 5:
+                for row_idx in range(len(watch_factors), 5):
                     data_row = table.rows[row_idx + 1]
                     # Generate placeholder content based on available intelligence
                     placeholder = self._generate_placeholder_watch_factor(row_idx, items)
                     if placeholder:
-                        data_row.cells[0].text = placeholder.get("indicator", "TBD")
-                        data_row.cells[1].text = placeholder.get(
-                            "what_to_watch", "Monitoring in progress"
-                        )
-                        data_row.cells[2].text = placeholder.get(
-                            "why_it_matters", "Analysis pending"
-                        )
+                        set_cell_text_with_style(data_row.cells[0], placeholder.get("indicator", "TBD"))
+                        set_cell_text_with_style(data_row.cells[1], placeholder.get("current_status", "Monitoring"))
+                        set_cell_text_with_style(data_row.cells[2], placeholder.get("what_to_watch", "Monitoring in progress"))
+                        set_cell_text_with_style(data_row.cells[3], placeholder.get("why_it_matters", "Analysis pending"))
             # Add spacing after table
             doc.add_paragraph()
 
@@ -404,13 +390,15 @@ class DocumentGenerator:
                             self.ai_generator.generate_executive_summary(
                                 items,
                                 fallback_generator=lambda x: self._extract_insights_template(x),
-                            ),                        )
+                            ),
+                        )
                         ai_summary = future.result(timeout=120)
                 except RuntimeError:
                     # No running event loop - safe to use asyncio.run
                     ai_summary = asyncio.run(
                         self.ai_generator.generate_executive_summary(
-                            items, fallback_generator=lambda x: self._extract_insights_template(x)                        )
+                            items, fallback_generator=lambda x: self._extract_insights_template(x)
+                        )
                     )
 
                 if ai_summary and any(ai_summary.values()):
@@ -629,7 +617,8 @@ class DocumentGenerator:
         # ALWAYS return content - use the processed content directly if no specific pattern matches
         # Truncate at sentence boundary if needed
         if len(original_text) > 300:
-            sentences = original_text.split(". ")            truncated = ""
+            sentences = original_text.split(". ")
+            truncated = ""
             for sent in sentences:
                 if len(truncated) + len(sent) + 2 < 280:
                     truncated += sent + ". "
@@ -671,7 +660,8 @@ class DocumentGenerator:
         if "tariff" in text or "trade" in text:
             return "Track trade policy developments and tariff announcements - affects supply chain patterns and client travel requirements."
 
-        if "technology" in text or "semiconductor" in text:            return "Monitor tech sector export controls and regulatory changes - impacts Silicon Valley client compliance and travel patterns."
+        if "technology" in text or "semiconductor" in text:
+            return "Monitor tech sector export controls and regulatory changes - impacts Silicon Valley client compliance and travel patterns."
 
         # Fallback: Create generic watch factor from content
         # Extract first sentence and format as watch factor
@@ -718,7 +708,8 @@ class DocumentGenerator:
             subheader = "Fiscal policy & economic stimulus"
         elif "aviation" in text_lower or "aircraft" in text_lower or "fuel" in text_lower:
             subheader = "Aviation industry outlook"
-        elif "regulation" in text_lower or "compliance" in text_lower or "policy" in text_lower:            subheader = "Regulatory developments"
+        elif "regulation" in text_lower or "compliance" in text_lower or "policy" in text_lower:
+            subheader = "Regulatory developments"
         else:
             # Extract first key phrase as subheader
             subheader = "Strategic development"
@@ -740,7 +731,8 @@ class DocumentGenerator:
             content = sentences[0] + "."
             bullets = [
                 sentences[1].strip() + ("." if not sentences[1].strip().endswith(".") else "")
-            ]        else:
+            ]
+        else:
             content = text
             bullets = []
 
@@ -844,13 +836,15 @@ class DocumentGenerator:
             indicator = "China Policy Signals"
             what_to_watch = "Beijing policy announcements and US diplomatic engagement"
             why_it_matters = "Sets tone for cross-Pacific business climate and travel demand"
-        elif "oil" in text_lower or "fuel" in text_lower:            indicator = "Fuel Price Volatility"
+        elif "oil" in text_lower or "fuel" in text_lower:
+            indicator = "Fuel Price Volatility"
             what_to_watch = "Crude oil prices and refining capacity indicators"
             why_it_matters = "Direct impact on operating costs and charter pricing"
         else:
             # Generic parsing - try to split on common delimiters
             if " - " in text:
-                parts = text.split(" - ", 1)                indicator = parts[0][:30]  # Truncate indicator
+                parts = text.split(" - ", 1)
+                indicator = parts[0][:30]  # Truncate indicator
                 remainder = parts[1] if len(parts) > 1 else ""
                 what_to_watch = remainder[:80] if remainder else "Monitor for developments"
                 why_it_matters = "Potential impact on business aviation operations"
@@ -862,40 +856,47 @@ class DocumentGenerator:
         return (indicator, what_to_watch, why_it_matters)
 
     def _generate_placeholder_watch_factor(self, index: int, items: List[IntelligenceItem]) -> dict:
-        """Generate placeholder watch factors when fewer than 3 are available"""
+        """Generate placeholder watch factors when fewer than 5 are available.
+
+        Returns uniform placeholders covering 5 key categories:
+        1. Fuel & Energy Costs
+        2. Interest Rates & Financing
+        3. Trade Policy & Tariffs
+        4. Geopolitical Stability
+        5. Regulatory Environment
+        """
         placeholders = [
             {
-                "indicator": "Economic Indicators",
-                "what_to_watch": "Key macro indicators including GDP growth, PMI, and consumer confidence",
-                "why_it_matters": "Leading indicators of corporate travel demand and budget trends",
+                "indicator": "Fuel & Energy Costs",
+                "current_status": "Elevated volatility",
+                "what_to_watch": "Jet fuel spot prices (Gulf Coast), crude oil futures, refinery capacity utilization",
+                "why_it_matters": "Direct operating cost impact; 15-25% of charter costs; affects pricing strategy",
             },
             {
-                "indicator": "Regulatory Changes",
-                "what_to_watch": "Aviation regulatory updates from FAA, EASA, and international authorities",
-                "why_it_matters": "Compliance requirements and operational flexibility",
+                "indicator": "Interest Rates & Financing",
+                "current_status": "Rates holding steady",
+                "what_to_watch": "Fed funds rate trajectory, 10-year Treasury yields, aircraft financing spreads",
+                "why_it_matters": "Fleet acquisition costs, client capital allocation decisions, M&A activity levels",
             },
             {
-                "indicator": "Geopolitical Developments",
-                "what_to_watch": "Regional stability indicators and diplomatic developments",
-                "why_it_matters": "Route availability and client travel safety assessments",
-            },        ]
-
-        # Try to generate based on available intelligence items
-        if items and index < len(items):
-            item = items[index]
-            text_lower = item.processed_content.lower()
-
-            if "technology" in text_lower or "semiconductor" in text_lower:
-                return {
-                    "indicator": "Tech Sector Activity",
-                    "what_to_watch": "Silicon Valley business activity and venture capital flows",
-                    "why_it_matters": "Tech executive travel demand indicator",
-                }
-            elif "finance" in text_lower or "banking" in text_lower:
-                return {
-                    "indicator": "Financial Sector Health",
-                    "what_to_watch": "Banking sector stability and M&A activity levels",
-                    "why_it_matters": "Financial sector client demand signals",                }
+                "indicator": "Trade Policy & Tariffs",
+                "current_status": "Active negotiations",
+                "what_to_watch": "Section 301 tariffs, bilateral trade agreements, supply chain restrictions",
+                "why_it_matters": "Client sector exposure varies; tech and manufacturing clients most sensitive",
+            },
+            {
+                "indicator": "Geopolitical Stability",
+                "current_status": "Monitoring hotspots",
+                "what_to_watch": "Regional conflict indicators, diplomatic developments, travel advisories",
+                "why_it_matters": "Route availability, client travel patterns, security planning requirements",
+            },
+            {
+                "indicator": "Regulatory Environment",
+                "current_status": "Evolving requirements",
+                "what_to_watch": "FAA/EASA rule changes, environmental mandates, international flight permissions",
+                "why_it_matters": "Compliance costs, operational flexibility, fleet planning implications",
+            },
+        ]
 
         return placeholders[index] if index < len(placeholders) else placeholders[0]
 
@@ -913,11 +914,13 @@ class DocumentGenerator:
 
         if not fred_items:
             p = doc.add_paragraph("No economic indicator data available for this period.")
-            p.paragraph_format.space_after = Pt(self.spacing["header_after"])            return
+            p.paragraph_format.space_after = Pt(self.spacing["header_after"])
+            return
 
         # Create table with 4 columns: Indicator, Current Value, Trend, Aviation Impact
         table = doc.add_table(rows=1, cols=4)
-        table.style = "Table Grid"        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        table.style = "Table Grid"
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
         # Set column widths
         widths = [Inches(1.8), Inches(1.2), Inches(1.0), Inches(2.5)]
@@ -926,7 +929,8 @@ class DocumentGenerator:
 
         # Header row
         header_cells = table.rows[0].cells
-        headers = ["Indicator", "Current Value", "Trend", "Aviation Impact"]        for i, header in enumerate(headers):
+        headers = ["Indicator", "Current Value", "Trend", "Aviation Impact"]
+        for i, header in enumerate(headers):
             header_cells[i].text = header
             # Style header
             for paragraph in header_cells[i].paragraphs:
@@ -962,7 +966,8 @@ class DocumentGenerator:
                 item.so_what_statement
                 if item.so_what_statement
                 else self._generate_economic_impact(item)
-            )            # Truncate if too long
+            )
+            # Truncate if too long
             if len(impact) > 120:
                 impact = impact[:117] + "..."
             cells[3].text = impact
@@ -1036,7 +1041,8 @@ class DocumentGenerator:
         text = re.sub(r"\s+-\s+", " - ", text)
 
         # Clean up extra whitespace
-        text = re.sub(r"\s+", " ", text)        text = text.strip()
+        text = re.sub(r"\s+", " ", text)
+        text = text.strip()
 
         return text
 
@@ -1076,7 +1082,8 @@ class DocumentGenerator:
         content = item.processed_content
 
         # Look for percentage patterns
-        pct_match = re.search(r"(\d+\.?\d*)\s*%", content)        if pct_match:
+        pct_match = re.search(r"(\d+\.?\d*)\s*%", content)
+        if pct_match:
             return f"{pct_match.group(1)}%"
 
         # Look for dollar amounts
@@ -1089,7 +1096,8 @@ class DocumentGenerator:
             return f"${amount}{unit[0].upper() if unit else ''}"
 
         # Look for just numbers with context
-        num_match = re.search(r"(\d+\.?\d*)\s*(points?|bps|basis points)?", content)        if num_match:
+        num_match = re.search(r"(\d+\.?\d*)\s*(points?|bps|basis points)?", content)
+        if num_match:
             return num_match.group(0)
 
         return "See details"
@@ -1128,7 +1136,8 @@ class DocumentGenerator:
             return "Signals leisure charter demand patterns"
         elif "dollar" in content or "currency" in content:
             return "Affects international charter competitiveness"
-        elif "trade" in content:            return "Influences cross-border business travel needs"
+        elif "trade" in content:
+            return "Influences cross-border business travel needs"
         else:
             return "Monitor for potential aviation sector impact"
 
@@ -1207,7 +1216,8 @@ class DocumentGenerator:
                     run.font.color.rgb = self.ergo_colors["dark_gray"]
                     run.font.italic = True
                     p.paragraph_format.left_indent = Inches(0.5)
-                    p.paragraph_format.space_after = Pt(self.spacing["bullet"])            elif item.source_type == "fred":
+                    p.paragraph_format.space_after = Pt(self.spacing["bullet"])
+            elif item.source_type == "fred":
                 # FRED source with series ID and observation date
                 source_text = "   📊 FRED Economic Data"
                 if item.fred_series_id:
@@ -1241,7 +1251,7 @@ class DocumentGenerator:
                 p.paragraph_format.left_indent = Inches(0.5)
                 p.paragraph_format.space_after = Pt(self.spacing["paragraph"])
     def _add_regional_assessment(self, doc: Document, regional_items: List[IntelligenceItem]):
-        """Add regional risk assessments with actual content"""
+        """Add regional risk assessments with rigorous analytical content matching document tone"""
         regions = {"North America": [], "Europe": [], "Asia-Pacific": [], "Middle East": []}
 
         # Track which items we've already assigned to prevent duplication
@@ -1249,96 +1259,207 @@ class DocumentGenerator:
 
         # Categorize items by PRIMARY region only - check both category and content
         for item in regional_items:
-            # Skip if already assigned
             item_id = id(item)
             if item_id in assigned_items:
                 continue
 
             text_lower = item.processed_content.lower()
             category_lower = item.category.lower()
-
-            # Prioritize more specific regional mentions
-            # Use GTA country data if available for more precise mapping
             primary_region = None
 
             if item.source_type == "gta":
-                # Use GTA geographic data for precise regional assignment
                 countries = item.gta_implementing_countries + item.gta_affected_countries
                 countries_text = " ".join(countries).lower()
 
                 if any(c in countries_text for c in ["united states", "canada", "mexico"]):
                     primary_region = "North America"
-                elif any(
-                    c in countries_text
-                    for c in ["china", "japan", "india", "korea", "singapore", "australia"]
-                ):
+                elif any(c in countries_text for c in ["china", "japan", "india", "korea", "singapore", "australia", "taiwan"]):
                     primary_region = "Asia-Pacific"
-                elif any(
-                    c in countries_text
-                    for c in [
-                        "germany",
-                        "france",
-                        "uk",
-                        "united kingdom",
-                        "italy",
-                        "spain",
-                        "european union",
-                    ]
-                ):
+                elif any(c in countries_text for c in ["germany", "france", "uk", "united kingdom", "italy", "spain", "european union", "netherlands", "poland"]):
                     primary_region = "Europe"
-                elif any(
-                    c in countries_text
-                    for c in ["saudi", "uae", "qatar", "israel", "iran", "kuwait"]
-                ):
+                elif any(c in countries_text for c in ["saudi", "uae", "qatar", "israel", "iran", "kuwait", "bahrain"]):
                     primary_region = "Middle East"
 
-            # Fallback to content-based detection
             if not primary_region:
-                if any(
-                    kw in text_lower or kw in category_lower
-                    for kw in ["united states", "u.s.", "america", "canada", "mexico"]
-                ):
+                if any(kw in text_lower or kw in category_lower for kw in ["united states", "u.s.", "america", "canada", "mexico", "washington", "federal"]):
                     primary_region = "North America"
-                elif any(
-                    kw in text_lower or kw in category_lower
-                    for kw in ["china", "japan", "india", "asia", "pacific"]
-                ):
+                elif any(kw in text_lower or kw in category_lower for kw in ["china", "japan", "india", "asia", "pacific", "beijing", "tokyo", "seoul"]):
                     primary_region = "Asia-Pacific"
-                elif any(
-                    kw in text_lower or kw in category_lower
-                    for kw in ["europe", "eu", "britain", "france", "germany", "uk"]
-                ):
+                elif any(kw in text_lower or kw in category_lower for kw in ["europe", "eu", "britain", "france", "germany", "uk", "brussels", "ecb"]):
                     primary_region = "Europe"
-                elif any(
-                    kw in text_lower or kw in category_lower
-                    for kw in ["middle east", "saudi", "uae", "qatar", "israel"]
-                ):
+                elif any(kw in text_lower or kw in category_lower for kw in ["middle east", "saudi", "uae", "qatar", "israel", "gulf", "opec"]):
                     primary_region = "Middle East"
 
             if primary_region:
                 regions[primary_region].append(item)
                 assigned_items.add(item_id)
 
-        # Add regional summaries with actual content - use top 2-3 items per region
+        # Generate comprehensive regional assessments
         for region, items in regions.items():
             if items:
+                # Region header
                 p = doc.add_paragraph()
-                run = p.add_run(f"{region}: ")
+                run = p.add_run(region)
                 run.font.bold = True
+                run.font.size = Pt(11)
                 run.font.color.rgb = self.ergo_colors["primary_blue"]
+                p.paragraph_format.space_before = Pt(self.spacing["subsection_before"])
+                p.paragraph_format.space_after = Pt(self.spacing["bullet"])
 
-                # Get top item sorted by relevance - use single best source for clarity
-                top_item = sorted(items, key=lambda x: x.relevance_score, reverse=True)[0]
+                # Sort by relevance and use top items
+                sorted_items = sorted(items, key=lambda x: x.relevance_score, reverse=True)
 
-                # Generate clean regional assessment
-                assessment = self._craft_regional_assessment(region, top_item, items)
-                p.add_run(assessment)
-                p.paragraph_format.space_after = Pt(self.spacing["header_after"])
+                # Generate multi-paragraph assessment using top 2-3 items
+                self._write_regional_assessment_paragraphs(doc, region, sorted_items[:3])
+
+    def _write_regional_assessment_paragraphs(
+        self, doc: Document, region: str, items: List[IntelligenceItem]
+    ):
+        """
+        Write multi-paragraph regional assessments with rigorous analytical content.
+        Matches the tone, depth, and structure of KEY FINDINGS sections.
+        """
+        import re
+
+        if not items:
+            return
+
+        # Collect and clean all content from items
+        all_content = []
+        for item in items:
+            content = self._strip_markdown(item.processed_content)
+            if content:
+                all_content.append(content)
+
+        if not all_content:
+            return
+
+        # Extract specifics from combined content for analytical framing
+        combined_text = " ".join(all_content)
+        specifics = self._extract_specifics(combined_text, "")
+
+        # Build the assessment as cohesive paragraphs
+        paragraphs = []
+
+        # PARAGRAPH 1: Lead with the most significant development
+        primary_item = items[0]
+        primary_content = self._strip_markdown(primary_item.processed_content)
+
+        # Extract substantive sentences (filter out metadata and short fragments)
+        sentences = [s.strip() for s in primary_content.split(". ") if s.strip()]
+        substantive_sentences = []
+        for sent in sentences:
+            # Skip metadata prefixes
+            if any(sent.startswith(prefix) for prefix in [
+                "Baseline:", "Background:", "Context:", "Note:", "Source:",
+                "Reference:", "Update:", "Summary:", "Overview:", "Key Point:",
+                "Action:", "Status:", "**", "- ", "• "
+            ]):
+                continue
+            # Skip very short or fragment sentences
+            if len(sent) < 40 or not sent[0].isupper():
+                continue
+            substantive_sentences.append(sent)
+
+        if substantive_sentences:
+            # Use first 2-3 substantive sentences as lead paragraph
+            lead_text = ". ".join(substantive_sentences[:3])
+            if not lead_text.endswith("."):
+                lead_text += "."
+            paragraphs.append(lead_text)
+
+        # PARAGRAPH 2: Supporting intelligence from secondary items
+        if len(items) > 1:
+            supporting_sentences = []
+            for item in items[1:3]:
+                content = self._strip_markdown(item.processed_content)
+                item_sentences = [s.strip() for s in content.split(". ") if s.strip()]
+                for sent in item_sentences:
+                    if any(sent.startswith(prefix) for prefix in [
+                        "Baseline:", "Background:", "Context:", "Note:", "Source:",
+                        "Reference:", "Update:", "Summary:", "Overview:", "Key Point:",
+                        "Action:", "Status:", "**", "- ", "• "
+                    ]):
+                        continue
+                    if len(sent) >= 40 and sent[0].isupper():
+                        # Check for data points (numbers, percentages, currencies)
+                        has_data = bool(re.search(
+                            r"\d+%|\$\d+|€\d+|£\d+|\d+\s*(?:billion|million|trillion)",
+                            sent, re.IGNORECASE
+                        ))
+                        if has_data or len(supporting_sentences) < 2:
+                            supporting_sentences.append(sent)
+                            if len(supporting_sentences) >= 3:
+                                break
+                if len(supporting_sentences) >= 3:
+                    break
+
+            if supporting_sentences:
+                support_text = ". ".join(supporting_sentences[:3])
+                if not support_text.endswith("."):
+                    support_text += "."
+                paragraphs.append(support_text)
+
+        # PARAGRAPH 3: Analytical implications (if we have enough material)
+        if len(paragraphs) >= 1:
+            # Build implications based on extracted data
+            implications = []
+
+            # Add quantitative context if available
+            if specifics.get("percentages"):
+                pct = specifics["percentages"][0]
+                implications.append(f"measures involving {pct} adjustments")
+
+            if specifics.get("currencies"):
+                curr = specifics["currencies"][0]
+                implications.append(f"financial exposure of {curr}")
+
+            # Build operational implications sentence based on region and content themes
+            content_lower = combined_text.lower()
+
+            if "tariff" in content_lower or "trade" in content_lower:
+                if region == "North America":
+                    implications.append("supply chain routing decisions for cross-border operations")
+                elif region == "Asia-Pacific":
+                    implications.append("manufacturing sourcing and procurement strategies")
+                elif region == "Europe":
+                    implications.append("EU customs and compliance considerations")
+                elif region == "Middle East":
+                    implications.append("regional trade corridor planning")
+
+            if "sanction" in content_lower or "restriction" in content_lower:
+                implications.append("enhanced due diligence on counterparty relationships")
+
+            if "fuel" in content_lower or "energy" in content_lower or "oil" in content_lower:
+                implications.append("fuel cost hedging and route optimization")
+
+            if "regulation" in content_lower or "regulatory" in content_lower:
+                implications.append("compliance monitoring and reporting requirements")
+
+            # Only add implications paragraph if we have substantive ones
+            if implications and len(implications) >= 2:
+                impl_text = f"For Solairus operations in {region}, these developments warrant attention to {', '.join(implications[:3])}."
+                paragraphs.append(impl_text)
+
+        # Write paragraphs to document with proper formatting
+        for i, para_text in enumerate(paragraphs):
+            p = doc.add_paragraph()
+            run = p.add_run(para_text)
+            run.font.name = self.body_font
+            run.font.size = Pt(self.font_sizes["body"])
+
+            # First paragraph: normal indent; subsequent: slight indent for flow
+            if i > 0:
+                p.paragraph_format.first_line_indent = Inches(0.25)
+
+            p.paragraph_format.space_after = Pt(self.spacing["paragraph"])
+            p.paragraph_format.line_spacing = 1.15
 
     def _craft_regional_assessment(
         self, region: str, primary_item: IntelligenceItem, all_items: List[IntelligenceItem]
     ) -> str:
-        """Craft a specific, data-driven regional assessment using actual intelligence details"""        import re
+        """Craft a specific, data-driven regional assessment using actual intelligence details"""
+        import re
 
         # Strip markdown and clean the content
         content = self._strip_markdown(primary_item.processed_content)
@@ -1620,27 +1741,61 @@ class DocumentGenerator:
         }
         return fallbacks.get(region, "Continue monitoring regional developments.")
     def _add_regulatory_outlook(self, doc: Document, reg_items: List[IntelligenceItem]):
-        """Add regulatory outlook section"""
+        """Add regulatory outlook section with actual content from items"""
         if not reg_items:
             p = doc.add_paragraph()
             p.add_run("No significant regulatory changes identified this period.")
             return
 
-        # Combine action items from regulatory intelligence
-        all_actions = []
-        for item in reg_items[:3]:
-            all_actions.extend(item.action_items)
+        # Sort by relevance and take top items
+        sorted_items = sorted(reg_items, key=lambda x: x.relevance_score, reverse=True)
 
-        # Deduplicate and add top actions
-        unique_actions = list(dict.fromkeys(all_actions))
-        for action in unique_actions[:4]:
+        # Add regulatory findings as bullet points
+        added_content = set()
+        items_added = 0
+
+        for item in sorted_items[:6]:  # Check up to 6 items
+            if items_added >= 4:  # Show max 4 items
+                break
+
+            content = self._strip_markdown(item.processed_content)
+
+            # Skip empty or too short content
+            if not content or len(content) < 50:
+                continue
+
+            # Skip duplicates
+            content_key = content[:80].lower()
+            if content_key in added_content:
+                continue
+            added_content.add(content_key)
+
+            # Truncate to reasonable length at sentence boundary
+            if len(content) > 200:
+                sentences = content.split(". ")
+                truncated = ""
+                for sentence in sentences:
+                    if len(truncated) + len(sentence) + 2 <= 180:
+                        truncated += sentence + ". "
+                    else:
+                        break
+                content = truncated.rstrip() if truncated else sentences[0][:180] + "..."
+
             p = doc.add_paragraph()
-            p.add_run(f"• {action}")
+            p.add_run(f"• {content}")
             p.paragraph_format.space_after = Pt(self.spacing["bullet"])
+            items_added += 1
+
+        # If no items were added from content, show fallback message
+        if items_added == 0:
+            p = doc.add_paragraph()
+            p.add_run("No significant regulatory changes identified this period.")
+            return
 
     def _add_sector_section(
         self, doc: Document, sector: ClientSector, intelligence: SectorIntelligence
-    ):        """Add a section for a specific client sector"""
+    ):
+        """Add a section for a specific client sector"""
         # Sector heading
         sector_name = sector.value.replace("_", " ").upper()
         if sector == ClientSector.TECHNOLOGY:

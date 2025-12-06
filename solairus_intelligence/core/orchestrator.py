@@ -52,36 +52,41 @@ class QueryOrchestrator:
         # Get current month for temporal queries
         now = datetime.now()
         current_month = now.strftime("%B %Y")
-        # last_month variable available for future use if needed
+        # Calculate 6 months ago for time constraint
+        from dateutil.relativedelta import relativedelta
+        six_months_ago = (now - relativedelta(months=6)).strftime("%B %Y")
+
+        # Time constraint to add to queries - ensures ErgoMind only provides recent data
+        time_constraint = f" Only include information from {six_months_ago} to present. Do not include any events or data older than 6 months."
 
         templates = [
             # TIER 1: Critical Aviation & Business Travel Intelligence
             QueryTemplate(
                 category="aviation_security",
-                query=f"What geopolitical developments in {current_month} have impacted international aviation security, airspace restrictions, or flight routing?",
+                query=f"What geopolitical developments in {current_month} have impacted international aviation security, airspace restrictions, or flight routing?{time_constraint}",
                 follow_ups=[
-                    "Which regions have new or modified airspace restrictions?",
-                    "What are the implications for business jet operations?",
+                    f"Which regions have new or modified airspace restrictions?{time_constraint}",
+                    f"What are the implications for business jet operations?{time_constraint}",
                 ],
                 priority=10,
                 sectors=[ClientSector.GENERAL],
             ),
             QueryTemplate(
                 category="sanctions_trade",
-                query=f"Summarize all new sanctions, trade restrictions, and export controls implemented in {current_month} that affect international business.",
+                query=f"Summarize all new sanctions, trade restrictions, and export controls implemented in {current_month} that affect international business.{time_constraint}",
                 follow_ups=[
-                    "Which countries and sectors are most affected?",
-                    "What are the compliance requirements for aviation operators?",
+                    f"Which countries and sectors are most affected?{time_constraint}",
+                    f"What are the compliance requirements for aviation operators?{time_constraint}",
                 ],
                 priority=9,
                 sectors=[ClientSector.GENERAL, ClientSector.TECHNOLOGY, ClientSector.FINANCE],
             ),
             QueryTemplate(
                 category="economic_indicators",
-                query=f"What key economic indicators and central bank decisions from {current_month} signal changes in business aviation demand?",
+                query=f"What key economic indicators and central bank decisions from {current_month} signal changes in business aviation demand?{time_constraint}",
                 follow_ups=[
-                    "How are interest rate changes affecting corporate travel budgets?",
-                    "Which regions show strongest economic growth or contraction?",
+                    f"How are interest rate changes affecting corporate travel budgets?{time_constraint}",
+                    f"Which regions show strongest economic growth or contraction?{time_constraint}",
                 ],
                 priority=9,
                 sectors=[ClientSector.FINANCE, ClientSector.REAL_ESTATE],
@@ -89,40 +94,40 @@ class QueryOrchestrator:
             # TIER 2: Regional Geopolitical Assessments
             QueryTemplate(
                 category="north_america",
-                query=f"Analyze the key political and economic developments in North America during {current_month}, focusing on impacts to corporate aviation and cross-border business.",
+                query=f"Analyze the key political and economic developments in North America during {current_month}, focusing on impacts to corporate aviation and cross-border business.{time_constraint}",
                 follow_ups=[
-                    "What regulatory changes affect business aviation?",
-                    "How are US-Mexico-Canada relations affecting corporate travel?",
+                    f"What regulatory changes affect business aviation?{time_constraint}",
+                    f"How are US-Mexico-Canada relations affecting corporate travel?{time_constraint}",
                 ],
                 priority=8,
                 sectors=[ClientSector.GENERAL],
             ),
             QueryTemplate(
                 category="europe",
-                query=f"What were the significant European political, regulatory, and economic changes in {current_month} that impact business aviation and corporate travel?",
+                query=f"What were the significant European political, regulatory, and economic changes in {current_month} that impact business aviation and corporate travel?{time_constraint}",
                 follow_ups=[
-                    "How are EU regulations affecting aviation operations?",
-                    "What is the impact of energy costs on European aviation?",
+                    f"How are EU regulations affecting aviation operations?{time_constraint}",
+                    f"What is the impact of energy costs on European aviation?{time_constraint}",
                 ],
                 priority=8,
                 sectors=[ClientSector.GENERAL, ClientSector.ENERGY],
             ),
             QueryTemplate(
                 category="asia_pacific",
-                query=f"Summarize Asia-Pacific geopolitical tensions and economic developments from {current_month}, with focus on China relations and regional stability.",
+                query=f"Summarize Asia-Pacific geopolitical tensions and economic developments from {current_month}, with focus on China relations and regional stability.{time_constraint}",
                 follow_ups=[
-                    "How are US-China tensions affecting technology sector travel?",
-                    "What are the implications for Pacific route planning?",
+                    f"How are US-China tensions affecting technology sector travel?{time_constraint}",
+                    f"What are the implications for Pacific route planning?{time_constraint}",
                 ],
                 priority=8,
                 sectors=[ClientSector.TECHNOLOGY, ClientSector.FINANCE],
             ),
             QueryTemplate(
                 category="middle_east",
-                query=f"Assess Middle East stability, energy markets, and regional conflicts in {current_month} and their impact on aviation operations.",
+                query=f"Assess Middle East stability, energy markets, and regional conflicts in {current_month} and their impact on aviation operations.{time_constraint}",
                 follow_ups=[
-                    "Which airspaces face heightened security risks?",
-                    "How are energy prices affecting aviation fuel costs?",
+                    f"Which airspaces face heightened security risks?{time_constraint}",
+                    f"How are energy prices affecting aviation fuel costs?{time_constraint}",
                 ],
                 priority=7,
                 sectors=[ClientSector.ENERGY, ClientSector.GENERAL],
@@ -130,40 +135,40 @@ class QueryOrchestrator:
             # TIER 3: Sector-Specific Intelligence
             QueryTemplate(
                 category="technology_sector",
-                query=f"What geopolitical factors in {current_month} specifically impacted the global technology sector, including semiconductor supply chains, data sovereignty, and tech regulation?",
+                query=f"What geopolitical factors in {current_month} specifically impacted the global technology sector, including semiconductor supply chains, data sovereignty, and tech regulation?{time_constraint}",
                 follow_ups=[
-                    "How are export controls affecting US tech companies?",
-                    "What are the implications for Silicon Valley business travel?",
+                    f"How are export controls affecting US tech companies?{time_constraint}",
+                    f"What are the implications for Silicon Valley business travel?{time_constraint}",
                 ],
                 priority=7,
                 sectors=[ClientSector.TECHNOLOGY],
             ),
             QueryTemplate(
                 category="financial_sector",
-                query=f"Analyze financial market volatility, banking sector developments, and investment trends from {current_month} that affect private equity and capital markets.",
+                query=f"Analyze financial market volatility, banking sector developments, and investment trends from {current_month} that affect private equity and capital markets.{time_constraint}",
                 follow_ups=[
-                    "What is the outlook for M&A activity?",
-                    "How are regulatory changes affecting private equity?",
+                    f"What is the outlook for M&A activity?{time_constraint}",
+                    f"How are regulatory changes affecting private equity?{time_constraint}",
                 ],
                 priority=7,
                 sectors=[ClientSector.FINANCE],
             ),
             QueryTemplate(
                 category="real_estate_sector",
-                query=f"What were the key developments in global real estate markets, construction costs, and infrastructure investment during {current_month}?",
+                query=f"What were the key developments in global real estate markets, construction costs, and infrastructure investment during {current_month}?{time_constraint}",
                 follow_ups=[
-                    "How are interest rates affecting real estate development?",
-                    "What are the supply chain impacts on construction?",
+                    f"How are interest rates affecting real estate development?{time_constraint}",
+                    f"What are the supply chain impacts on construction?{time_constraint}",
                 ],
                 priority=6,
                 sectors=[ClientSector.REAL_ESTATE],
             ),
             QueryTemplate(
                 category="entertainment_sector",
-                query=f"Summarize entertainment industry developments, content regulation changes, and talent mobility issues from {current_month}.",
+                query=f"Summarize entertainment industry developments, content regulation changes, and talent mobility issues from {current_month}.{time_constraint}",
                 follow_ups=[
-                    "What are the implications for international productions?",
-                    "How are visa policies affecting talent movement?",
+                    f"What are the implications for international productions?{time_constraint}",
+                    f"How are visa policies affecting talent movement?{time_constraint}",
                 ],
                 priority=5,
                 sectors=[ClientSector.ENTERTAINMENT],
@@ -171,20 +176,20 @@ class QueryOrchestrator:
             # TIER 4: Forward-Looking Intelligence
             QueryTemplate(
                 category="risk_forecast",
-                query=f"Based on {current_month} developments, what are the top geopolitical and economic risks for international business aviation in the next 3-6 months?",
+                query=f"Based on {current_month} developments, what are the top geopolitical and economic risks for international business aviation in the next 3-6 months?{time_constraint}",
                 follow_ups=[
-                    "Which regions face highest instability risk?",
-                    "What contingency planning is recommended?",
+                    f"Which regions face highest instability risk?{time_constraint}",
+                    f"What contingency planning is recommended?{time_constraint}",
                 ],
                 priority=8,
                 sectors=[ClientSector.GENERAL],
             ),
             QueryTemplate(
                 category="opportunity_forecast",
-                query=f"What emerging opportunities and positive trends from {current_month} suggest growth potential for business aviation and corporate travel?",
+                query=f"What emerging opportunities and positive trends from {current_month} suggest growth potential for business aviation and corporate travel?{time_constraint}",
                 follow_ups=[
-                    "Which markets show strongest recovery or growth?",
-                    "What sectors are increasing travel investment?",
+                    f"Which markets show strongest recovery or growth?{time_constraint}",
+                    f"What sectors are increasing travel investment?{time_constraint}",
                 ],
                 priority=7,
                 sectors=[ClientSector.GENERAL],
@@ -192,20 +197,20 @@ class QueryOrchestrator:
             # TIER 5: Specialized Topics
             QueryTemplate(
                 category="sustainability_climate",
-                query=f"What climate policies, sustainability regulations, and ESG developments from {current_month} affect aviation operations and corporate travel policies?",
+                query=f"What climate policies, sustainability regulations, and ESG developments from {current_month} affect aviation operations and corporate travel policies?{time_constraint}",
                 follow_ups=[
-                    "What are the implications for carbon offsetting?",
-                    "How are sustainable aviation fuel mandates evolving?",
+                    f"What are the implications for carbon offsetting?{time_constraint}",
+                    f"How are sustainable aviation fuel mandates evolving?{time_constraint}",
                 ],
                 priority=6,
                 sectors=[ClientSector.GENERAL],
             ),
             QueryTemplate(
                 category="cybersecurity",
-                query=f"Summarize cybersecurity threats, data breaches, and digital infrastructure risks from {current_month} that could impact aviation and corporate operations.",
+                query=f"Summarize cybersecurity threats, data breaches, and digital infrastructure risks from {current_month} that could impact aviation and corporate operations.{time_constraint}",
                 follow_ups=[
-                    "What are the implications for aviation IT systems?",
-                    "How should operators enhance cyber defenses?",
+                    f"What are the implications for aviation IT systems?{time_constraint}",
+                    f"How should operators enhance cyber defenses?{time_constraint}",
                 ],
                 priority=6,
                 sectors=[ClientSector.TECHNOLOGY, ClientSector.GENERAL],
