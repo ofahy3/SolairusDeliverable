@@ -124,6 +124,10 @@ class GTAClient:
                 "offset": 0,
             }
 
+            if self.session is None:
+                logger.error("Session not initialized - use async context manager")
+                return False
+
             async with self.session.post(self.config.base_url, json=request_data) as response:
                 if response.status == 200:
                     data = await response.json()

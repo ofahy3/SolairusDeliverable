@@ -17,9 +17,11 @@ else:
     load_dotenv()
 
 import asyncio
+import logging
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, AsyncGenerator
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
@@ -35,33 +37,27 @@ SESSION_TTL_MINUTES = 60  # Sessions expire after 1 hour
 SESSION_CLEANUP_INTERVAL_SECONDS = 300  # Run cleanup every 5 minutes
 MAX_SESSIONS = 100  # Maximum number of sessions to keep
 
-# Create FastAPI app
-app = FastAPI(
-    title="Ergo Intelligence Report Generator",
-    description="Generate monthly intelligence reports from ErgoMind Flashpoints Forum data",
-    version="1.0.0",
-)
-
-# Mount static files directory for logo and assets
-static_dir = Path(__file__).parent / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
-# Configure Jinja2 templates
-templates_dir = Path(__file__).parent / "templates"
-templates = Jinja2Templates(directory=str(templates_dir))
-
-# Global generator instance
-generator = SolairusIntelligenceGenerator()
+logger = logging.getLogger(__name__)
 
 # Track generation status per session (supports multiple concurrent users)
 sessions: Dict[str, dict] = {}
 
+# Global generator instance (initialized lazily)
+generator: Optional[SolairusIntelligenceGenerator] = None
 
-def cleanup_expired_sessions():
+
+def get_generator() -> SolairusIntelligenceGenerator:
+    """Get or create the generator instance"""
+    global generator
+    if generator is None:
+        generator = SolairusIntelligenceGenerator()
+    return generator
+
+
+def cleanup_expired_sessions() -> int:
     """Remove expired sessions based on TTL"""
     now = datetime.now()
-    expired_keys = []
+    expired_keys: List[str] = []
 
     for session_id, session_data in sessions.items():
         created_at_str = session_data.get("created_at", "")
@@ -89,18 +85,49 @@ def cleanup_expired_sessions():
     return len(expired_keys)
 
 
-@app.on_event("startup")
-async def start_session_cleanup():
-    """Start background task for periodic session cleanup"""
-    async def periodic_cleanup():
-        while True:
-            await asyncio.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
-            removed = cleanup_expired_sessions()
-            if removed > 0:
-                import logging
-                logging.getLogger(__name__).info(f"Cleaned up {removed} expired sessions")
+async def periodic_cleanup() -> None:
+    """Background task for periodic session cleanup"""
+    while True:
+        await asyncio.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
+        removed = cleanup_expired_sessions()
+        if removed > 0:
+            logger.info(f"Cleaned up {removed} expired sessions")
 
-    asyncio.create_task(periodic_cleanup())
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Lifespan context manager for startup and shutdown"""
+    # Startup: start background cleanup task
+    cleanup_task = asyncio.create_task(periodic_cleanup())
+    logger.info("Started session cleanup background task")
+
+    yield
+
+    # Shutdown: cancel cleanup task
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
+    logger.info("Stopped session cleanup background task")
+
+
+# Create FastAPI app with lifespan
+app = FastAPI(
+    title="Ergo Intelligence Report Generator",
+    description="Generate monthly intelligence reports from ErgoMind Flashpoints Forum data",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# Mount static files directory for logo and assets
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+# Configure Jinja2 templates
+templates_dir = Path(__file__).parent / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
 
 class GenerationRequest(BaseModel):
     """Request model for report generation"""
@@ -142,7 +169,8 @@ async def generate_report(request: GenerationRequest, background_tasks: Backgrou
 async def run_generation(session_id: str, test_mode: bool, focus_areas: Optional[List[str]]):
     """Run the report generation process for a specific session"""
     try:
-        filepath, status = await generator.generate_monthly_report(
+        gen = get_generator()
+        filepath, status = await gen.generate_monthly_report(
             focus_areas=focus_areas, test_mode=test_mode
         )
 

@@ -120,9 +120,13 @@ def get_companies_for_sector(sector: ClientSector) -> List[str]:
 
 def get_sector_keywords(sector: ClientSector) -> List[str]:
     """Get keywords for a specific sector"""
-    return CLIENT_SECTOR_MAPPING.get(sector, {}).get('keywords', [])
+    mapping = CLIENT_SECTOR_MAPPING.get(sector, {})
+    keywords: List[str] = mapping.get('keywords', [])
+    return keywords
 
 
 def get_sector_triggers(sector: ClientSector) -> List[str]:
     """Get geopolitical triggers for a specific sector"""
-    return CLIENT_SECTOR_MAPPING.get(sector, {}).get('geopolitical_triggers', [])
+    mapping = CLIENT_SECTOR_MAPPING.get(sector, {})
+    triggers: List[str] = mapping.get('geopolitical_triggers', [])
+    return triggers
