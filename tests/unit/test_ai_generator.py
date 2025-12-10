@@ -223,3 +223,166 @@ class TestSecureAIGenerator:
 
         assert 'total_requests' in summary
         assert 'total_cost_usd' in summary
+
+
+class TestExecutiveSummaryParsing:
+    """Test parsing of executive summary responses"""
+
+    @pytest.fixture
+    def config(self):
+        return AIConfig(api_key="test_key")
+
+    @pytest.fixture
+    def generator(self, config):
+        return SecureAIGenerator(config)
+
+    def test_parse_bottom_line_section(self, generator):
+        """Test parsing bottom line section"""
+        response = """
+        BOTTOM LINE:
+        - Key development affecting aviation
+        - Monitor for operational impact
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert "bottom_line" in result
+        assert len(result["bottom_line"]) > 0
+
+    def test_parse_key_findings_section(self, generator):
+        """Test parsing key findings section"""
+        response = """
+        KEY FINDINGS:
+        - Trade policy changes affecting supply chain
+        - Economic indicators showing weakness
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert "key_findings" in result
+        assert len(result["key_findings"]) > 0
+
+    def test_parse_watch_factors_section(self, generator):
+        """Test parsing watch factors section"""
+        response = """
+        WATCH FACTORS:
+        - Monitor geopolitical developments
+        - Watch for regulatory changes
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert "watch_factors" in result
+        assert len(result["watch_factors"]) > 0
+
+    def test_parse_empty_response(self, generator):
+        """Test parsing empty response"""
+        result = generator._parse_executive_summary_response("")
+
+        assert result["bottom_line"] == []
+        assert result["key_findings"] == []
+        assert result["watch_factors"] == []
+
+    def test_parse_structured_key_finding(self, generator):
+        """Test parsing structured key finding format"""
+        response = """
+        KEY FINDINGS:
+        [SUBHEADER: Trade Policy]
+        [CONTENT: New tariffs announced affecting imports]
+        [BULLET: Supply chain disruption expected]
+        [BULLET: Monitor price increases]
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert "key_findings" in result
+
+    def test_parse_structured_watch_factor(self, generator):
+        """Test parsing structured watch factor format"""
+        response = """
+        WATCH FACTORS:
+        [INDICATOR: Geopolitical Risk]
+        [WHAT_TO_WATCH: Regional tensions escalating]
+        [WHY_IT_MATTERS: May impact aviation routes]
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert "watch_factors" in result
+
+    def test_parse_mixed_format(self, generator):
+        """Test parsing mixed format response"""
+        response = """
+        BOTTOM LINE:
+        - Critical development requiring attention
+
+        KEY FINDINGS:
+        - Economic growth slowing
+        - Trade tensions rising
+
+        WATCH FACTORS:
+        - Monitor inflation trends
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert len(result["bottom_line"]) >= 1
+        assert len(result["key_findings"]) >= 2
+        assert len(result["watch_factors"]) >= 1
+
+    def test_parse_bullet_variations(self, generator):
+        """Test parsing different bullet formats"""
+        response = """
+        KEY FINDINGS:
+        - First finding with dash
+        • Second finding with bullet
+        """
+        result = generator._parse_executive_summary_response(response)
+
+        assert len(result["key_findings"]) >= 2
+
+
+class TestPromptConstruction:
+    """Test prompt construction for AI calls"""
+
+    @pytest.fixture
+    def config(self):
+        return AIConfig(api_key="test_key")
+
+    @pytest.fixture
+    def generator(self, config):
+        return SecureAIGenerator(config)
+
+    @pytest.fixture
+    def sample_items(self):
+        return [
+            IntelligenceItem(
+                raw_content="Trade tensions",
+                processed_content="US-China trade tensions escalating",
+                category="geopolitical",
+                relevance_score=0.9,
+                confidence=0.85,
+                so_what_statement="Monitor for supply chain impact",
+                affected_sectors=[ClientSector.TECHNOLOGY],
+            ),
+            IntelligenceItem(
+                raw_content="Economic data",
+                processed_content="GDP growth at 2.5% in Q4",
+                category="economic",
+                relevance_score=0.8,
+                confidence=0.9,
+                so_what_statement="Watch for demand changes",
+                affected_sectors=[ClientSector.FINANCE],
+            ),
+        ]
+
+    def test_build_executive_summary_prompt(self, generator, sample_items):
+        """Test building executive summary prompt"""
+        prompt = generator._build_executive_summary_prompt(sample_items)
+
+        assert prompt is not None
+        assert len(prompt) > 0
+        assert "BOTTOM LINE" in prompt or "intelligence" in prompt.lower()
+
+    def test_build_so_what_prompt(self, generator, sample_items):
+        """Test building so-what statement prompt"""
+        item = sample_items[0]
+        prompt = generator._build_so_what_prompt(item)
+
+        assert prompt is not None
+        assert len(prompt) > 0
+        assert item.processed_content in prompt or "So What" in prompt

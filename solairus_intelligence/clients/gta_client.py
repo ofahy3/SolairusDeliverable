@@ -173,11 +173,12 @@ class GTAClient:
                 # GTA API returns a list directly, not wrapped in a dict
                 if isinstance(data, list):
                     logger.info(f"GTA API Response: Retrieved {len(data)} interventions")
-                    return data
+                    return list(data)  # Ensure we return list[dict]
                 elif isinstance(data, dict) and "data" in data:
                     # Fallback for alternate response format
-                    logger.info(f"GTA API Response: Retrieved {len(data['data'])} interventions")
-                    return data["data"]
+                    data_list = data["data"]
+                    logger.info(f"GTA API Response: Retrieved {len(data_list)} interventions")
+                    return list(data_list) if isinstance(data_list, list) else []
                 else:
                     logger.warning(f"Unexpected GTA API response format: {type(data)}")
                     return []
@@ -216,8 +217,13 @@ class GTAClient:
         is_in_force_raw = raw_data.get("is_in_force", 1)
         is_in_force = bool(is_in_force_raw) if isinstance(is_in_force_raw, int) else is_in_force_raw
 
+        # Ensure intervention_id is an int (required by GTAIntervention)
+        intervention_id = raw_data.get("intervention_id", 0)
+        if intervention_id is None:
+            intervention_id = 0
+
         return GTAIntervention(
-            intervention_id=raw_data.get("intervention_id"),
+            intervention_id=int(intervention_id),
             title=title,
             description=description,
             gta_evaluation=raw_data.get("gta_evaluation", "Unclear"),

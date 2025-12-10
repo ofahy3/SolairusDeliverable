@@ -8,7 +8,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from solairus_intelligence.ai.fact_validator import FactValidator
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
@@ -253,8 +253,9 @@ class SecureAIGenerator:
                     timeout=self.config.timeout,
                 )
 
-                # Extract text from response
-                text = response.content[0].text
+                # Extract text from response - only TextBlocks have .text
+                first_block = response.content[0]
+                text = first_block.text if hasattr(first_block, 'text') else str(first_block)
 
                 # Log usage
                 self.usage_tracker.log_request(
@@ -443,10 +444,10 @@ Generate ONLY the "So What" statement (no labels, no extra text):
 
         return prompt
 
-    def _parse_executive_summary_response(self, ai_response: str) -> Dict[str, List]:
+    def _parse_executive_summary_response(self, ai_response: str) -> Dict[str, List[Any]]:
         """Parse AI response into structured executive summary with new format support"""
 
-        result = {"bottom_line": [], "key_findings": [], "watch_factors": []}
+        result: Dict[str, List[Any]] = {"bottom_line": [], "key_findings": [], "watch_factors": []}
 
         current_section = None
         lines = ai_response.strip().split("\n")
@@ -488,19 +489,24 @@ Generate ONLY the "So What" statement (no labels, no extra text):
                         result["key_findings"].append(current_finding)
                     # Start new finding
                     subheader = line.replace("[SUBHEADER:", "").rstrip("]").strip()
-                    current_finding = {"subheader": subheader, "content": "", "bullets": []}
+                    bullets_list: List[str] = []
+                    current_finding = {"subheader": subheader, "content": "", "bullets": bullets_list}
                 elif line.startswith("[CONTENT:") and current_finding:
                     content = line.replace("[CONTENT:", "").rstrip("]").strip()
                     current_finding["content"] = content
                 elif line.startswith("[BULLET:") and current_finding:
                     bullet = line.replace("[BULLET:", "").rstrip("]").strip()
-                    current_finding["bullets"].append(bullet)
+                    bullets = current_finding.get("bullets")
+                    if isinstance(bullets, list):
+                        bullets.append(bullet)
                 elif line.startswith("-") or line.startswith("•"):
                     # Legacy format bullet
                     statement = line.lstrip("- •").strip()
                     if statement:
                         if current_finding:
-                            current_finding["bullets"].append(statement)
+                            bullets = current_finding.get("bullets")
+                            if isinstance(bullets, list):
+                                bullets.append(statement)
                         else:
                             # Legacy format - just a string
                             result["key_findings"].append(statement)

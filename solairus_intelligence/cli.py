@@ -6,7 +6,7 @@ Main application that orchestrates the entire intelligence gathering and report 
 import asyncio
 import logging
 from datetime import datetime
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 import json
 
 from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
@@ -33,7 +33,7 @@ class SolairusIntelligenceGenerator:
         self.orchestrator = QueryOrchestrator(self.client)
         self.processor = IntelligenceProcessor()
         self.generator = DocumentGenerator()
-        self.last_run_status = None
+        self.last_run_status: Optional[Dict[str, Any]] = None
 
         # Log environment configuration
         logger.info(f"Initialized with: {ENV_CONFIG}")
@@ -42,19 +42,19 @@ class SolairusIntelligenceGenerator:
         self,
         focus_areas: Optional[List[str]] = None,
         test_mode: bool = False
-    ) -> Tuple[str, Dict]:
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Generate a complete monthly intelligence report
-        
+
         Args:
             focus_areas: Optional list of specific areas to focus on
             test_mode: If True, uses limited queries for testing
-            
+
         Returns:
             Tuple of (filepath, status_dict)
         """
         start_time = datetime.now()
-        status = {
+        status: Dict[str, Any] = {
             'start_time': start_time.isoformat(),
             'success': False,
             'queries_executed': 0,

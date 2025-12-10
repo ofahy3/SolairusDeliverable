@@ -68,7 +68,7 @@ class ErgoMindClient:
         self.config = config or ErgoMindConfig()
         self.session: Optional[ClientSession] = None
         self.conversation_id: Optional[str] = None
-        self._response_buffer = []
+        self._response_buffer: List[str] = []
         
     async def __aenter__(self):
         """Async context manager entry"""
@@ -114,6 +114,8 @@ class ErgoMindClient:
         }
         
         try:
+            if self.session is None:
+                raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
             async with self.session.post(url, headers=headers, json=data) as response:
                 if response.status == 201:
                     result = await response.json()
@@ -316,13 +318,15 @@ class ErgoMindClient:
         Test the connection to ErgoMind
         """
         try:
+            if self.session is None:
+                raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
             # Test REST API
             url = f"{self.config.base_url}/api/v1/health"
             headers = {
                 "Authorization": f"Bearer {self.config.api_key}",
                 "X-API-Key": self.config.api_key
             }
-            
+
             async with self.session.get(url, headers=headers) as response:
                 if response.status == 200:
                     logger.info("REST API connection successful")

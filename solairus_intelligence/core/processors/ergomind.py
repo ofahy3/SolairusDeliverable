@@ -245,7 +245,7 @@ class ErgoMindProcessor(BaseProcessor):
                     fallback_generator=lambda x: self._generate_so_what_template(x.processed_content, x.category)
                 )
                 if ai_so_what and len(ai_so_what) > 20:
-                    return ai_so_what
+                    return str(ai_so_what)
             except Exception as e:
                 logger.debug(f"AI 'So What' generation failed, using template: {e}")
 

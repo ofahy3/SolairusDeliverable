@@ -5,7 +5,7 @@ Detects hallucinations and unsupported claims in AI-generated content
 
 import logging
 import re
-from typing import List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from solairus_intelligence.core.processor import IntelligenceItem
 
@@ -138,8 +138,8 @@ class FactValidator:
         return is_valid, unsupported_claims
 
     def validate_executive_summary(
-        self, summary_dict: dict, source_items: List[IntelligenceItem]
-    ) -> Tuple[bool, dict]:
+        self, summary_dict: Dict[str, Any], source_items: List[IntelligenceItem]
+    ) -> Tuple[bool, Dict[str, Any]]:
         """
         Validate an executive summary dictionary structure
 
@@ -150,7 +150,7 @@ class FactValidator:
         Returns:
             Tuple of (is_valid, validation_report)
         """
-        validation_report = {
+        validation_report: Dict[str, Any] = {
             "bottom_line": {"valid": True, "unsupported_claims": []},
             "key_findings": {"valid": True, "unsupported_claims": []},
             "watch_factors": {"valid": True, "unsupported_claims": []},

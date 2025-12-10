@@ -224,7 +224,7 @@ class QueryOrchestrator:
         Execute the full monthly intelligence gathering process with parallel query execution
         Returns organized results by category
         """
-        results = {}
+        results: Dict[str, List[QueryResult]] = {}
 
         # Sort templates by priority (highest first)
         sorted_templates = sorted(self.query_templates, key=lambda x: x.priority, reverse=True)
@@ -285,7 +285,7 @@ class QueryOrchestrator:
             for result in completed_results:
                 if isinstance(result, Exception):
                     logger.error(f"Query failed with exception: {result}")
-                else:
+                elif isinstance(result, tuple) and len(result) == 2:
                     category, category_results = result
                     if category_results:
                         results[category] = category_results
@@ -353,7 +353,7 @@ class QueryOrchestrator:
                                 processed_items.append(item)
 
         # Remove duplicates based on content similarity
-        unique_items = []
+        unique_items: List[IntelligenceItem] = []
         for item in processed_items:
             is_duplicate = False
             for existing in unique_items:
@@ -404,7 +404,7 @@ class QueryOrchestrator:
         Optimize query order to maximize information gain and minimize redundancy
         """
         # Group by related topics to maintain context
-        groups = {"regional": [], "sectoral": [], "thematic": [], "forecast": []}
+        groups: Dict[str, List[QueryTemplate]] = {"regional": [], "sectoral": [], "thematic": [], "forecast": []}
 
         for template in templates:
             if any(
@@ -445,7 +445,7 @@ class QueryOrchestrator:
 
         logger.info(f"Starting GTA intelligence gathering ({days_back} days)")
 
-        results = {}
+        results: Dict[str, List[Any]] = {}
 
         async with GTAClient() as gta_client:
             # Test GTA connection
@@ -479,7 +479,7 @@ class QueryOrchestrator:
                 if isinstance(result, Exception):
                     logger.error(f"GTA query failed for {category}: {result}")
                     results[category] = []
-                else:
+                elif isinstance(result, list):
                     results[category] = result
                     logger.info(f"GTA {category}: Retrieved {len(result)} interventions")
 
@@ -550,7 +550,7 @@ class QueryOrchestrator:
 
         logger.info(f"Starting FRED economic data gathering ({days_back} days)")
 
-        results = {}
+        results: Dict[str, List[Any]] = {}
 
         config = FREDConfig()
         if not config.api_key:
@@ -573,27 +573,34 @@ class QueryOrchestrator:
                 gdp_task = fred_client.get_gdp_growth_data(days_back=180)  # Quarterly data
                 confidence_task = fred_client.get_business_confidence_data(days_back=365)  # Monthly OECD data
 
-                inflation, rates, fuel, gdp, confidence = await asyncio.gather(
+                gathered_results = await asyncio.gather(
                     inflation_task, rates_task, fuel_task, gdp_task, confidence_task,
                     return_exceptions=True
                 )
 
+                # Unpack with explicit typing
+                inflation_result = gathered_results[0]
+                rates_result = gathered_results[1]
+                fuel_result = gathered_results[2]
+                gdp_result = gathered_results[3]
+                confidence_result = gathered_results[4]
+
                 # Store results
-                if not isinstance(inflation, Exception):
-                    results["inflation"] = inflation
-                    logger.info(f"FRED inflation: Retrieved {len(inflation)} indicators")
-                if not isinstance(rates, Exception):
-                    results["interest_rates"] = rates
-                    logger.info(f"FRED interest rates: Retrieved {len(rates)} indicators")
-                if not isinstance(fuel, Exception):
-                    results["fuel_costs"] = fuel
-                    logger.info(f"FRED fuel costs: Retrieved {len(fuel)} indicators")
-                if not isinstance(gdp, Exception):
-                    results["gdp_growth"] = gdp
-                    logger.info(f"FRED GDP growth: Retrieved {len(gdp)} indicators")
-                if not isinstance(confidence, Exception):
-                    results["business_confidence"] = confidence
-                    logger.info(f"FRED business confidence: Retrieved {len(confidence)} indicators")
+                if not isinstance(inflation_result, Exception) and isinstance(inflation_result, list):
+                    results["inflation"] = inflation_result
+                    logger.info(f"FRED inflation: Retrieved {len(inflation_result)} indicators")
+                if not isinstance(rates_result, Exception) and isinstance(rates_result, list):
+                    results["interest_rates"] = rates_result
+                    logger.info(f"FRED interest rates: Retrieved {len(rates_result)} indicators")
+                if not isinstance(fuel_result, Exception) and isinstance(fuel_result, list):
+                    results["fuel_costs"] = fuel_result
+                    logger.info(f"FRED fuel costs: Retrieved {len(fuel_result)} indicators")
+                if not isinstance(gdp_result, Exception) and isinstance(gdp_result, list):
+                    results["gdp_growth"] = gdp_result
+                    logger.info(f"FRED GDP growth: Retrieved {len(gdp_result)} indicators")
+                if not isinstance(confidence_result, Exception) and isinstance(confidence_result, list):
+                    results["business_confidence"] = confidence_result
+                    logger.info(f"FRED business confidence: Retrieved {len(confidence_result)} indicators")
 
             except Exception as e:
                 logger.error(f"FRED data gathering error: {str(e)}")
@@ -721,7 +728,7 @@ class QueryOrchestrator:
             logger.error(f"❌ ErgoMind gathering failed: {ergomind_results}")
             ergomind_results = {}
             source_status["ergomind"] = "failed"
-        else:
+        elif ergomind_results is not None and isinstance(ergomind_results, dict):
             logger.info(f"✓ ErgoMind: {sum(len(v) for v in ergomind_results.values())} responses")
             # Cache successful results (only if freshly fetched)
             if use_cache and "ergomind" in task_names and ergomind_results:
@@ -731,7 +738,7 @@ class QueryOrchestrator:
             logger.error(f"❌ GTA gathering failed: {gta_results}")
             gta_results = {}
             source_status["gta"] = "failed"
-        else:
+        elif gta_results is not None and isinstance(gta_results, dict):
             logger.info(f"✓ GTA: {sum(len(v) for v in gta_results.values())} interventions")
             # Cache successful results (only if freshly fetched)
             if use_cache and "gta" in task_names and gta_results:
@@ -741,7 +748,7 @@ class QueryOrchestrator:
             logger.error(f"❌ FRED gathering failed: {fred_results}")
             fred_results = {}
             source_status["fred"] = "failed"
-        else:
+        elif fred_results is not None and isinstance(fred_results, dict):
             logger.info(f"✓ FRED: {sum(len(v) for v in fred_results.values())} economic indicators")
             # Cache successful results (only if freshly fetched)
             if use_cache and "fred" in task_names and fred_results:

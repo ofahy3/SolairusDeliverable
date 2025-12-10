@@ -97,6 +97,8 @@ class FREDClient:
                 'file_type': 'json'
             }
 
+            if self.session is None:
+                raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
             async with self.session.get(url, params=params) as response:
                 if response.status == 200:
                     logger.info("✓ FRED API connection successful")
@@ -256,6 +258,8 @@ class FREDClient:
             'sort_order': 'asc'
         }
 
+        if self.session is None:
+            raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
         async with self.session.get(url, params=params) as response:
             if response.status == 200:
                 data = await response.json()
