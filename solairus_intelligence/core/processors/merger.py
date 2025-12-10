@@ -90,8 +90,8 @@ class IntelligenceMerger:
 
     def _deduplicate(self, items: List[IntelligenceItem]) -> List[IntelligenceItem]:
         """Remove semantic duplicates"""
-        unique_items = []
-        seen_content_hashes = set()
+        unique_items: List[IntelligenceItem] = []
+        seen_content_hashes: set[str] = set()
 
         for item in items:
             content_normalized = item.processed_content[:200].lower().strip()
@@ -133,8 +133,8 @@ class IntelligenceMerger:
         economic_keywords = ['inflation', 'interest rate', 'gdp', 'cpi', 'federal reserve', 'treasury', 'mortgage']
         trade_keywords = ['tariff', 'sanction', 'export control', 'trade barrier', 'intervention']
 
-        prioritized_items = []
-        topic_seen = {'economic': set(), 'trade': set()}
+        prioritized_items: List[IntelligenceItem] = []
+        topic_seen: Dict[str, set[str]] = {'economic': set(), 'trade': set()}
 
         # First pass: Add high-priority sources for each topic
         for item in items:

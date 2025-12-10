@@ -5,42 +5,47 @@ Tests the FastAPI endpoints and session management
 
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
-from fastapi.testclient import TestClient
+import httpx
 
 
 class TestWebIntegration:
     """Integration tests for the web application"""
 
     @pytest.fixture
-    def client(self):
-        """Create test client with mocked generator"""
+    async def client(self):
+        """Create async test client using ASGI transport"""
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
             with patch('solairus_intelligence.web.app.generator') as mock_gen:
                 mock_gen.generate_monthly_report = AsyncMock(
                     return_value=("/tmp/test_report.docx", {"success": True, "errors": []})
                 )
                 from solairus_intelligence.web.app import app
-                return TestClient(app)
+                transport = httpx.ASGITransport(app=app)
+                async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+                    yield client
 
-    def test_home_page_loads(self, client):
+    @pytest.mark.asyncio
+    async def test_home_page_loads(self, client):
         """Test that the home page loads successfully"""
-        response = client.get("/")
+        response = await client.get("/")
 
         assert response.status_code == 200
         assert "Ergo Intelligence Report" in response.text
 
-    def test_health_check(self, client):
+    @pytest.mark.asyncio
+    async def test_health_check(self, client):
         """Test health check endpoint"""
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
         assert "timestamp" in data
 
-    def test_generate_endpoint_returns_session(self, client):
+    @pytest.mark.asyncio
+    async def test_generate_endpoint_returns_session(self, client):
         """Test that generate endpoint returns session ID"""
-        response = client.post(
+        response = await client.post(
             "/generate",
             json={"test_mode": False, "focus_areas": []}
         )
@@ -50,15 +55,17 @@ class TestWebIntegration:
         assert "session_id" in data
         assert data["status"] == "processing"
 
-    def test_status_endpoint_not_found(self, client):
+    @pytest.mark.asyncio
+    async def test_status_endpoint_not_found(self, client):
         """Test status endpoint with invalid session"""
-        response = client.get("/status/invalid-session-id")
+        response = await client.get("/status/invalid-session-id")
 
         assert response.status_code == 404
 
-    def test_download_not_found(self, client):
+    @pytest.mark.asyncio
+    async def test_download_not_found(self, client):
         """Test download endpoint with non-existent file"""
-        response = client.get("/download/nonexistent.docx")
+        response = await client.get("/download/nonexistent.docx")
 
         assert response.status_code == 404
 

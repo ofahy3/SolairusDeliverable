@@ -45,6 +45,7 @@ class IntelligenceProcessor:
         # Backwards compatibility aliases
         self.client_mapping = CLIENT_SECTOR_MAPPING
         self.ai_generator = self.ergomind_processor.ai_generator
+        self.relevance_keywords = self.ergomind_processor.RELEVANCE_KEYWORDS
 
     # =====================================================================
     # ErgoMind Processing (delegated)

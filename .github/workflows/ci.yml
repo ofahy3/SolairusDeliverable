@@ -87,6 +87,16 @@ jobs:
           FRED_API_KEY: test_key
           AI_ENABLED: "false"
 
+      - name: Run integration tests
+        run: |
+          pytest tests/integration -v --cov=solairus_intelligence --cov-append --cov-report=xml --cov-report=term-missing
+        env:
+          ERGOMIND_API_KEY: test_key
+          ERGOMIND_USER_ID: test@test.com
+          GTA_API_KEY: test_key
+          FRED_API_KEY: test_key
+          AI_ENABLED: "false"
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

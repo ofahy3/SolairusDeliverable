@@ -760,27 +760,3 @@ class QueryOrchestrator:
             "fred": fred_results,
             "source_status": source_status,  # Add status tracking
         }
-
-    # Maintain backward compatibility
-
-
-async def test_query_orchestrator():
-    """Test the query orchestrator"""
-    orchestrator = QueryOrchestrator()
-
-    # Test with a subset of queries
-    print("Testing Query Orchestrator...")
-    print(f"Loaded {len(orchestrator.query_templates)} query templates\n")
-
-    # Show some sample queries
-    print("Sample High-Priority Queries:")
-    high_priority = [t for t in orchestrator.query_templates if t.priority >= 8]
-    for template in high_priority[:3]:
-        print(f"\nCategory: {template.category}")
-        print(f"Priority: {template.priority}")
-        print(f"Query: {template.query[:100]}...")
-        print(f"Sectors: {[s.value for s in template.sectors]}")
-
-
-if __name__ == "__main__":
-    asyncio.run(test_query_orchestrator())
