@@ -51,8 +51,9 @@ class EnvironmentConfig:
             # Use /mnt/user-data/outputs in cloud/container environments
             output_dir = Path("/mnt/user-data/outputs")
         else:
-            # Local development: use project directory
-            project_root = Path(__file__).parent
+            # Local development: use project root directory
+            # Path(__file__) is utils/config.py, so .parents[2] reaches project root
+            project_root = Path(__file__).parents[2]
             output_dir = project_root / "outputs"
 
         # Ensure directory exists

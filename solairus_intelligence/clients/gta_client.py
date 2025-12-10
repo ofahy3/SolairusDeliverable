@@ -84,10 +84,9 @@ class GTAClient:
         self.config = config or GTAConfig()
         self.session: Optional[aiohttp.ClientSession] = None
 
-        # Warn if using fallback API key
-        if self.config.api_key == "24f03ce8ff0ebf8155033d867de5cec5f7be2b01":
+        if not self.config.api_key:
             logger.warning(
-                "Using fallback GTA API key - set GTA_API_KEY environment variable for production"
+                "GTA_API_KEY not set - set GTA_API_KEY environment variable for production"
             )
 
         logger.info(f"GTAClient initialized with API endpoint: {self.config.base_url}")

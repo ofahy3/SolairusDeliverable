@@ -6,9 +6,12 @@ Removes personally identifiable information and client-specific data before send
 import logging
 import re
 from typing import List, Dict
-from solairus_intelligence.core.processor import IntelligenceItem, ClientSector
+
+from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
+from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)
+
 
 class PIISanitizer:
     """
@@ -23,31 +26,9 @@ class PIISanitizer:
         Args:
             client_mapping: Dictionary mapping sectors to client data
         """
-        self.client_mapping = client_mapping or self._get_default_client_mapping()
+        # Use centralized config as single source of truth
+        self.client_mapping = client_mapping or CLIENT_SECTOR_MAPPING
         self.company_patterns = self._build_company_patterns()
-
-    def _get_default_client_mapping(self) -> Dict[ClientSector, Dict]:
-        """Get default client mapping for PII sanitization"""
-        # Define client mapping directly to avoid circular import with IntelligenceProcessor
-        return {
-            ClientSector.TECHNOLOGY: {
-                'companies': ['Cisco', 'Palantir', 'NantWorks', 'Pluralsight'],
-            },
-            ClientSector.FINANCE: {
-                'companies': ['ICONIQ Capital', 'Vista Equity', 'Affinius Capital',
-                            'Ribbit Management', 'ArcLight Capital'],
-            },
-            ClientSector.REAL_ESTATE: {
-                'companies': ['Presidium Development', 'Restoration Hardware',
-                            'Grassy Creek', 'Bay Grove Capital'],
-            },
-            ClientSector.ENTERTAINMENT: {
-                'companies': ['WME IMG', 'Anheuser-Busch InBev'],
-            },
-            ClientSector.ENERGY: {
-                'companies': ['ArcLight Capital Partners'],
-            }
-        }
 
     def _build_company_patterns(self) -> Dict[str, str]:
         """
@@ -178,60 +159,3 @@ class PIISanitizer:
                 sanitized[key] = value
 
         return sanitized
-
-
-def test_sanitizer():
-    """Test the PII sanitization functionality"""
-    print("=" * 60)
-    print("PII SANITIZER TEST")
-    print("=" * 60)
-
-    sanitizer = PIISanitizer()
-
-    # Test 1: Basic text sanitization
-    print("\nTest 1: Basic Text Sanitization")
-    test_text = "Cisco announced a new data center expansion in partnership with Palantir Technologies."
-    sanitized = sanitizer.sanitize_text(test_text)
-    print(f"Original:  {test_text}")
-    print(f"Sanitized: {sanitized}")
-
-    # Test 2: Case insensitivity
-    print("\nTest 2: Case Insensitivity")
-    test_text2 = "ICONIQ Capital and iconiq capital both mentioned"
-    sanitized2 = sanitizer.sanitize_text(test_text2)
-    print(f"Original:  {test_text2}")
-    print(f"Sanitized: {sanitized2}")
-
-    # Test 3: Preserve non-client mentions
-    print("\nTest 3: Non-Client Companies Preserved")
-    test_text3 = "Apple and Microsoft announced new features, while Cisco implemented changes"
-    sanitized3 = sanitizer.sanitize_text(test_text3)
-    print(f"Original:  {test_text3}")
-    print(f"Sanitized: {sanitized3}")
-
-    # Test 4: Intelligence item sanitization
-    print("\nTest 4: Intelligence Item Sanitization")
-    from solairus_intelligence.core.processor import IntelligenceItem
-
-    test_item = IntelligenceItem(
-        raw_content="Cisco technology export restrictions",
-        processed_content="US export controls on semiconductor technology impact Palantir's operations",
-        category="technology",
-        relevance_score=0.85,
-        so_what_statement="Technology sector clients like NantWorks face compliance challenges",
-        affected_sectors=[ClientSector.TECHNOLOGY]
-    )
-
-    sanitized_item = sanitizer.sanitize_intelligence_item(test_item)
-    print(f"Original processed_content:  {test_item.processed_content}")
-    print(f"Sanitized processed_content: {sanitized_item.processed_content}")
-    print(f"Original so_what:            {test_item.so_what_statement}")
-    print(f"Sanitized so_what:           {sanitized_item.so_what_statement}")
-
-    print("\n" + "=" * 60)
-    print("✓ PII Sanitizer test complete")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    test_sanitizer()

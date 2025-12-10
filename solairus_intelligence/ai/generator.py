@@ -12,7 +12,8 @@ from typing import Dict, List, Optional
 
 from solairus_intelligence.ai.fact_validator import FactValidator
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
-from solairus_intelligence.core.processor import ClientSector, IntelligenceItem
+from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)
 
@@ -456,12 +457,6 @@ Generate ONLY the "So What" statement (no labels, no extra text):
         # For structured watch factors
         current_watch_factor = None
 
-        # For structured key findings
-        current_finding = None
-
-        # For structured watch factors
-        current_watch_factor = None
-
         for line in lines:
             line = line.strip()
 
@@ -557,96 +552,3 @@ Generate ONLY the "So What" statement (no labels, no extra text):
         return self.usage_tracker.get_summary()
 
 
-def test_ai_generator():
-    """Test AI generator functionality"""
-    print("=" * 60)
-    print("AI GENERATOR TEST")
-    print("=" * 60)
-
-    # Check if API key is set
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("\n⚠️  ANTHROPIC_API_KEY not set - skipping AI tests")
-        print("Set environment variable: export ANTHROPIC_API_KEY=your_key_here")
-        print("=" * 60)
-        return
-
-    print("\n✓ API key configured")
-
-    # Create test intelligence items
-    test_items = [
-        IntelligenceItem(
-            raw_content="US inflation 3.5% Q4",
-            processed_content="US inflation rose to 3.5% in Q4 2025, driven by energy costs and supply chain pressures",
-            category="economic",
-            relevance_score=0.9,
-            confidence=0.85,
-            so_what_statement="Higher operating costs for aviation",
-            affected_sectors=[ClientSector.GENERAL],
-            source_type="fred",
-        ),
-        IntelligenceItem(
-            raw_content="China export controls semiconductors",
-            processed_content="China imposed new export controls on semiconductor manufacturing equipment, affecting US technology companies",
-            category="geopolitical",
-            relevance_score=0.88,
-            confidence=0.9,
-            so_what_statement="Supply chain risks for tech sector clients",
-            affected_sectors=[ClientSector.TECHNOLOGY],
-            source_type="ergomind",
-        ),
-    ]
-
-    async def run_tests():
-        generator = SecureAIGenerator()
-
-        if not generator.config.enabled:
-            print("\n✗ AI generation disabled")
-            return
-
-        # Test 1: Executive Summary generation
-        print("\nTest 1: Executive Summary Generation")
-        print("-" * 60)
-
-        def template_fallback(items):
-            return {
-                "bottom_line": ["Template fallback bottom line"],
-                "key_findings": ["Template fallback finding"],
-                "watch_factors": ["Template fallback factor"],
-            }
-
-        summary = await generator.generate_executive_summary(test_items, template_fallback)
-
-        print("Generated Executive Summary:")
-        for section, items in summary.items():
-            print(f"\n{section.upper().replace('_', ' ')}:")
-            for item in items:
-                print(f"  - {item[:100]}...")
-
-        # Test 2: "So What" statement generation
-        print("\n\nTest 2: 'So What' Statement Generation")
-        print("-" * 60)
-
-        def so_what_fallback(item):
-            return "Template fallback so what statement"
-
-        so_what = await generator.generate_so_what_statement(test_items[0], so_what_fallback)
-        print(f"Generated 'So What': {so_what}")
-
-        # Test 3: Usage summary
-        print("\n\nTest 3: Usage Summary")
-        print("-" * 60)
-        usage = generator.get_usage_summary()
-        for key, value in usage.items():
-            print(f"  {key}: {value}")
-
-    # Run async tests
-    asyncio.run(run_tests())
-
-    print("\n" + "=" * 60)
-    print("✓ AI Generator test complete")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    test_ai_generator()

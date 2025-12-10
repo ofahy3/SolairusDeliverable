@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user for security
+RUN adduser --disabled-password --gecos '' --uid 1000 appuser
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 
@@ -21,8 +24,14 @@ COPY solairus_intelligence/ ./solairus_intelligence/
 COPY .env.example .env.example
 COPY README.md README.md
 
-# Create output directory
-RUN mkdir -p /mnt/user-data/outputs
+# Create output directory with proper ownership
+RUN mkdir -p /mnt/user-data/outputs && chown -R appuser:appuser /mnt/user-data/outputs
+
+# Set ownership of app directory
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
