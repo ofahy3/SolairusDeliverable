@@ -5,7 +5,7 @@ Removes personally identifiable information and client-specific data before send
 
 import logging
 import re
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 
 from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
 from solairus_intelligence.core.processor import IntelligenceItem
@@ -19,7 +19,7 @@ class PIISanitizer:
     before sending data to external AI services
     """
 
-    def __init__(self, client_mapping: Dict[ClientSector, Dict] = None):
+    def __init__(self, client_mapping: Optional[Dict[ClientSector, Dict]] = None):
         """
         Initialize sanitizer with client mapping data
 
@@ -133,7 +133,7 @@ class PIISanitizer:
 
         return sanitized_items
 
-    def sanitize_dict(self, data: Dict) -> Dict:
+    def sanitize_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Sanitize all string values in a dictionary
 
@@ -143,7 +143,7 @@ class PIISanitizer:
         Returns:
             Dictionary with sanitized string values
         """
-        sanitized = {}
+        sanitized: Dict[str, Any] = {}
 
         for key, value in data.items():
             if isinstance(value, str):
@@ -151,10 +151,11 @@ class PIISanitizer:
             elif isinstance(value, dict):
                 sanitized[key] = self.sanitize_dict(value)
             elif isinstance(value, list):
-                sanitized[key] = [
+                sanitized_list: List[Any] = [
                     self.sanitize_text(v, audit_log=False) if isinstance(v, str) else v
                     for v in value
                 ]
+                sanitized[key] = sanitized_list
             else:
                 sanitized[key] = value
 

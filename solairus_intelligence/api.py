@@ -4,18 +4,34 @@ Simple Public API for Solairus Intelligence
 This module provides a clean, Stripe-style API for generating intelligence reports.
 Designed to make complex functionality accessible in just a few lines of code.
 
-Usage:
+Basic Usage (7 lines):
+    ```python
     from solairus_intelligence import generate_report
 
-    # Generate a report (async)
+    report = await generate_report()
+    ```
+
+Full Usage:
+    ```python
+    from solairus_intelligence import generate_report
+
+    # Generate a report for specific month
     report_path = await generate_report(month="December 2024")
 
     # Generate with options
     report_path = await generate_report(
         month="December 2024",
         sources=["ergomind", "gta", "fred"],
-        output_format="docx"
+        test_mode=True  # For faster testing
     )
+    ```
+
+Sync Usage:
+    ```python
+    from solairus_intelligence import generate_report_sync
+
+    report = generate_report_sync(month="December 2024")
+    ```
 """
 
 import asyncio
