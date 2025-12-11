@@ -23,16 +23,16 @@ class TestEndToEndPipeline:
             {
                 "query": "aviation geopolitical risks",
                 "response": "Rising tensions in Eastern Europe pose risks to aviation operations. "
-                           "Several airlines have rerouted flights away from conflict zones. "
-                           "Insurance costs have increased by 15% for affected regions.",
-                "confidence": 0.87
+                "Several airlines have rerouted flights away from conflict zones. "
+                "Insurance costs have increased by 15% for affected regions.",
+                "confidence": 0.87,
             },
             {
                 "query": "trade policy aviation",
                 "response": "New export controls on aviation components affecting supply chains. "
-                           "Manufacturers report 6-month delays for critical parts.",
-                "confidence": 0.82
-            }
+                "Manufacturers report 6-month delays for critical parts.",
+                "confidence": 0.82,
+            },
         ]
 
     @pytest.fixture
@@ -46,7 +46,7 @@ class TestEndToEndPipeline:
                 "affected_products": ["aircraft engines", "aviation parts"],
                 "announcement_date": "2024-11-15",
                 "implementation_date": "2024-12-01",
-                "description": "25% tariff on imported aviation components from certain countries"
+                "description": "25% tariff on imported aviation components from certain countries",
             }
         ]
 
@@ -58,21 +58,18 @@ class TestEndToEndPipeline:
             "interest_rates": [{"date": "2024-11", "value": 4.5}],
             "fuel_costs": [{"date": "2024-11", "value": 85.2}],
             "gdp": [{"date": "2024-Q3", "value": 2.8}],
-            "consumer_confidence": [{"date": "2024-11", "value": 98.5}]
+            "consumer_confidence": [{"date": "2024-11", "value": 98.5}],
         }
 
     @pytest.mark.asyncio
     async def test_full_pipeline_with_mocks(
-        self,
-        mock_ergomind_response,
-        mock_gta_response,
-        mock_fred_response
+        self, mock_ergomind_response, mock_gta_response, mock_fred_response
     ):
         """Test complete pipeline from API to report"""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
 
-            with patch('solairus_intelligence.api.SolairusIntelligenceGenerator') as MockGen:
+            with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
                 mock_generator = MagicMock()
                 mock_doc_path = str(output_dir / "Intelligence_Report_December_2024.docx")
                 Path(mock_doc_path).touch()
@@ -84,8 +81,8 @@ class TestEndToEndPipeline:
                             "success": True,
                             "errors": [],
                             "queries_executed": 15,
-                            "intelligence_items": 25
-                        }
+                            "intelligence_items": 25,
+                        },
                     )
                 )
                 MockGen.return_value = mock_generator
@@ -96,16 +93,13 @@ class TestEndToEndPipeline:
                 assert isinstance(result, Path)
 
     def test_sync_pipeline_with_mocks(
-        self,
-        mock_ergomind_response,
-        mock_gta_response,
-        mock_fred_response
+        self, mock_ergomind_response, mock_gta_response, mock_fred_response
     ):
         """Test synchronous pipeline"""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
 
-            with patch('solairus_intelligence.api.SolairusIntelligenceGenerator') as MockGen:
+            with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
                 mock_generator = MagicMock()
                 mock_doc_path = str(output_dir / "Intelligence_Report_December_2024.docx")
                 Path(mock_doc_path).touch()
@@ -127,15 +121,12 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_handles_generation_failure(self):
         """Test that failures are properly reported"""
-        with patch('solairus_intelligence.api.SolairusIntelligenceGenerator') as MockGen:
+        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=(
                     None,
-                    {
-                        "success": False,
-                        "errors": ["API connection failed", "No data retrieved"]
-                    }
+                    {"success": False, "errors": ["API connection failed", "No data retrieved"]},
                 )
             )
             MockGen.return_value = mock_generator
@@ -148,7 +139,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_handles_empty_errors(self):
         """Test handling of failure with no error details"""
-        with patch('solairus_intelligence.api.SolairusIntelligenceGenerator') as MockGen:
+        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=(None, {"success": False, "errors": []})

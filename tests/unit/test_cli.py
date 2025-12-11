@@ -18,23 +18,23 @@ class TestSolairusIntelligenceGenerator:
         gen = SolairusIntelligenceGenerator()
 
         assert gen is not None
-        assert hasattr(gen, 'orchestrator')
-        assert hasattr(gen, 'generator')  # DocumentGenerator is named 'generator'
-        assert hasattr(gen, 'merger')
-        assert hasattr(gen, 'client')
+        assert hasattr(gen, "orchestrator")
+        assert hasattr(gen, "generator")  # DocumentGenerator is named 'generator'
+        assert hasattr(gen, "merger")
+        assert hasattr(gen, "client")
 
     def test_generator_has_required_methods(self):
         """Test generator has required interface methods"""
         gen = SolairusIntelligenceGenerator()
 
-        assert hasattr(gen, 'generate_monthly_report')
+        assert hasattr(gen, "generate_monthly_report")
         assert callable(gen.generate_monthly_report)
 
     def test_generator_has_last_run_status(self):
         """Test generator tracks last run status"""
         gen = SolairusIntelligenceGenerator()
 
-        assert hasattr(gen, 'last_run_status')
+        assert hasattr(gen, "last_run_status")
 
 
 class TestCLIHelpers:
@@ -48,8 +48,18 @@ class TestCLIHelpers:
         # Should be format like "December 2024"
         assert len(month_str.split()) == 2
         assert month_str.split()[0] in [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         ]
 
 
@@ -211,14 +221,13 @@ class TestStatusManagement:
         # Mock the status file path
         status_file = tmp_path / "status.json"
         monkeypatch.setattr(
-            "solairus_intelligence.cli.get_status_file_path",
-            lambda: str(status_file)
+            "solairus_intelligence.cli.get_status_file_path", lambda: str(status_file)
         )
 
         status = {
-            'success': True,
-            'queries_executed': 10,
-            'items_processed': 5,
+            "success": True,
+            "queries_executed": 10,
+            "items_processed": 5,
         }
 
         generator._save_status(status)
@@ -226,11 +235,12 @@ class TestStatusManagement:
         assert status_file.exists()
 
         import json
+
         with open(status_file) as f:
             saved_status = json.load(f)
 
-        assert saved_status['success'] is True
-        assert saved_status['queries_executed'] == 10
+        assert saved_status["success"] is True
+        assert saved_status["queries_executed"] == 10
 
 
 class TestPrintSummary:
@@ -243,58 +253,58 @@ class TestPrintSummary:
     def test_print_summary_success(self, generator, capsys):
         """Test printing summary for successful run"""
         status = {
-            'success': True,
-            'queries_executed': 15,
-            'items_processed': 10,
-            'sectors_covered': ['general', 'finance', 'technology'],
-            'quality_score': 0.85,
-            'report_path': '/tmp/test_report.docx',
-            'errors': [],
+            "success": True,
+            "queries_executed": 15,
+            "items_processed": 10,
+            "sectors_covered": ["general", "finance", "technology"],
+            "quality_score": 0.85,
+            "report_path": "/tmp/test_report.docx",
+            "errors": [],
         }
         start_time = datetime.now()
 
         generator._print_summary(status, start_time)
 
         captured = capsys.readouterr()
-        assert 'SUCCESS' in captured.out
-        assert '15' in captured.out  # queries
-        assert '10' in captured.out  # items
-        assert '85' in captured.out  # quality score percentage
+        assert "SUCCESS" in captured.out
+        assert "15" in captured.out  # queries
+        assert "10" in captured.out  # items
+        assert "85" in captured.out  # quality score percentage
 
     def test_print_summary_with_errors(self, generator, capsys):
         """Test printing summary with errors"""
         status = {
-            'success': False,
-            'queries_executed': 5,
-            'items_processed': 0,
-            'sectors_covered': [],
-            'quality_score': 0.0,
-            'report_path': None,
-            'errors': ['Connection failed', 'Timeout error'],
+            "success": False,
+            "queries_executed": 5,
+            "items_processed": 0,
+            "sectors_covered": [],
+            "quality_score": 0.0,
+            "report_path": None,
+            "errors": ["Connection failed", "Timeout error"],
         }
         start_time = datetime.now()
 
         generator._print_summary(status, start_time)
 
         captured = capsys.readouterr()
-        assert 'FAILED' in captured.out
-        assert 'Connection failed' in captured.out
-        assert 'Timeout error' in captured.out
+        assert "FAILED" in captured.out
+        assert "Connection failed" in captured.out
+        assert "Timeout error" in captured.out
 
     def test_print_summary_with_source_status(self, generator, capsys):
         """Test printing summary with source status"""
         status = {
-            'success': True,
-            'queries_executed': 20,
-            'items_processed': 15,
-            'sectors_covered': ['general'],
-            'quality_score': 0.7,
-            'report_path': '/tmp/report.docx',
-            'errors': [],
-            'source_status': {
-                'ergomind': 'success',
-                'gta': 'success',
-                'fred': 'failed',
+            "success": True,
+            "queries_executed": 20,
+            "items_processed": 15,
+            "sectors_covered": ["general"],
+            "quality_score": 0.7,
+            "report_path": "/tmp/report.docx",
+            "errors": [],
+            "source_status": {
+                "ergomind": "success",
+                "gta": "success",
+                "fred": "failed",
             },
         }
         start_time = datetime.now()
@@ -302,26 +312,26 @@ class TestPrintSummary:
         generator._print_summary(status, start_time)
 
         captured = capsys.readouterr()
-        assert 'ErgoMind' in captured.out
-        assert 'GTA' in captured.out
-        assert 'FRED' in captured.out
+        assert "ErgoMind" in captured.out
+        assert "GTA" in captured.out
+        assert "FRED" in captured.out
 
     def test_print_summary_with_ai_usage(self, generator, capsys):
         """Test printing summary with AI usage stats"""
         status = {
-            'success': True,
-            'queries_executed': 10,
-            'items_processed': 8,
-            'sectors_covered': ['general'],
-            'quality_score': 0.8,
-            'report_path': '/tmp/report.docx',
-            'errors': [],
-            'ai_usage': {
-                'total_requests': 5,
-                'successful_requests': 5,
-                'total_input_tokens': 1000,
-                'total_output_tokens': 500,
-                'total_cost_usd': 0.0123,
+            "success": True,
+            "queries_executed": 10,
+            "items_processed": 8,
+            "sectors_covered": ["general"],
+            "quality_score": 0.8,
+            "report_path": "/tmp/report.docx",
+            "errors": [],
+            "ai_usage": {
+                "total_requests": 5,
+                "successful_requests": 5,
+                "total_input_tokens": 1000,
+                "total_output_tokens": 500,
+                "total_cost_usd": 0.0123,
             },
         }
         start_time = datetime.now()
@@ -329,6 +339,6 @@ class TestPrintSummary:
         generator._print_summary(status, start_time)
 
         captured = capsys.readouterr()
-        assert 'AI Enhancement' in captured.out
-        assert '5' in captured.out  # API calls
-        assert '1,000' in captured.out or '1000' in captured.out  # tokens
+        assert "AI Enhancement" in captured.out
+        assert "5" in captured.out  # API calls
+        assert "1,000" in captured.out or "1000" in captured.out  # tokens

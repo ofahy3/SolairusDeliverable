@@ -56,6 +56,7 @@ class QueryOrchestrator:
         current_month = now.strftime("%B %Y")
         # Calculate 6 months ago for time constraint
         from dateutil.relativedelta import relativedelta
+
         six_months_ago = (now - relativedelta(months=6)).strftime("%B %Y")
 
         # Time constraint to add to queries - ensures ErgoMind only provides recent data
@@ -518,11 +519,17 @@ class QueryOrchestrator:
                 rates_task = fred_client.get_interest_rate_data(days_back=days_back)
                 fuel_task = fred_client.get_aviation_fuel_costs(days_back=days_back)
                 gdp_task = fred_client.get_gdp_growth_data(days_back=180)  # Quarterly data
-                confidence_task = fred_client.get_business_confidence_data(days_back=365)  # Monthly OECD data
+                confidence_task = fred_client.get_business_confidence_data(
+                    days_back=365
+                )  # Monthly OECD data
 
                 gathered_results = await asyncio.gather(
-                    inflation_task, rates_task, fuel_task, gdp_task, confidence_task,
-                    return_exceptions=True
+                    inflation_task,
+                    rates_task,
+                    fuel_task,
+                    gdp_task,
+                    confidence_task,
+                    return_exceptions=True,
                 )
 
                 # Unpack with explicit typing
@@ -533,7 +540,9 @@ class QueryOrchestrator:
                 confidence_result = gathered_results[4]
 
                 # Store results
-                if not isinstance(inflation_result, Exception) and isinstance(inflation_result, list):
+                if not isinstance(inflation_result, Exception) and isinstance(
+                    inflation_result, list
+                ):
                     results["inflation"] = inflation_result
                     logger.info(f"FRED inflation: Retrieved {len(inflation_result)} indicators")
                 if not isinstance(rates_result, Exception) and isinstance(rates_result, list):
@@ -545,9 +554,13 @@ class QueryOrchestrator:
                 if not isinstance(gdp_result, Exception) and isinstance(gdp_result, list):
                     results["gdp_growth"] = gdp_result
                     logger.info(f"FRED GDP growth: Retrieved {len(gdp_result)} indicators")
-                if not isinstance(confidence_result, Exception) and isinstance(confidence_result, list):
+                if not isinstance(confidence_result, Exception) and isinstance(
+                    confidence_result, list
+                ):
                     results["business_confidence"] = confidence_result
-                    logger.info(f"FRED business confidence: Retrieved {len(confidence_result)} indicators")
+                    logger.info(
+                        f"FRED business confidence: Retrieved {len(confidence_result)} indicators"
+                    )
 
             except Exception as e:
                 logger.error(f"FRED data gathering error: {str(e)}")

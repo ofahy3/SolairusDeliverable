@@ -26,17 +26,13 @@ class HeaderBuilder:
         self.styles = styles
         self.logo_path = logo_path
 
-    def add_header(
-        self,
-        doc: Document,
-        title: str,
-        subtitle: str
-    ) -> None:
+    def add_header(self, doc: Document, title: str, subtitle: str) -> None:
         """Add branded header to document"""
         # Add logo if available
         if self.logo_path:
             try:
                 from pathlib import Path
+
                 if Path(self.logo_path).exists():
                     doc.add_picture(str(self.logo_path), width=Inches(1.5))
             except Exception:
@@ -65,17 +61,13 @@ class ExecutiveSummaryBuilder:
         self,
         styles: ErgoStyles,
         content_extractor: ContentExtractor,
-        ai_generator: Optional[Any] = None
+        ai_generator: Optional[Any] = None,
     ):
         self.styles = styles
         self.content_extractor = content_extractor
         self.ai_generator = ai_generator
 
-    def add_executive_summary(
-        self,
-        doc: Document,
-        items: List[IntelligenceItem]
-    ) -> None:
+    def add_executive_summary(self, doc: Document, items: List[IntelligenceItem]) -> None:
         """Add executive summary section"""
         self._add_section_heading(doc, "Executive Summary")
 
@@ -175,16 +167,13 @@ class EconomicIndicatorsBuilder:
         self.styles = styles
         self.content_extractor = content_extractor
 
-    def add_economic_indicators_table(
-        self,
-        doc: Document,
-        items: List[IntelligenceItem]
-    ) -> None:
+    def add_economic_indicators_table(self, doc: Document, items: List[IntelligenceItem]) -> None:
         """Add economic indicators table"""
         # Filter for economic items
         econ_items = [
-            item for item in items
-            if item.source_type == 'fred' or 'economic' in item.category.lower()
+            item
+            for item in items
+            if item.source_type == "fred" or "economic" in item.category.lower()
         ]
 
         if not econ_items:
@@ -199,10 +188,10 @@ class EconomicIndicatorsBuilder:
 
         # Create table
         table = doc.add_table(rows=1, cols=4)
-        table.style = 'Table Grid'
+        table.style = "Table Grid"
 
         # Header row
-        headers = ['Indicator', 'Value', 'Trend', 'Impact']
+        headers = ["Indicator", "Value", "Trend", "Impact"]
         for i, header in enumerate(headers):
             cell = table.rows[0].cells[i]
             cell.text = header
@@ -232,11 +221,7 @@ class RegionalAssessmentBuilder:
         self.styles = styles
         self.content_extractor = content_extractor
 
-    def add_regional_assessment(
-        self,
-        doc: Document,
-        items: List[IntelligenceItem]
-    ) -> None:
+    def add_regional_assessment(self, doc: Document, items: List[IntelligenceItem]) -> None:
         """Add regional assessment section"""
         # Group by region
         regions: Dict[str, List[IntelligenceItem]] = {}
@@ -263,7 +248,7 @@ class RegionalAssessmentBuilder:
 
     def _detect_region(self, item: IntelligenceItem) -> str:
         """Detect region from item content"""
-        content = (item.processed_content + ' ' + item.raw_content).lower()
+        content = (item.processed_content + " " + item.raw_content).lower()
 
         region_keywords = {
             "Europe": ["europe", "eu", "uk", "germany", "france", "italy"],
@@ -280,10 +265,7 @@ class RegionalAssessmentBuilder:
         return "Global"
 
     def _add_region_section(
-        self,
-        doc: Document,
-        region: str,
-        items: List[IntelligenceItem]
+        self, doc: Document, region: str, items: List[IntelligenceItem]
     ) -> None:
         """Add a region subsection"""
         # Region heading
@@ -316,10 +298,7 @@ class SectorSectionBuilder:
         self.content_extractor = content_extractor
 
     def add_sector_section(
-        self,
-        doc: Document,
-        sector: ClientSector,
-        intelligence: SectorIntelligence
+        self, doc: Document, sector: ClientSector, intelligence: SectorIntelligence
     ) -> None:
         """Add a sector section to the document"""
         # Sector heading
@@ -340,12 +319,7 @@ class SectorSectionBuilder:
         for item in intelligence.items[:5]:
             self._add_sector_item(doc, item, sector)
 
-    def _add_sector_item(
-        self,
-        doc: Document,
-        item: IntelligenceItem,
-        sector: ClientSector
-    ) -> None:
+    def _add_sector_item(self, doc: Document, item: IntelligenceItem, sector: ClientSector) -> None:
         """Add a single sector item"""
         item_para = doc.add_paragraph()
 

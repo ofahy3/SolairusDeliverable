@@ -14,12 +14,13 @@ class TestWebIntegration:
     @pytest.fixture
     async def client(self):
         """Create async test client using ASGI transport"""
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            with patch('solairus_intelligence.web.app.generator') as mock_gen:
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
+            with patch("solairus_intelligence.web.app.generator") as mock_gen:
                 mock_gen.generate_monthly_report = AsyncMock(
                     return_value=("/tmp/test_report.docx", {"success": True, "errors": []})
                 )
                 from solairus_intelligence.web.app import app
+
                 transport = httpx.ASGITransport(app=app)
                 async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
                     yield client
@@ -45,10 +46,7 @@ class TestWebIntegration:
     @pytest.mark.asyncio
     async def test_generate_endpoint_returns_session(self, client):
         """Test that generate endpoint returns session ID"""
-        response = await client.post(
-            "/generate",
-            json={"test_mode": False, "focus_areas": []}
-        )
+        response = await client.post("/generate", json={"test_mode": False, "focus_areas": []})
 
         assert response.status_code == 200
         data = response.json()

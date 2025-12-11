@@ -17,8 +17,8 @@ class TestPIISanitizer:
         sanitizer = PIISanitizer()
 
         assert sanitizer is not None
-        assert hasattr(sanitizer, 'sanitize_text')
-        assert hasattr(sanitizer, 'company_patterns')
+        assert hasattr(sanitizer, "sanitize_text")
+        assert hasattr(sanitizer, "company_patterns")
 
     def test_sanitizer_with_default_mapping(self):
         """Test sanitizer uses default client mapping"""
@@ -34,7 +34,7 @@ class TestPIISanitizer:
 
         # Get a known company name from config
         tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
-        companies = tech_mapping.get('companies', [])
+        companies = tech_mapping.get("companies", [])
 
         if companies:
             company_name = companies[0]
@@ -75,7 +75,7 @@ class TestPIISanitizer:
         sanitizer = PIISanitizer()
 
         tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
-        companies = tech_mapping.get('companies', [])
+        companies = tech_mapping.get("companies", [])
 
         if companies:
             company = companies[0]
@@ -106,7 +106,7 @@ class TestPIISanitizerReplacement:
         sanitizer = PIISanitizer()
 
         tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
-        companies = tech_mapping.get('companies', [])
+        companies = tech_mapping.get("companies", [])
 
         if companies:
             company = companies[0]

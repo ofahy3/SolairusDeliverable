@@ -44,8 +44,8 @@ class TestEnvironmentConfig:
     def test_config_has_ai_settings(self):
         """Test config has AI settings"""
         config = EnvironmentConfig.detect()
-        assert hasattr(config, 'ai_enabled')
-        assert hasattr(config, 'ai_model')
+        assert hasattr(config, "ai_enabled")
+        assert hasattr(config, "ai_model")
 
 
 class TestGetOutputDir:
@@ -59,14 +59,14 @@ class TestGetOutputDir:
     def test_local_environment_output(self):
         """Test local environment uses local output path"""
         with patch.dict(os.environ, {}, clear=True):
-            with patch('pathlib.Path.exists', return_value=False):
+            with patch("pathlib.Path.exists", return_value=False):
                 output_dir = get_output_dir()
                 # Should be relative to project
                 assert isinstance(output_dir, Path)
 
     def test_docker_environment_output(self):
         """Test Docker environment uses mounted path"""
-        with patch.dict(os.environ, {'K_SERVICE': 'test'}):
+        with patch.dict(os.environ, {"K_SERVICE": "test"}):
             output_dir = get_output_dir()
             # Should return a Path (potentially mounted volume)
             assert isinstance(output_dir, Path)
@@ -83,7 +83,7 @@ class TestGetStatusFilePath:
     def test_path_ends_with_json(self):
         """Test status file is JSON"""
         status_path = get_status_file_path()
-        assert str(status_path).endswith('.json')
+        assert str(status_path).endswith(".json")
 
     def test_path_in_output_dir(self):
         """Test status file is in output directory"""

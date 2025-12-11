@@ -31,7 +31,7 @@ class ResponseCache:
             cache_dir: Directory to store cache files (default: outputs/.cache)
             ttl_hours: Time-to-live in hours for cached items (default: 24)
         """
-        self.enabled = os.getenv('CACHE_ENABLED', 'true').lower() == 'true'
+        self.enabled = os.getenv("CACHE_ENABLED", "true").lower() == "true"
         self.ttl_hours = ttl_hours
 
         if cache_dir:
@@ -39,6 +39,7 @@ class ResponseCache:
         else:
             # Use outputs/.cache directory
             from solairus_intelligence.utils.config import get_output_dir
+
             self.cache_dir = get_output_dir() / ".cache"
 
         if self.enabled:
@@ -83,18 +84,18 @@ class ResponseCache:
             return None
 
         try:
-            with open(cache_path, 'r') as f:
+            with open(cache_path, "r") as f:
                 cached = json.load(f)
 
             # Check expiry
-            cached_at = datetime.fromisoformat(cached.get('cached_at', '2000-01-01'))
+            cached_at = datetime.fromisoformat(cached.get("cached_at", "2000-01-01"))
             if datetime.now() - cached_at > timedelta(hours=self.ttl_hours):
                 logger.debug(f"Cache expired for {source}")
                 cache_path.unlink()  # Delete expired cache
                 return None
 
             logger.info(f"Cache HIT for {source} ({cache_key})")
-            return cached.get('data')
+            return cached.get("data")
 
         except (json.JSONDecodeError, KeyError, ValueError) as e:
             logger.warning(f"Cache read error for {source}: {e}")
@@ -120,13 +121,13 @@ class ResponseCache:
 
         try:
             cache_entry = {
-                'source': source,
-                'query_params': query_params,
-                'cached_at': datetime.now().isoformat(),
-                'data': data
+                "source": source,
+                "query_params": query_params,
+                "cached_at": datetime.now().isoformat(),
+                "data": data,
             }
 
-            with open(cache_path, 'w') as f:
+            with open(cache_path, "w") as f:
                 json.dump(cache_entry, f, indent=2, default=str)
 
             logger.debug(f"Cached {source} response ({cache_key})")
@@ -161,17 +162,17 @@ class ResponseCache:
     def get_stats(self) -> dict:
         """Get cache statistics"""
         if not self.cache_dir.exists():
-            return {'enabled': self.enabled, 'entries': 0, 'size_bytes': 0}
+            return {"enabled": self.enabled, "entries": 0, "size_bytes": 0}
 
         entries = list(self.cache_dir.glob("*.json"))
         total_size = sum(f.stat().st_size for f in entries)
 
         return {
-            'enabled': self.enabled,
-            'entries': len(entries),
-            'size_bytes': total_size,
-            'size_mb': round(total_size / (1024 * 1024), 2),
-            'cache_dir': str(self.cache_dir)
+            "enabled": self.enabled,
+            "entries": len(entries),
+            "size_bytes": total_size,
+            "size_mb": round(total_size / (1024 * 1024), 2),
+            "cache_dir": str(self.cache_dir),
         }
 
 

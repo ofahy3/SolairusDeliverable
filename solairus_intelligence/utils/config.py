@@ -25,7 +25,7 @@ class EnvironmentConfig:
     ai_model: str = "claude-opus-4-5-20251101"
 
     @classmethod
-    def detect(cls) -> 'EnvironmentConfig':
+    def detect(cls) -> "EnvironmentConfig":
         """
         Intelligently detect the runtime environment and configure paths
 
@@ -35,10 +35,10 @@ class EnvironmentConfig:
         3. Local: Default fallback with platform-specific paths
         """
         # Detect cloud environment
-        is_cloud = os.getenv('K_SERVICE') is not None or os.getenv('GAE_ENV') is not None
+        is_cloud = os.getenv("K_SERVICE") is not None or os.getenv("GAE_ENV") is not None
 
         # Detect Docker
-        is_docker = os.path.exists('/.dockerenv') or cls._is_in_docker()
+        is_docker = os.path.exists("/.dockerenv") or cls._is_in_docker()
 
         # Determine if local development
         is_local = not is_cloud and not is_docker
@@ -60,9 +60,9 @@ class EnvironmentConfig:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Load AI configuration from environment
-        anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-        ai_enabled = os.getenv('AI_ENABLED', 'true').lower() == 'true'
-        ai_model = os.getenv('AI_MODEL', 'claude-opus-4-5-20251101')
+        anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+        ai_enabled = os.getenv("AI_ENABLED", "true").lower() == "true"
+        ai_model = os.getenv("AI_MODEL", "claude-opus-4-5-20251101")
 
         # Disable AI if no API key provided
         if not anthropic_api_key and ai_enabled:
@@ -76,15 +76,15 @@ class EnvironmentConfig:
             platform_name=platform_name,
             anthropic_api_key=anthropic_api_key,
             ai_enabled=ai_enabled,
-            ai_model=ai_model
+            ai_model=ai_model,
         )
 
     @staticmethod
     def _is_in_docker() -> bool:
         """Check if running inside Docker container"""
         try:
-            with open('/proc/1/cgroup', 'r') as f:
-                return 'docker' in f.read()
+            with open("/proc/1/cgroup", "r") as f:
+                return "docker" in f.read()
         except (FileNotFoundError, PermissionError):
             return False
 
@@ -129,5 +129,6 @@ def get_status_file_path() -> Path:
 # Print configuration on import for transparency
 if __name__ != "__main__":
     import logging
+
     logger = logging.getLogger(__name__)
     logger.info(f"Environment detected: {ENV_CONFIG}")

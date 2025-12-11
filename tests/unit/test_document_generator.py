@@ -55,12 +55,12 @@ class TestDocumentGenerator:
             ClientSector.GENERAL: SectorIntelligence(
                 sector=ClientSector.GENERAL,
                 items=[sample_items[0]],
-                summary="Economic indicators show pressure"
+                summary="Economic indicators show pressure",
             ),
             ClientSector.TECHNOLOGY: SectorIntelligence(
                 sector=ClientSector.TECHNOLOGY,
                 items=[sample_items[1]],
-                summary="Tech sector faces trade restrictions"
+                summary="Tech sector faces trade restrictions",
             ),
         }
 
@@ -71,11 +71,7 @@ class TestDocumentGenerator:
 
     def test_create_report(self, generator, sample_items, sample_sector_intel):
         """Test report creation"""
-        doc = generator.create_report(
-            sample_items,
-            sample_sector_intel,
-            "November 2024"
-        )
+        doc = generator.create_report(sample_items, sample_sector_intel, "November 2024")
 
         assert doc is not None
         # Document should have content
@@ -85,6 +81,7 @@ class TestDocumentGenerator:
         """Test filename generation format"""
         # Generator creates reports with timestamps
         from datetime import datetime
+
         current_month = datetime.now().strftime("%B %Y")
         # Verify current month formatting works
         assert len(current_month) > 0
@@ -92,15 +89,16 @@ class TestDocumentGenerator:
     def test_add_executive_summary(self, generator, sample_items):
         """Test executive summary is added to report"""
         from docx import Document
+
         # Create a full report which includes executive summary
         doc = generator.create_report(
             sample_items,
-            {ClientSector.GENERAL: SectorIntelligence(
-                sector=ClientSector.GENERAL,
-                items=sample_items,
-                summary="Test summary"
-            )},
-            "November 2024"
+            {
+                ClientSector.GENERAL: SectorIntelligence(
+                    sector=ClientSector.GENERAL, items=sample_items, summary="Test summary"
+                )
+            },
+            "November 2024",
         )
 
         # Should have added content
@@ -109,16 +107,29 @@ class TestDocumentGenerator:
     def test_format_date(self, generator):
         """Test date formatting in reports"""
         from datetime import datetime
+
         # Current date should format correctly
         formatted = datetime.now().strftime("%B %Y")
 
         assert len(formatted) > 0
         # Should be in readable format
-        assert any(month in formatted for month in [
-            "January", "February", "March", "April",
-            "May", "June", "July", "August",
-            "September", "October", "November", "December"
-        ])
+        assert any(
+            month in formatted
+            for month in [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ]
+        )
 
 
 class TestDocumentGeneratorStyles:
@@ -130,12 +141,13 @@ class TestDocumentGeneratorStyles:
 
     def test_color_constants(self, generator):
         """Test color constants are defined"""
-        assert hasattr(generator, 'ERGO_BLUE') or True  # May be class attribute
+        assert hasattr(generator, "ERGO_BLUE") or True  # May be class attribute
         # Colors should be properly formatted RGB values
 
     def test_style_configuration(self, generator):
         """Test styles are configured"""
         from docx import Document
+
         doc = Document()
 
         # Generator should be able to apply styles to a document
@@ -169,9 +181,7 @@ class TestDocumentGeneratorOutput:
     def minimal_sector_intel(self, minimal_items):
         return {
             ClientSector.GENERAL: SectorIntelligence(
-                sector=ClientSector.GENERAL,
-                items=minimal_items,
-                summary="Test summary"
+                sector=ClientSector.GENERAL, items=minimal_items, summary="Test summary"
             )
         }
 
@@ -180,11 +190,7 @@ class TestDocumentGeneratorOutput:
         # Override output directory for test
         generator.output_dir = tmp_path
 
-        doc = generator.create_report(
-            minimal_items,
-            minimal_sector_intel,
-            "Test Month"
-        )
+        doc = generator.create_report(minimal_items, minimal_sector_intel, "Test Month")
 
         filepath = generator.save_report(doc)
 

@@ -53,7 +53,7 @@ class TestFREDObservation:
             date="2024-10-01",
             value=310.5,
             units="Index",
-            category="inflation"
+            category="inflation",
         )
 
         assert obs.series_id == "CPIAUCSL"
@@ -68,7 +68,7 @@ class TestFREDObservation:
             date="2024-10-01",
             value=5.33,
             units="Percent",
-            category="interest_rates"
+            category="interest_rates",
         )
 
         assert obs.series_id == "FEDFUNDS"
@@ -104,7 +104,7 @@ class TestFREDClient:
     def test_series_definitions(self, client):
         """Test that series definitions are properly configured"""
         # Check that client has series_definitions attribute
-        assert hasattr(client, 'series_definitions') or hasattr(client, 'SERIES')
+        assert hasattr(client, "series_definitions") or hasattr(client, "SERIES")
         # Client is properly configured
         assert client.config is not None
 
@@ -135,10 +135,10 @@ class TestFREDClientMethods:
 
     def test_client_has_required_methods(self, client):
         """Test client has required methods"""
-        assert hasattr(client, 'test_connection')
-        assert hasattr(client, 'get_inflation_indicators')
-        assert hasattr(client, 'get_interest_rate_data')
-        assert hasattr(client, 'get_aviation_fuel_costs')
+        assert hasattr(client, "test_connection")
+        assert hasattr(client, "get_inflation_indicators")
+        assert hasattr(client, "get_interest_rate_data")
+        assert hasattr(client, "get_aviation_fuel_costs")
 
     @pytest.mark.asyncio
     async def test_context_manager_creates_session(self, client):
@@ -187,7 +187,13 @@ class TestFREDObservationProperties:
 
     def test_observation_categories(self):
         """Test various observation categories"""
-        categories = ["inflation", "interest_rates", "fuel_costs", "gdp_growth", "business_confidence"]
+        categories = [
+            "inflation",
+            "interest_rates",
+            "fuel_costs",
+            "gdp_growth",
+            "business_confidence",
+        ]
 
         for category in categories:
             obs = FREDObservation(
@@ -217,7 +223,7 @@ class TestFREDConfigProperties:
         monkeypatch.setenv("FRED_API_KEY", "test")
         config = FREDConfig()
 
-        assert hasattr(config, 'timeout')
+        assert hasattr(config, "timeout")
         assert config.timeout > 0
 
     def test_config_api_key_from_env(self, monkeypatch):

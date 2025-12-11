@@ -75,9 +75,7 @@ def cleanup_expired_sessions() -> int:
     # Also enforce max sessions limit (keep most recent)
     if len(sessions) > MAX_SESSIONS:
         sorted_sessions = sorted(
-            sessions.keys(),
-            key=lambda k: sessions[k].get("created_at", ""),
-            reverse=True
+            sessions.keys(), key=lambda k: sessions[k].get("created_at", ""), reverse=True
         )
         for key in sorted_sessions[MAX_SESSIONS:]:
             del sessions[key]
@@ -128,6 +126,7 @@ if static_dir.exists():
 # Configure Jinja2 templates
 templates_dir = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+
 
 class GenerationRequest(BaseModel):
     """Request model for report generation"""
@@ -191,6 +190,7 @@ async def get_status(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
     return sessions[session_id]
 
+
 @app.get("/status")
 async def get_global_status():
     """Get overall status (for backwards compatibility)"""
@@ -201,6 +201,7 @@ async def get_global_status():
     # Get the most recent session
     recent_session = max(sessions.values(), key=lambda s: s.get("created_at", ""))
     return recent_session
+
 
 @app.get("/download/{filename}")
 async def download_report(filename: str):
@@ -227,6 +228,7 @@ async def health_check():
 def main():
     """Entry point for solairus-web CLI command"""
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)
 
 

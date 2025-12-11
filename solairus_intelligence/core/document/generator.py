@@ -65,12 +65,8 @@ class DocumentGenerator:
         self.econ_indicators_builder = EconomicIndicatorsBuilder(
             self.styles, self.content_extractor
         )
-        self.regional_builder = RegionalAssessmentBuilder(
-            self.styles, self.content_extractor
-        )
-        self.sector_builder = SectorSectionBuilder(
-            self.styles, self.content_extractor
-        )
+        self.regional_builder = RegionalAssessmentBuilder(self.styles, self.content_extractor)
+        self.sector_builder = SectorSectionBuilder(self.styles, self.content_extractor)
 
         # Backwards compatibility attributes
         self.ergo_colors = ERGO_COLORS
@@ -86,11 +82,7 @@ class DocumentGenerator:
                 logger.info("AI generation disabled: no API key configured")
                 return
 
-            config = AIConfig(
-                api_key=api_key,
-                model=ENV_CONFIG.ai_model,
-                enabled=True
-            )
+            config = AIConfig(api_key=api_key, model=ENV_CONFIG.ai_model, enabled=True)
             self.ai_generator = SecureAIGenerator(config)
             logger.info("✓ AI-enhanced Executive Summary enabled")
         except Exception as e:
@@ -150,19 +142,10 @@ class DocumentGenerator:
             section.top_margin = Inches(0.75)
             section.bottom_margin = Inches(0.75)
 
-    def _create_page_1(
-        self,
-        doc: Document,
-        items: List[IntelligenceItem],
-        month: str
-    ) -> None:
+    def _create_page_1(self, doc: Document, items: List[IntelligenceItem], month: str) -> None:
         """Create page 1: Business Intelligence Overview"""
         # Header
-        self.header_builder.add_header(
-            doc,
-            "Solairus Business Intelligence",
-            month
-        )
+        self.header_builder.add_header(doc, "Solairus Business Intelligence", month)
 
         # Executive Summary
         self.exec_summary_builder.add_executive_summary(doc, items)
@@ -174,29 +157,18 @@ class DocumentGenerator:
         self.regional_builder.add_regional_assessment(doc, items)
 
     def _create_page_2(
-        self,
-        doc: Document,
-        sector_intelligence: Dict[ClientSector, SectorIntelligence],
-        month: str
+        self, doc: Document, sector_intelligence: Dict[ClientSector, SectorIntelligence], month: str
     ) -> None:
         """Create page 2: Sector Analysis"""
         # Header
-        self.header_builder.add_header(
-            doc,
-            "Sector Intelligence Analysis",
-            month
-        )
+        self.header_builder.add_header(doc, "Sector Intelligence Analysis", month)
 
         # Add each sector
         for sector, intelligence in sector_intelligence.items():
             if intelligence.items:
                 self.sector_builder.add_sector_section(doc, sector, intelligence)
 
-    def save_report(
-        self,
-        doc: Document,
-        filename: Optional[str] = None
-    ) -> str:
+    def save_report(self, doc: Document, filename: Optional[str] = None) -> str:
         """
         Save the report to a file.
 

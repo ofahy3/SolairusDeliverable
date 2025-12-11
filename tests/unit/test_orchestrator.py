@@ -22,7 +22,7 @@ class TestQueryTemplate:
             query="What are the latest developments?",
             follow_ups=["Follow up 1", "Follow up 2"],
             priority=8,
-            sectors=[ClientSector.TECHNOLOGY]
+            sectors=[ClientSector.TECHNOLOGY],
         )
 
         assert template.category == "test_category"
@@ -31,10 +31,7 @@ class TestQueryTemplate:
 
     def test_template_defaults(self):
         """Test template default values"""
-        template = QueryTemplate(
-            category="test",
-            query="Test query"
-        )
+        template = QueryTemplate(category="test", query="Test query")
 
         assert template.priority == 5
         assert template.follow_ups == []
@@ -77,7 +74,8 @@ class TestQueryOrchestrator:
     def test_aviation_templates_exist(self, orchestrator):
         """Test aviation-related templates exist"""
         aviation_templates = [
-            t for t in orchestrator.query_templates
+            t
+            for t in orchestrator.query_templates
             if "aviation" in t.category.lower() or "aviation" in t.query.lower()
         ]
 
@@ -98,9 +96,7 @@ class TestQueryOrchestratorMethods:
     def test_templates_sorted_by_priority(self, orchestrator):
         """Test templates can be sorted by priority"""
         sorted_templates = sorted(
-            orchestrator.query_templates,
-            key=lambda x: x.priority,
-            reverse=True
+            orchestrator.query_templates, key=lambda x: x.priority, reverse=True
         )
 
         # Highest priority should be first
@@ -145,12 +141,15 @@ class TestMultiSourceGathering:
     async def test_execute_multi_source_handles_failures(self, orchestrator):
         """Test multi-source gathering handles source failures gracefully"""
         # Mock the individual gathering methods to simulate failures
-        with patch.object(orchestrator, 'execute_monthly_intelligence_gathering',
-                         new_callable=AsyncMock) as mock_ergo:
-            with patch.object(orchestrator, 'execute_gta_intelligence_gathering',
-                             new_callable=AsyncMock) as mock_gta:
-                with patch.object(orchestrator, 'execute_fred_data_gathering',
-                                 new_callable=AsyncMock) as mock_fred:
+        with patch.object(
+            orchestrator, "execute_monthly_intelligence_gathering", new_callable=AsyncMock
+        ) as mock_ergo:
+            with patch.object(
+                orchestrator, "execute_gta_intelligence_gathering", new_callable=AsyncMock
+            ) as mock_gta:
+                with patch.object(
+                    orchestrator, "execute_fred_data_gathering", new_callable=AsyncMock
+                ) as mock_fred:
 
                     # Simulate partial failure
                     mock_ergo.return_value = {}
@@ -162,23 +161,26 @@ class TestMultiSourceGathering:
                     )
 
                     # Should still return results structure
-                    assert 'ergomind' in results
-                    assert 'gta' in results
-                    assert 'fred' in results
-                    assert 'source_status' in results
+                    assert "ergomind" in results
+                    assert "gta" in results
+                    assert "fred" in results
+                    assert "source_status" in results
 
                     # GTA should be marked as failed
-                    assert results['source_status']['gta'] == 'failed'
+                    assert results["source_status"]["gta"] == "failed"
 
     @pytest.mark.asyncio
     async def test_execute_multi_source_all_succeed(self, orchestrator):
         """Test multi-source gathering when all sources succeed"""
-        with patch.object(orchestrator, 'execute_monthly_intelligence_gathering',
-                         new_callable=AsyncMock) as mock_ergo:
-            with patch.object(orchestrator, 'execute_gta_intelligence_gathering',
-                             new_callable=AsyncMock) as mock_gta:
-                with patch.object(orchestrator, 'execute_fred_data_gathering',
-                                 new_callable=AsyncMock) as mock_fred:
+        with patch.object(
+            orchestrator, "execute_monthly_intelligence_gathering", new_callable=AsyncMock
+        ) as mock_ergo:
+            with patch.object(
+                orchestrator, "execute_gta_intelligence_gathering", new_callable=AsyncMock
+            ) as mock_gta:
+                with patch.object(
+                    orchestrator, "execute_fred_data_gathering", new_callable=AsyncMock
+                ) as mock_fred:
 
                     mock_ergo.return_value = {"category1": ["result1"]}
                     mock_gta.return_value = {"sanctions": ["intervention1"]}
@@ -188,9 +190,9 @@ class TestMultiSourceGathering:
                         use_cache=False
                     )
 
-                    assert results['source_status']['ergomind'] == 'success'
-                    assert results['source_status']['gta'] == 'success'
-                    assert results['source_status']['fred'] == 'success'
+                    assert results["source_status"]["ergomind"] == "success"
+                    assert results["source_status"]["gta"] == "success"
+                    assert results["source_status"]["fred"] == "success"
 
 
 class TestProcessAndFilterResults:
@@ -207,7 +209,10 @@ class TestProcessAndFilterResults:
 
         mock_result = MagicMock()
         mock_result.success = True
-        mock_result.response = "This is a comprehensive analysis of geopolitical developments affecting aviation security. " * 5
+        mock_result.response = (
+            "This is a comprehensive analysis of geopolitical developments affecting aviation security. "
+            * 5
+        )
         mock_result.confidence_score = 0.9
         mock_result.sources = ["source1"]
 
@@ -224,7 +229,9 @@ class TestProcessAndFilterResults:
         # Use MagicMock to provide sources attribute
         mock_result = MagicMock()
         mock_result.success = True
-        mock_result.response = "New sanctions have been implemented affecting multiple sectors and industries. " * 5
+        mock_result.response = (
+            "New sanctions have been implemented affecting multiple sectors and industries. " * 5
+        )
         mock_result.sources = ["source1"]
 
         raw_results = {"sanctions_trade": [mock_result]}
@@ -479,12 +486,14 @@ class TestOrchestratorWithMockedClient:
         """Create mock ErgoMind client"""
         client = MagicMock()
         client.test_connection = AsyncMock(return_value=True)
-        client.query_websocket = AsyncMock(return_value=MagicMock(
-            success=True,
-            response="Test response content that is long enough to pass filters. " * 10,
-            confidence_score=0.85,
-            sources=["test_source"],
-        ))
+        client.query_websocket = AsyncMock(
+            return_value=MagicMock(
+                success=True,
+                response="Test response content that is long enough to pass filters. " * 10,
+                confidence_score=0.85,
+                sources=["test_source"],
+            )
+        )
         client.__aenter__ = AsyncMock(return_value=client)
         client.__aexit__ = AsyncMock(return_value=None)
         return client

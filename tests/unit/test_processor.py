@@ -25,7 +25,7 @@ class TestIntelligenceItem:
             category="economic",
             relevance_score=0.85,
             so_what_statement="Impact on aviation",
-            affected_sectors=[ClientSector.GENERAL]
+            affected_sectors=[ClientSector.GENERAL],
         )
 
         assert item.raw_content == "Raw data"
@@ -42,7 +42,7 @@ class TestIntelligenceItem:
             so_what_statement="Impact",
             affected_sectors=[ClientSector.TECHNOLOGY],
             source_type="gta",
-            confidence=0.9
+            confidence=0.9,
         )
 
         assert item.source_type == "gta"
@@ -61,14 +61,12 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.8,
                 so_what_statement="Impact",
-                affected_sectors=[ClientSector.TECHNOLOGY]
+                affected_sectors=[ClientSector.TECHNOLOGY],
             )
         ]
 
         sector_intel = SectorIntelligence(
-            sector=ClientSector.TECHNOLOGY,
-            items=items,
-            summary="Technology sector update"
+            sector=ClientSector.TECHNOLOGY, items=items, summary="Technology sector update"
         )
 
         assert sector_intel.sector == ClientSector.TECHNOLOGY
@@ -84,7 +82,7 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.9,
                 so_what_statement="Impact 1",
-                affected_sectors=[ClientSector.FINANCE]
+                affected_sectors=[ClientSector.FINANCE],
             ),
             IntelligenceItem(
                 raw_content="Test 2",
@@ -92,14 +90,12 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.85,
                 so_what_statement="Impact 2",
-                affected_sectors=[ClientSector.FINANCE]
+                affected_sectors=[ClientSector.FINANCE],
             ),
         ]
 
         sector_intel = SectorIntelligence(
-            sector=ClientSector.FINANCE,
-            items=items,
-            summary="Finance sector update"
+            sector=ClientSector.FINANCE, items=items, summary="Finance sector update"
         )
 
         assert len(sector_intel.items) == 2
@@ -107,9 +103,7 @@ class TestSectorIntelligence:
     def test_sector_intel_empty_items(self):
         """Test sector intelligence with no items"""
         sector_intel = SectorIntelligence(
-            sector=ClientSector.GENERAL,
-            items=[],
-            summary="No items this period"
+            sector=ClientSector.GENERAL, items=[], summary="No items this period"
         )
 
         assert len(sector_intel.items) == 0
@@ -170,7 +164,9 @@ class TestErgoMindProcessor:
 
         low_relevance_content = "General weather patterns observed."
 
-        high_item = processor.process_intelligence(high_relevance_content, category="aviation_security")
+        high_item = processor.process_intelligence(
+            high_relevance_content, category="aviation_security"
+        )
         low_item = processor.process_intelligence(low_relevance_content, category="other")
 
         assert high_item.relevance_score >= low_item.relevance_score
@@ -179,7 +175,7 @@ class TestErgoMindProcessor:
         """Test that relevance keywords are loaded"""
         processor = ErgoMindProcessor()
 
-        assert hasattr(processor, 'RELEVANCE_KEYWORDS')
+        assert hasattr(processor, "RELEVANCE_KEYWORDS")
         assert len(processor.RELEVANCE_KEYWORDS) > 0
 
 
@@ -298,7 +294,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.8,
                 so_what_statement="Test impact",
                 affected_sectors=[ClientSector.GENERAL],
-                source_type="ergomind"
+                source_type="ergomind",
             )
         ]
 
@@ -316,7 +312,7 @@ class TestIntelligenceMerger:
             relevance_score=0.85,
             so_what_statement="ErgoMind impact",
             affected_sectors=[ClientSector.GENERAL],
-            source_type="ergomind"
+            source_type="ergomind",
         )
 
         gta_item = IntelligenceItem(
@@ -326,7 +322,7 @@ class TestIntelligenceMerger:
             relevance_score=0.9,
             so_what_statement="GTA impact",
             affected_sectors=[ClientSector.TECHNOLOGY],
-            source_type="gta"
+            source_type="gta",
         )
 
         fred_item = IntelligenceItem(
@@ -336,7 +332,7 @@ class TestIntelligenceMerger:
             relevance_score=0.75,
             so_what_statement="FRED impact",
             affected_sectors=[ClientSector.FINANCE],
-            source_type="fred"
+            source_type="fred",
         )
 
         merged = merger.merge_sources([ergomind_item], [gta_item], [fred_item])
@@ -357,7 +353,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.3,
                 so_what_statement="Impact",
                 affected_sectors=[ClientSector.GENERAL],
-                source_type="test"
+                source_type="test",
             ),
             IntelligenceItem(
                 raw_content="High relevance",
@@ -366,7 +362,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.95,
                 so_what_statement="Impact",
                 affected_sectors=[ClientSector.GENERAL],
-                source_type="test"
+                source_type="test",
             ),
             IntelligenceItem(
                 raw_content="Medium relevance",
@@ -375,7 +371,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.6,
                 so_what_statement="Impact",
                 affected_sectors=[ClientSector.GENERAL],
-                source_type="test"
+                source_type="test",
             ),
         ]
 
@@ -397,7 +393,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.8,
                 so_what_statement="Test impact",
                 affected_sectors=[ClientSector.TECHNOLOGY],
-                source_type="ergomind"
+                source_type="ergomind",
             )
         ]
 
@@ -421,7 +417,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.9,
                 so_what_statement="Tech impact",
                 affected_sectors=[ClientSector.TECHNOLOGY],
-                source_type="ergomind"
+                source_type="ergomind",
             ),
             IntelligenceItem(
                 raw_content="Finance news",
@@ -430,7 +426,7 @@ class TestIntelligenceMerger:
                 relevance_score=0.85,
                 so_what_statement="Finance impact",
                 affected_sectors=[ClientSector.FINANCE],
-                source_type="ergomind"
+                source_type="ergomind",
             ),
         ]
 
@@ -456,8 +452,15 @@ class TestClientSectorEnum:
 
     def test_all_sectors_defined(self):
         """Test all expected sectors are defined"""
-        expected_sectors = ["TECHNOLOGY", "FINANCE", "GENERAL", "HEALTHCARE",
-                          "ENERGY", "ENTERTAINMENT", "REAL_ESTATE"]
+        expected_sectors = [
+            "TECHNOLOGY",
+            "FINANCE",
+            "GENERAL",
+            "HEALTHCARE",
+            "ENERGY",
+            "ENTERTAINMENT",
+            "REAL_ESTATE",
+        ]
 
         for sector_name in expected_sectors:
             assert hasattr(ClientSector, sector_name), f"Missing sector: {sector_name}"

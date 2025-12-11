@@ -80,11 +80,7 @@ class TestFontConfig:
 
     def test_custom_values(self):
         """Test custom font configuration"""
-        config = FontConfig(
-            name="Arial",
-            heading_size=16,
-            body_size=11
-        )
+        config = FontConfig(name="Arial", heading_size=16, body_size=11)
 
         assert config.name == "Arial"
         assert config.heading_size == 16
@@ -145,7 +141,7 @@ class TestErgoStyles:
         styles.apply_to_document(doc)
 
         # Check that Normal style was modified
-        normal_style = doc.styles['Normal']
+        normal_style = doc.styles["Normal"]
         assert normal_style.font.name == "Calibri"
 
 
@@ -162,40 +158,32 @@ class TestContentExtractor:
 
     def test_extractor_has_extract_method(self, extractor):
         """Test extractor has extract methods"""
-        assert hasattr(extractor, 'extract_analytical_insights')
-        assert hasattr(extractor, 'extract_theme')
-        assert hasattr(extractor, 'extract_value')
+        assert hasattr(extractor, "extract_analytical_insights")
+        assert hasattr(extractor, "extract_theme")
+        assert hasattr(extractor, "extract_value")
 
     def test_extract_theme_geopolitical(self, extractor):
         """Test extracting geopolitical theme"""
         result = extractor.extract_theme(
-            "Military conflict escalating in the region",
-            "Tensions affecting trade routes"
+            "Military conflict escalating in the region", "Tensions affecting trade routes"
         )
         assert result == "Geopolitical Risk"
 
     def test_extract_theme_economic(self, extractor):
         """Test extracting economic theme"""
         result = extractor.extract_theme(
-            "Inflation continues to rise",
-            "Economic pressure mounting"
+            "Inflation continues to rise", "Economic pressure mounting"
         )
         assert result == "Economic Pressure"
 
     def test_extract_theme_trade(self, extractor):
         """Test extracting trade theme"""
-        result = extractor.extract_theme(
-            "New tariff announced on imports",
-            "Trade policy impact"
-        )
+        result = extractor.extract_theme("New tariff announced on imports", "Trade policy impact")
         assert result == "Trade Policy"
 
     def test_extract_theme_default(self, extractor):
         """Test default theme"""
-        result = extractor.extract_theme(
-            "General update",
-            "No specific keywords"
-        )
+        result = extractor.extract_theme("General update", "No specific keywords")
         assert result == "Strategic Development"
 
     def test_extract_value_percentage(self, extractor):
@@ -562,7 +550,7 @@ class TestDocumentGenerator:
 
     @pytest.fixture
     def generator(self):
-        with patch.object(DocumentGenerator, '_init_ai_generator'):
+        with patch.object(DocumentGenerator, "_init_ai_generator"):
             return DocumentGenerator()
 
     def test_generator_initialization(self, generator):
@@ -581,12 +569,12 @@ class TestDocumentGenerator:
 
     def test_generator_has_create_report(self, generator):
         """Test generator has create_report method"""
-        assert hasattr(generator, 'create_report')
+        assert hasattr(generator, "create_report")
         assert callable(generator.create_report)
 
     def test_generator_has_save_report(self, generator):
         """Test generator has save_report method"""
-        assert hasattr(generator, 'save_report')
+        assert hasattr(generator, "save_report")
         assert callable(generator.save_report)
 
     def test_create_report(self, generator):
@@ -606,13 +594,13 @@ class TestDocumentGenerator:
         doc = generator.create_report(items, sector_intel)
         # Check it's a document by verifying it has paragraphs
         assert doc is not None
-        assert hasattr(doc, 'paragraphs')
+        assert hasattr(doc, "paragraphs")
 
     def test_create_report_with_month(self, generator):
         """Test creating report with custom month"""
         doc = generator.create_report([], {}, report_month="January 2024")
         assert doc is not None
-        assert hasattr(doc, 'paragraphs')
+        assert hasattr(doc, "paragraphs")
 
 
 class TestDocumentIntegration:
@@ -645,7 +633,7 @@ class TestDocumentIntegration:
 
     def test_full_document_workflow(self):
         """Test complete document generation workflow"""
-        with patch.object(DocumentGenerator, '_init_ai_generator'):
+        with patch.object(DocumentGenerator, "_init_ai_generator"):
             generator = DocumentGenerator()
 
         # Generator should have initialized properly

@@ -254,7 +254,7 @@ class SecureAIGenerator:
 
                 # Extract text from response - only TextBlocks have .text
                 first_block = response.content[0]
-                text = first_block.text if hasattr(first_block, 'text') else str(first_block)
+                text = first_block.text if hasattr(first_block, "text") else str(first_block)
 
                 # Log usage
                 self.usage_tracker.log_request(
@@ -489,7 +489,11 @@ Generate ONLY the "So What" statement (no labels, no extra text):
                     # Start new finding
                     subheader = line.replace("[SUBHEADER:", "").rstrip("]").strip()
                     bullets_list: List[str] = []
-                    current_finding = {"subheader": subheader, "content": "", "bullets": bullets_list}
+                    current_finding = {
+                        "subheader": subheader,
+                        "content": "",
+                        "bullets": bullets_list,
+                    }
                 elif line.startswith("[CONTENT:") and current_finding:
                     content = line.replace("[CONTENT:", "").rstrip("]").strip()
                     current_finding["content"] = content
@@ -555,5 +559,3 @@ Generate ONLY the "So What" statement (no labels, no extra text):
     def get_usage_summary(self) -> Dict:
         """Get AI usage summary"""
         return self.usage_tracker.get_summary()
-
-

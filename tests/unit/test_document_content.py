@@ -90,36 +90,28 @@ class TestThemeExtraction:
     def test_extract_geopolitical_theme(self, extractor):
         """Test geopolitical theme detection"""
         theme = extractor.extract_theme(
-            "Military tensions escalating in the region",
-            "Monitor conflict developments"
+            "Military tensions escalating in the region", "Monitor conflict developments"
         )
 
         assert theme == "Geopolitical Risk"
 
     def test_extract_economic_theme(self, extractor):
         """Test economic theme detection"""
-        theme = extractor.extract_theme(
-            "GDP growth slowed in Q4",
-            "Economic indicators weakening"
-        )
+        theme = extractor.extract_theme("GDP growth slowed in Q4", "Economic indicators weakening")
 
         assert theme == "Economic Pressure"
 
     def test_extract_trade_theme(self, extractor):
         """Test trade theme detection"""
         theme = extractor.extract_theme(
-            "New tariffs announced on imports",
-            "Trade policy affecting supply"
+            "New tariffs announced on imports", "Trade policy affecting supply"
         )
 
         assert theme == "Trade Policy"
 
     def test_extract_default_theme(self, extractor):
         """Test default theme for unrecognized content"""
-        theme = extractor.extract_theme(
-            "General update on situation",
-            "Standard business impact"
-        )
+        theme = extractor.extract_theme("General update on situation", "Standard business impact")
 
         assert theme == "Strategic Development"
 
@@ -149,7 +141,7 @@ class TestStatementCrafting:
 
         assert statement is not None
         assert len(statement) > 0
-        assert statement.endswith('.')
+        assert statement.endswith(".")
 
     def test_craft_key_finding(self, extractor, sample_item):
         """Test key finding crafting"""

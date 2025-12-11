@@ -40,7 +40,7 @@ class PIISanitizer:
         patterns = {}
 
         for sector, data in self.client_mapping.items():
-            companies = data.get('companies', [])
+            companies = data.get("companies", [])
             sector_token = f"[{sector.value.upper()}_CLIENT]"
 
             for company in companies:
@@ -69,7 +69,7 @@ class PIISanitizer:
         # Replace company names (case-insensitive)
         for company, token in self.company_patterns.items():
             # Use word boundaries to avoid partial matches
-            pattern = re.compile(r'\b' + re.escape(company) + r'\b', re.IGNORECASE)
+            pattern = re.compile(r"\b" + re.escape(company) + r"\b", re.IGNORECASE)
             matches = pattern.findall(sanitized)
 
             if matches:
@@ -102,7 +102,7 @@ class PIISanitizer:
             raw_content=self.sanitize_text(item.raw_content, audit_log=False),
             processed_content=self.sanitize_text(item.processed_content, audit_log=False),
             so_what_statement=self.sanitize_text(item.so_what_statement, audit_log=False),
-            category=item.category  # Category is safe
+            category=item.category,  # Category is safe
         )
 
         return sanitized_item
@@ -122,7 +122,8 @@ class PIISanitizer:
 
         # Log summary
         total_replacements = sum(
-            1 for orig, san in zip(items, sanitized_items)
+            1
+            for orig, san in zip(items, sanitized_items)
             if orig.processed_content != san.processed_content
         )
 

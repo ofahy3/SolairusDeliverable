@@ -40,6 +40,7 @@ def create_retry_decorator(
     Returns:
         Decorator function
     """
+
     def default_on_backoff(details):
         logger.warning(
             f"Retry attempt {details['tries']} for {details['target'].__name__} "
@@ -76,9 +77,7 @@ class RetryableError(Exception):
 
 
 async def with_timeout(
-    coro: Any,
-    timeout: float,
-    error_message: str = "Operation timed out"
+    coro: Any, timeout: float, error_message: str = "Operation timed out"
 ) -> Any:
     """
     Execute a coroutine with a timeout.
@@ -123,10 +122,7 @@ class CircuitBreaker:
     """
 
     def __init__(
-        self,
-        failure_threshold: int = 5,
-        recovery_timeout: float = 30.0,
-        name: str = "default"
+        self, failure_threshold: int = 5, recovery_timeout: float = 30.0, name: str = "default"
     ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -142,6 +138,7 @@ class CircuitBreaker:
             # Check if recovery timeout has passed
             if self._last_failure_time:
                 import time
+
                 if time.time() - self._last_failure_time >= self.recovery_timeout:
                     self._state = "half-open"
                     return False
@@ -156,17 +153,17 @@ class CircuitBreaker:
     def record_failure(self) -> None:
         """Record a failed call"""
         import time
+
         self._failures += 1
         self._last_failure_time = time.time()
 
         if self._failures >= self.failure_threshold:
             self._state = "open"
-            logger.warning(
-                f"Circuit breaker '{self.name}' opened after {self._failures} failures"
-            )
+            logger.warning(f"Circuit breaker '{self.name}' opened after {self._failures} failures")
 
     def __call__(self, func: Callable) -> Callable:
         """Decorator usage"""
+
         @wraps(func)
         async def wrapper(*args, **kwargs):
             if self.is_open:

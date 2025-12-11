@@ -20,7 +20,7 @@ class TestErgoMindProcessorIntegration:
     @pytest.fixture
     def processor(self):
         """Create a processor with AI disabled for testing"""
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             return ErgoMindProcessor()
 
     def test_ergomind_processing_pipeline(self, processor):
@@ -40,7 +40,10 @@ class TestErgoMindProcessorIntegration:
         assert result.confidence > 0
         assert len(result.so_what_statement) > 0
         assert len(result.affected_sectors) > 0
-        assert ClientSector.FINANCE in result.affected_sectors or ClientSector.GENERAL in result.affected_sectors
+        assert (
+            ClientSector.FINANCE in result.affected_sectors
+            or ClientSector.GENERAL in result.affected_sectors
+        )
 
     def test_aviation_relevance_scoring(self, processor):
         """Test that aviation-related content gets higher relevance scores"""
@@ -86,8 +89,10 @@ class TestErgoMindProcessorIntegration:
         result = processor.process_intelligence(sanctions_text, category="geopolitical")
 
         assert len(result.action_items) > 0
-        assert any('compliance' in action.lower() or 'review' in action.lower()
-                   for action in result.action_items)
+        assert any(
+            "compliance" in action.lower() or "review" in action.lower()
+            for action in result.action_items
+        )
 
     @pytest.mark.asyncio
     async def test_async_processing(self, processor):
@@ -106,7 +111,7 @@ class TestGTAProcessorIntegration:
 
     @pytest.fixture
     def processor(self):
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             return GTAProcessor()
 
     def test_gta_intervention_processing(self, processor):
@@ -120,7 +125,9 @@ class TestGTAProcessorIntegration:
         mock_intervention.sources = [{"url": "https://example.com"}]
         mock_intervention.date_implemented = "2024-01-15"
         mock_intervention.date_announced = "2024-01-10"
-        mock_intervention.get_short_description = MagicMock(return_value="Export restrictions on semiconductor equipment")
+        mock_intervention.get_short_description = MagicMock(
+            return_value="Export restrictions on semiconductor equipment"
+        )
         mock_intervention.get_implementing_countries = MagicMock(return_value=["United States"])
         mock_intervention.get_affected_countries = MagicMock(return_value=["China"])
 
@@ -138,7 +145,7 @@ class TestFREDProcessorIntegration:
 
     @pytest.fixture
     def processor(self):
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             return FREDProcessor()
 
     def test_fred_observation_processing(self, processor):
@@ -157,7 +164,10 @@ class TestFREDProcessorIntegration:
         assert result.source_type == "fred"
         assert result.fred_series_id == "WJFUELUSGULF"
         assert result.fred_value == 2.85
-        assert "jet fuel" in result.so_what_statement.lower() or "fuel" in result.so_what_statement.lower()
+        assert (
+            "jet fuel" in result.so_what_statement.lower()
+            or "fuel" in result.so_what_statement.lower()
+        )
 
 
 class TestMergerIntegration:
@@ -177,7 +187,7 @@ class TestMergerIntegration:
                 relevance_score=0.7,
                 so_what_statement="Financing costs increasing",
                 confidence=0.8,
-                source_type="ergomind"
+                source_type="ergomind",
             )
         ]
 
@@ -191,7 +201,7 @@ class TestMergerIntegration:
                 confidence=0.95,
                 source_type="fred",
                 fred_series_id="DFF",
-                fred_value=5.5
+                fred_value=5.5,
             )
         ]
 
@@ -212,7 +222,7 @@ class TestMergerIntegration:
                 so_what_statement="Tech impact",
                 confidence=0.85,
                 source_type="ergomind",
-                affected_sectors=[ClientSector.TECHNOLOGY]
+                affected_sectors=[ClientSector.TECHNOLOGY],
             ),
             IntelligenceItem(
                 raw_content="Finance sector news",
@@ -222,8 +232,8 @@ class TestMergerIntegration:
                 so_what_statement="Finance impact",
                 confidence=0.8,
                 source_type="ergomind",
-                affected_sectors=[ClientSector.FINANCE]
-            )
+                affected_sectors=[ClientSector.FINANCE],
+            ),
         ]
 
         organized = merger.organize_by_sector(items)

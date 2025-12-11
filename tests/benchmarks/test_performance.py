@@ -20,7 +20,7 @@ class TestProcessorPerformance:
     @pytest.fixture
     def ergomind_processor(self):
         """Create an ErgoMind processor for detailed tests"""
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             return ErgoMindProcessor()
 
     @pytest.fixture
@@ -48,7 +48,7 @@ class TestProcessorPerformance:
 
             The European Union's new sustainable aviation fuel mandate requires 5% SAF blend
             by 2025, creating supply chain challenges for operators serving European destinations.
-            """
+            """,
         ]
 
     def test_single_processing_latency(self, ergomind_processor, sample_texts):
@@ -113,7 +113,7 @@ class TestProcessorPerformance:
                 relevance_score=0.7 + (i % 3) * 0.1,
                 so_what_statement=f"Impact statement {i}",
                 confidence=0.8,
-                source_type="ergomind"
+                source_type="ergomind",
             )
             for i in range(20)
         ]
@@ -126,7 +126,7 @@ class TestProcessorPerformance:
                 relevance_score=0.6 + (i % 3) * 0.1,
                 so_what_statement=f"Trade impact {i}",
                 confidence=0.85,
-                source_type="gta"
+                source_type="gta",
             )
             for i in range(15)
         ]
@@ -139,7 +139,7 @@ class TestProcessorPerformance:
                 relevance_score=0.75,
                 so_what_statement=f"Economic impact {i}",
                 confidence=0.95,
-                source_type="fred"
+                source_type="fred",
             )
             for i in range(10)
         ]
@@ -161,7 +161,7 @@ class TestMemoryUsage:
         """Verify processor has reasonable memory footprint"""
         import sys
 
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             processor = ErgoMindProcessor()
 
         base_size = sys.getsizeof(processor)
@@ -171,15 +171,14 @@ class TestMemoryUsage:
         """Verify processing doesn't accumulate memory"""
         import gc
 
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"AI_ENABLED": "false"}):
             processor = ErgoMindProcessor()
 
         for i in range(100):
             result = processor.process_intelligence(
-                f"Test text {i} with some content about aviation and finance.",
-                "test"
+                f"Test text {i} with some content about aviation and finance.", "test"
             )
             del result
 
         gc.collect()
-        assert not hasattr(processor, '_cache') or len(getattr(processor, '_cache', {})) < 100
+        assert not hasattr(processor, "_cache") or len(getattr(processor, "_cache", {})) < 100

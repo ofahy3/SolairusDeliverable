@@ -74,8 +74,8 @@ class TestGetGenerator:
 
     def test_get_generator_creates_instance(self):
         """Test get_generator creates instance"""
-        with patch('solairus_intelligence.web.app.generator', None):
-            with patch('solairus_intelligence.web.app.SolairusIntelligenceGenerator') as MockGen:
+        with patch("solairus_intelligence.web.app.generator", None):
+            with patch("solairus_intelligence.web.app.SolairusIntelligenceGenerator") as MockGen:
                 mock_instance = MagicMock()
                 MockGen.return_value = mock_instance
 
@@ -104,16 +104,19 @@ class TestAppConfiguration:
     def test_app_title(self):
         """Test app has correct title"""
         from solairus_intelligence.web.app import app
+
         assert app.title == "Ergo Intelligence Report Generator"
 
     def test_app_version(self):
         """Test app has version"""
         from solairus_intelligence.web.app import app
+
         assert app.version == "1.0.0"
 
     def test_app_has_routes(self):
         """Test app has expected routes"""
         from solairus_intelligence.web.app import app
+
         routes = [route.path for route in app.routes]
 
         assert "/" in routes
@@ -140,7 +143,7 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch('solairus_intelligence.web.app.get_generator') as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
             mock_gen.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/test_report.docx", {"success": True, "errors": []})
@@ -168,7 +171,7 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch('solairus_intelligence.web.app.get_generator') as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
             mock_gen.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": False, "errors": ["API Error"]})
@@ -196,11 +199,9 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch('solairus_intelligence.web.app.get_generator') as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
-            mock_gen.generate_monthly_report = AsyncMock(
-                side_effect=Exception("Connection failed")
-            )
+            mock_gen.generate_monthly_report = AsyncMock(side_effect=Exception("Connection failed"))
             mock_get_gen.return_value = mock_gen
 
             await run_generation(session_id, test_mode=True)

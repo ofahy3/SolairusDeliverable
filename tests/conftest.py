@@ -22,7 +22,7 @@ def sample_intelligence_item():
         sources=[],
         action_items=[],
         fred_series_id="CPIAUCSL",
-        fred_observation_date="2025-10-01"
+        fred_observation_date="2025-10-01",
     )
 
 
@@ -40,7 +40,7 @@ def sample_intelligence_items():
             affected_sectors=[ClientSector.TECHNOLOGY],
             source_type="ergomind",
             sources=["Source A", "Source B"],
-            action_items=["Monitor tech sector impacts"]
+            action_items=["Monitor tech sector impacts"],
         ),
         IntelligenceItem(
             raw_content="US tariffs on EU goods",
@@ -55,8 +55,8 @@ def sample_intelligence_items():
             action_items=["Review client exposure"],
             gta_intervention_id="12345",
             gta_implementing_countries=["United States"],
-            gta_affected_countries=["Germany", "France"]
-        )
+            gta_affected_countries=["Germany", "France"],
+        ),
     ]
 
 

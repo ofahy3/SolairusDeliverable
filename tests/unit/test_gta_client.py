@@ -24,10 +24,7 @@ class TestGTAConfig:
     def test_custom_values(self):
         """Test custom configuration"""
         config = GTAConfig(
-            base_url="https://custom-api.com",
-            api_key="test_key",
-            timeout=60,
-            max_retries=5
+            base_url="https://custom-api.com", api_key="test_key", timeout=60, max_retries=5
         )
 
         assert config.base_url == "https://custom-api.com"
@@ -48,11 +45,11 @@ class TestGTAIntervention:
             gta_evaluation="Harmful",
             implementing_jurisdictions=[
                 {"name": "United States", "code": "US"},
-                {"name": "Canada", "code": "CA"}
+                {"name": "Canada", "code": "CA"},
             ],
             affected_jurisdictions=[
                 {"name": "China", "code": "CN"},
-                {"name": "Japan", "code": "JP"}
+                {"name": "Japan", "code": "JP"},
             ],
             intervention_type="Tariff increase",
             intervention_type_id=47,
@@ -233,7 +230,7 @@ class TestGTAClient:
             }
         ]
 
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_response
             async with client:
                 interventions = await client.query_interventions({})
@@ -246,7 +243,7 @@ class TestGTAClient:
         """Test querying interventions with limit"""
         mock_response = [{"intervention_id": i} for i in range(10)]
 
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_response
             async with client:
                 interventions = await client.query_interventions({}, limit=5)
@@ -256,7 +253,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_query_interventions_failure(self, client):
         """Test querying interventions handles errors"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.side_effect = Exception("API Error")
             async with client:
                 interventions = await client.query_interventions({})
@@ -275,7 +272,7 @@ class TestGTAClient:
             }
         ]
 
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_response
             async with client:
                 interventions = await client.get_recent_harmful_interventions(days=30)
@@ -285,7 +282,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_recent_harmful_with_sectors(self, client):
         """Test getting harmful interventions with sector filter"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 await client.get_recent_harmful_interventions(days=30, sectors=["technology"])
@@ -297,7 +294,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_sanctions_and_export_controls(self, client):
         """Test getting sanctions"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 result = await client.get_sanctions_and_export_controls(days=60)
@@ -308,7 +305,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_capital_controls(self, client):
         """Test getting capital controls"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 result = await client.get_capital_controls(days=60)
@@ -318,7 +315,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_capital_controls_with_countries(self, client):
         """Test getting capital controls with country filter"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 await client.get_capital_controls(affected_countries=[1, 2, 3])
@@ -329,7 +326,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_technology_restrictions(self, client):
         """Test getting tech restrictions"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 result = await client.get_technology_restrictions(days=60)
@@ -339,7 +336,7 @@ class TestGTAClient:
     @pytest.mark.asyncio
     async def test_get_aviation_sector_interventions(self, client):
         """Test getting aviation sector interventions"""
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
                 result = await client.get_aviation_sector_interventions(days=90)
@@ -368,7 +365,7 @@ class TestGTAClient:
             },
         ]
 
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_response
             async with client:
                 result = await client.get_immigration_visa_restrictions(days=365)
@@ -406,7 +403,7 @@ class TestGTAClientIntegration:
             }
         ]
 
-        with patch.object(client, '_make_request', new_callable=AsyncMock) as mock_request:
+        with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = mock_interventions
 
             async with client:

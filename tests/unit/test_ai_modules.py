@@ -158,7 +158,7 @@ class TestAIConfig:
             model="claude-3-sonnet",
             enabled=False,
             max_tokens=2000,
-            temperature=0.5
+            temperature=0.5,
         )
 
         assert config.api_key == "custom_key"
@@ -242,8 +242,8 @@ class TestSecureAIGenerator:
 
     def test_generator_has_fallback_methods(self, generator):
         """Test generator has fallback methods"""
-        assert hasattr(generator, 'generate_executive_summary')
-        assert hasattr(generator, 'usage_tracker')
+        assert hasattr(generator, "generate_executive_summary")
+        assert hasattr(generator, "usage_tracker")
 
     def test_generator_disabled_returns_fallback(self, generator):
         """Test disabled generator returns fallback content"""
@@ -332,13 +332,7 @@ class TestPIISanitizer:
 
     def test_sanitize_dict(self, sanitizer):
         """Test sanitizing dictionary"""
-        data = {
-            "key1": "Test value",
-            "key2": "Another value",
-            "nested": {
-                "key3": "Nested value"
-            }
-        }
+        data = {"key1": "Test value", "key2": "Another value", "nested": {"key3": "Nested value"}}
 
         sanitized = sanitizer.sanitize_dict(data)
 
@@ -392,14 +386,14 @@ class TestValidateExecutiveSummary:
                 {
                     "subheader": "Economic Overview",
                     "content": "Growth remains steady.",
-                    "bullets": ["First bullet", "Second bullet"]
+                    "bullets": ["First bullet", "Second bullet"],
                 }
             ],
             "watch_factors": [
                 {
                     "indicator": "Inflation",
                     "what_to_watch": "CPI data",
-                    "why_it_matters": "Affects policy"
+                    "why_it_matters": "Affects policy",
                 }
             ],
         }

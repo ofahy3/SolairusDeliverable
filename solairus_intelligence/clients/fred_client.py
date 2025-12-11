@@ -14,17 +14,21 @@ import backoff
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class FREDConfig:
     """Configuration for FRED API client"""
+
     api_key: str = field(default_factory=lambda: os.getenv("FRED_API_KEY", ""))
     base_url: str = "https://api.stlouisfed.org/fred"
     timeout: int = 30
     max_retries: int = 3
 
+
 @dataclass
 class FREDObservation:
     """Represents a single FRED data observation"""
+
     series_id: str
     series_name: str
     value: float
@@ -41,17 +45,17 @@ class FREDClient:
 
     # Key economic series for business aviation - focused indicators
     SERIES = {
-        'fuel_costs': {
-            'WJFUELUSGULF': 'US Gulf Coast Kerosene-Type Jet Fuel Price',
-            'DCOILWTICO': 'Crude Oil Prices: West Texas Intermediate (WTI)',
+        "fuel_costs": {
+            "WJFUELUSGULF": "US Gulf Coast Kerosene-Type Jet Fuel Price",
+            "DCOILWTICO": "Crude Oil Prices: West Texas Intermediate (WTI)",
         },
-        'interest_rates': {
-            'DFF': 'Federal Funds Effective Rate',
-            'DGS10': '10-Year Treasury Constant Maturity Rate',
-            'MORTGAGE30US': '30-Year Fixed Rate Mortgage Average'
+        "interest_rates": {
+            "DFF": "Federal Funds Effective Rate",
+            "DGS10": "10-Year Treasury Constant Maturity Rate",
+            "MORTGAGE30US": "30-Year Fixed Rate Mortgage Average",
         },
-        'business_confidence': {
-            'BSCICP02USM460S': 'Business Confidence Index: Manufacturing for United States',
+        "business_confidence": {
+            "BSCICP02USM460S": "Business Confidence Index: Manufacturing for United States",
         },
     }
 
@@ -61,11 +65,15 @@ class FREDClient:
         self.session: Optional[aiohttp.ClientSession] = None
 
         if not self.config.api_key:
-            logger.warning("FRED_API_KEY not set. Get free key from https://fred.stlouisfed.org/docs/api/api_key.html")
+            logger.warning(
+                "FRED_API_KEY not set. Get free key from https://fred.stlouisfed.org/docs/api/api_key.html"
+            )
 
     async def __aenter__(self):
         """Async context manager entry"""
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.config.timeout))
+        self.session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+        )
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -74,10 +82,7 @@ class FREDClient:
             await self.session.close()
 
     @backoff.on_exception(
-        backoff.expo,
-        (aiohttp.ClientError, asyncio.TimeoutError),
-        max_tries=3,
-        max_time=30
+        backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError), max_tries=3, max_time=30
     )
     async def test_connection(self) -> bool:
         """Test FRED API connectivity with retry logic"""
@@ -91,14 +96,12 @@ class FREDClient:
 
             # Test with a simple series request
             url = f"{self.config.base_url}/series"
-            params = {
-                'series_id': 'CPIAUCSL',
-                'api_key': self.config.api_key,
-                'file_type': 'json'
-            }
+            params = {"series_id": "CPIAUCSL", "api_key": self.config.api_key, "file_type": "json"}
 
             if self.session is None:
-                raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
+                raise RuntimeError(
+                    "Session not initialized. Use async context manager or call initialize()"
+                )
             async with self.session.get(url, params=params) as response:
                 if response.status == 200:
                     logger.info("✓ FRED API connection successful")
@@ -124,7 +127,7 @@ class FREDClient:
         Returns:
             List of inflation observations
         """
-        return await self._get_series_category('inflation', days_back)
+        return await self._get_series_category("inflation", days_back)
 
     async def get_interest_rate_data(self, days_back: int = 90) -> List[FREDObservation]:
         """
@@ -136,7 +139,7 @@ class FREDClient:
         Returns:
             List of interest rate observations
         """
-        return await self._get_series_category('interest_rates', days_back)
+        return await self._get_series_category("interest_rates", days_back)
 
     async def get_aviation_fuel_costs(self, days_back: int = 90) -> List[FREDObservation]:
         """
@@ -148,7 +151,7 @@ class FREDClient:
         Returns:
             List of fuel cost observations
         """
-        return await self._get_series_category('fuel_costs', days_back)
+        return await self._get_series_category("fuel_costs", days_back)
 
     async def get_gdp_growth_data(self, days_back: int = 180) -> List[FREDObservation]:
         """
@@ -160,7 +163,7 @@ class FREDClient:
         Returns:
             List of GDP observations
         """
-        return await self._get_series_category('gdp_growth', days_back)
+        return await self._get_series_category("gdp_growth", days_back)
 
     async def get_employment_data(self, days_back: int = 90) -> List[FREDObservation]:
         """
@@ -172,7 +175,7 @@ class FREDClient:
         Returns:
             List of employment observations
         """
-        return await self._get_series_category('employment', days_back)
+        return await self._get_series_category("employment", days_back)
 
     async def get_business_confidence_data(self, days_back: int = 365) -> List[FREDObservation]:
         """
@@ -191,7 +194,7 @@ class FREDClient:
         Returns:
             List of business confidence observations
         """
-        return await self._get_series_category('business_confidence', days_back)
+        return await self._get_series_category("business_confidence", days_back)
 
     async def _get_series_category(self, category: str, days_back: int) -> List[FREDObservation]:
         """
@@ -215,14 +218,16 @@ class FREDClient:
                 if obs:
                     # Get the most recent observation
                     latest = obs[-1]  # FRED returns chronologically sorted
-                    observations.append(FREDObservation(
-                        series_id=series_id,
-                        series_name=series_name,
-                        value=float(latest['value']),
-                        date=latest['date'],
-                        units=obs[0].get('units', 'Unknown'),
-                        category=category
-                    ))
+                    observations.append(
+                        FREDObservation(
+                            series_id=series_id,
+                            series_name=series_name,
+                            value=float(latest["value"]),
+                            date=latest["date"],
+                            units=obs[0].get("units", "Unknown"),
+                            category=category,
+                        )
+                    )
                     logger.info(f"✓ Retrieved {series_name}: {latest['value']} ({latest['date']})")
             except Exception as e:
                 logger.error(f"Failed to retrieve {series_name}: {str(e)}")
@@ -231,10 +236,7 @@ class FREDClient:
         return observations
 
     @backoff.on_exception(
-        backoff.expo,
-        (aiohttp.ClientError, asyncio.TimeoutError),
-        max_tries=3,
-        max_time=60
+        backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError), max_tries=3, max_time=60
     )
     async def _get_series_observations(self, series_id: str, days_back: int) -> List[Dict]:
         """
@@ -251,21 +253,23 @@ class FREDClient:
 
         url = f"{self.config.base_url}/series/observations"
         params = {
-            'series_id': series_id,
-            'api_key': self.config.api_key,
-            'file_type': 'json',
-            'observation_start': observation_start,
-            'sort_order': 'asc'
+            "series_id": series_id,
+            "api_key": self.config.api_key,
+            "file_type": "json",
+            "observation_start": observation_start,
+            "sort_order": "asc",
         }
 
         if self.session is None:
-            raise RuntimeError("Session not initialized. Use async context manager or call initialize()")
+            raise RuntimeError(
+                "Session not initialized. Use async context manager or call initialize()"
+            )
         async with self.session.get(url, params=params) as response:
             if response.status == 200:
                 data = await response.json()
-                observations = data.get('observations', [])
+                observations = data.get("observations", [])
                 # Filter out non-numeric values (FRED uses '.' for missing data)
-                valid_obs = [obs for obs in observations if obs['value'] != '.']
+                valid_obs = [obs for obs in observations if obs["value"] != "."]
                 return valid_obs
             elif response.status == 400:
                 error_text = await response.text()

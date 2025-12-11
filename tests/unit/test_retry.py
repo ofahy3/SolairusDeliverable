@@ -96,10 +96,7 @@ class TestCreateRetryDecorator:
         def custom_callback(details):
             callback_called[0] = True
 
-        decorator = create_retry_decorator(
-            max_tries=3,
-            on_backoff=custom_callback
-        )
+        decorator = create_retry_decorator(max_tries=3, on_backoff=custom_callback)
 
         assert callable(decorator)
 
@@ -189,6 +186,7 @@ class TestRetryLogging:
     async def test_logs_retry_attempt(self, caplog):
         """Test that retry attempts are logged"""
         import logging
+
         caplog.set_level(logging.WARNING)
 
         call_count = [0]
@@ -392,6 +390,7 @@ class TestCircuitBreaker:
         cb._last_failure_time = 0  # Ensure not recovered
 
         import time
+
         cb._last_failure_time = time.time()  # Recent failure
 
         with pytest.raises(RetryableError, match="Circuit breaker"):

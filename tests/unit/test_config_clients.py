@@ -56,20 +56,20 @@ class TestClientSectorMapping:
         for sector, data in CLIENT_SECTOR_MAPPING.items():
             assert isinstance(sector, ClientSector)
             assert isinstance(data, dict)
-            assert 'companies' in data
-            assert isinstance(data['companies'], list)
+            assert "companies" in data
+            assert isinstance(data["companies"], list)
 
     def test_technology_has_companies(self):
         """Test technology sector has companies defined"""
         tech_data = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
-        companies = tech_data.get('companies', [])
+        companies = tech_data.get("companies", [])
 
         assert len(companies) > 0
 
     def test_sectors_have_keywords(self):
         """Test sectors have keywords defined"""
         for sector, data in CLIENT_SECTOR_MAPPING.items():
-            keywords = data.get('keywords', [])
+            keywords = data.get("keywords", [])
             # Keywords are optional, but if present should be a list
             assert isinstance(keywords, list)
 

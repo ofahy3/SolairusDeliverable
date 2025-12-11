@@ -91,8 +91,10 @@ class TestErgoMindClient:
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value={"status": "ok"})
 
-        with patch.object(client, 'session') as mock_session:
-            mock_session.get = AsyncMock(return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_response)))
+        with patch.object(client, "session") as mock_session:
+            mock_session.get = AsyncMock(
+                return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_response))
+            )
 
             # Initialize session
             client.session = MagicMock()
@@ -109,10 +111,7 @@ class TestQueryResult:
     def test_query_result_creation(self):
         """Test creating a query result"""
         result = QueryResult(
-            query="Test query",
-            response="Test response",
-            success=True,
-            confidence_score=0.85
+            query="Test query", response="Test response", success=True, confidence_score=0.85
         )
 
         assert result.query == "Test query"
@@ -122,10 +121,7 @@ class TestQueryResult:
 
     def test_query_result_default_values(self):
         """Test query result default values"""
-        result = QueryResult(
-            query="Test",
-            response="Response"
-        )
+        result = QueryResult(query="Test", response="Response")
 
         assert result.success is True
         assert result.error is None
@@ -134,12 +130,7 @@ class TestQueryResult:
 
     def test_query_result_with_error(self):
         """Test query result with error"""
-        result = QueryResult(
-            query="Test",
-            response="",
-            success=False,
-            error="Connection timeout"
-        )
+        result = QueryResult(query="Test", response="", success=False, error="Connection timeout")
 
         assert result.success is False
         assert result.error == "Connection timeout"
@@ -147,9 +138,7 @@ class TestQueryResult:
     def test_query_result_with_sources(self):
         """Test query result with sources"""
         result = QueryResult(
-            query="Test",
-            response="Response",
-            sources=["source1", "source2", "source3"]
+            query="Test", response="Response", sources=["source1", "source2", "source3"]
         )
 
         assert len(result.sources) == 3
@@ -157,11 +146,7 @@ class TestQueryResult:
 
     def test_query_result_with_timestamp(self):
         """Test query result with timestamp"""
-        result = QueryResult(
-            query="Test",
-            response="Response",
-            timestamp="2024-12-01T10:00:00"
-        )
+        result = QueryResult(query="Test", response="Response", timestamp="2024-12-01T10:00:00")
 
         assert result.timestamp == "2024-12-01T10:00:00"
 
@@ -181,10 +166,10 @@ class TestErgoMindClientMethods:
 
     def test_client_has_required_attributes(self, client):
         """Test client has required attributes"""
-        assert hasattr(client, 'config')
-        assert hasattr(client, 'session')
-        assert hasattr(client, 'test_connection')
-        assert hasattr(client, 'query_websocket')
+        assert hasattr(client, "config")
+        assert hasattr(client, "session")
+        assert hasattr(client, "test_connection")
+        assert hasattr(client, "query_websocket")
 
     @pytest.mark.asyncio
     async def test_initialize_creates_session(self, client):
@@ -250,7 +235,7 @@ class TestErgoMindConfigValidation:
         monkeypatch.setenv("ERGOMIND_USER_ID", "user")
 
         config = ErgoMindConfig()
-        assert hasattr(config, 'timeout')
+        assert hasattr(config, "timeout")
         assert config.timeout > 0
 
 
@@ -298,31 +283,19 @@ class TestQueryResultProperties:
 
     def test_query_result_with_high_confidence(self):
         """Test query result with high confidence"""
-        result = QueryResult(
-            query="Test",
-            response="Detailed response",
-            confidence_score=0.95
-        )
+        result = QueryResult(query="Test", response="Detailed response", confidence_score=0.95)
 
         assert result.confidence_score > 0.9
 
     def test_query_result_with_low_confidence(self):
         """Test query result with low confidence"""
-        result = QueryResult(
-            query="Test",
-            response="Uncertain response",
-            confidence_score=0.3
-        )
+        result = QueryResult(query="Test", response="Uncertain response", confidence_score=0.3)
 
         assert result.confidence_score < 0.5
 
     def test_query_result_empty_response(self):
         """Test query result with empty response"""
-        result = QueryResult(
-            query="Test",
-            response="",
-            success=False
-        )
+        result = QueryResult(query="Test", response="", success=False)
 
         assert result.response == ""
         assert result.success is False
@@ -330,10 +303,6 @@ class TestQueryResultProperties:
     def test_query_result_long_response(self):
         """Test query result with long response"""
         long_text = "This is a test. " * 1000
-        result = QueryResult(
-            query="Test",
-            response=long_text,
-            confidence_score=0.8
-        )
+        result = QueryResult(query="Test", response=long_text, confidence_score=0.8)
 
         assert len(result.response) > 10000

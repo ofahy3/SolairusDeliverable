@@ -149,7 +149,9 @@ class GTAClient:
                     return False
                 else:
                     error_text = await response.text()
-                    logger.error(f"GTA API connection failed: HTTP {response.status} - {error_text[:200]}")
+                    logger.error(
+                        f"GTA API connection failed: HTTP {response.status} - {error_text[:200]}"
+                    )
                     return False
         except Exception as e:
             logger.error(f"GTA API connection test failed: {str(e)}")
@@ -460,9 +462,18 @@ class GTAClient:
 
         # Filter for migration-related interventions by MAST chapter and keywords
         migration_keywords = [
-            "migration", "visa", "immigration", "work permit", "labour market",
-            "labor market", "travel ban", "entry restriction", "residence",
-            "mobility", "foreign worker", "skilled worker"
+            "migration",
+            "visa",
+            "immigration",
+            "work permit",
+            "labour market",
+            "labor market",
+            "travel ban",
+            "entry restriction",
+            "residence",
+            "mobility",
+            "foreign worker",
+            "skilled worker",
         ]
 
         migration_interventions = []
@@ -481,5 +492,7 @@ class GTAClient:
             if is_migration or has_keyword or type_match:
                 migration_interventions.append(intervention)
 
-        logger.info(f"Filtered {len(migration_interventions)} migration interventions from {len(all_interventions)} total")
+        logger.info(
+            f"Filtered {len(migration_interventions)} migration interventions from {len(all_interventions)} total"
+        )
         return migration_interventions[:limit]

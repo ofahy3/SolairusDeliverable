@@ -29,7 +29,7 @@ class TestAIGeneratorAdditional:
 
     def test_generator_has_generate_methods(self, disabled_generator):
         """Test generator has expected methods"""
-        assert hasattr(disabled_generator, 'generate_executive_summary')
+        assert hasattr(disabled_generator, "generate_executive_summary")
         assert callable(disabled_generator.generate_executive_summary)
 
 
@@ -100,7 +100,7 @@ class TestIntelligenceItemAdditional:
             affected_sectors=[ClientSector.GENERAL],
         )
         # Check that confidence exists (may or may not be 0)
-        assert hasattr(item, 'confidence')
+        assert hasattr(item, "confidence")
 
 
 class TestSectorIntelligenceAdditional:
@@ -162,7 +162,7 @@ class TestCLIAdditional:
     def test_generator_has_generate_method(self):
         """Test generator has generate method"""
         gen = SolairusIntelligenceGenerator()
-        assert hasattr(gen, 'generate_monthly_report')
+        assert hasattr(gen, "generate_monthly_report")
         assert callable(gen.generate_monthly_report)
 
     def test_generator_initial_status(self):
@@ -172,7 +172,12 @@ class TestCLIAdditional:
 
 
 # Test config module additional coverage
-from solairus_intelligence.utils.config import EnvironmentConfig, get_output_dir, get_config, ENV_CONFIG
+from solairus_intelligence.utils.config import (
+    EnvironmentConfig,
+    get_output_dir,
+    get_config,
+    ENV_CONFIG,
+)
 
 
 class TestConfigAdditional:
@@ -186,6 +191,7 @@ class TestConfigAdditional:
     def test_output_dir_creates_path(self):
         """Test output dir returns Path object"""
         from pathlib import Path
+
         output_dir = get_output_dir()
         assert isinstance(output_dir, Path)
 

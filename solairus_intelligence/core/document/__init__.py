@@ -12,8 +12,8 @@ from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.core.document.styles import ErgoStyles, ERGO_COLORS, SPACING
 
 __all__ = [
-    'DocumentGenerator',
-    'ErgoStyles',
-    'ERGO_COLORS',
-    'SPACING',
+    "DocumentGenerator",
+    "ErgoStyles",
+    "ERGO_COLORS",
+    "SPACING",
 ]

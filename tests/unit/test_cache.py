@@ -26,8 +26,8 @@ class TestResponseCache:
         cache = ResponseCache(cache_dir=temp_cache_dir)
 
         assert cache is not None
-        assert hasattr(cache, 'get')
-        assert hasattr(cache, 'set')
+        assert hasattr(cache, "get")
+        assert hasattr(cache, "set")
         assert cache.enabled is True
 
     def test_cache_set_and_get(self, temp_cache_dir):
@@ -69,7 +69,7 @@ class TestResponseCache:
 
     def test_cache_disabled_via_env(self, temp_cache_dir):
         """Test cache can be disabled via environment variable"""
-        with patch.dict('os.environ', {'CACHE_ENABLED': 'false'}):
+        with patch.dict("os.environ", {"CACHE_ENABLED": "false"}):
             cache = ResponseCache(cache_dir=temp_cache_dir)
 
             assert cache.enabled is False
@@ -81,7 +81,7 @@ class TestResponseCache:
 
     def test_cache_enabled_by_default(self, temp_cache_dir):
         """Test cache is enabled by default"""
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             cache = ResponseCache(cache_dir=temp_cache_dir)
             assert cache.enabled is True
 
@@ -148,7 +148,7 @@ class TestCacheExpiration:
         """Test cache has TTL configuration"""
         cache = ResponseCache(cache_dir=temp_cache_dir, ttl_hours=24)
 
-        assert hasattr(cache, 'ttl_hours')
+        assert hasattr(cache, "ttl_hours")
         assert cache.ttl_hours == 24
 
     def test_default_ttl(self, temp_cache_dir):
@@ -211,7 +211,7 @@ class TestCacheDataTypes:
             "metadata": {
                 "count": 2,
                 "source": "test",
-            }
+            },
         }
         cache.set("source", {"param": 1}, data)
 
@@ -233,7 +233,7 @@ class TestCacheClear:
         """Test cache has clear method"""
         cache = ResponseCache(cache_dir=temp_cache_dir)
 
-        assert hasattr(cache, 'clear') or hasattr(cache, 'invalidate')
+        assert hasattr(cache, "clear") or hasattr(cache, "invalidate")
 
     def test_overwrite_existing_cache(self, temp_cache_dir):
         """Test overwriting existing cached data"""

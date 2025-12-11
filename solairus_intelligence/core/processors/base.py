@@ -11,6 +11,7 @@ from solairus_intelligence.config.clients import ClientSector
 @dataclass
 class IntelligenceItem:
     """A single piece of processed intelligence from ErgoMind, GTA, or FRED"""
+
     raw_content: str
     processed_content: str
     category: str
@@ -38,6 +39,7 @@ class IntelligenceItem:
 @dataclass
 class SectorIntelligence:
     """Intelligence organized by client sector"""
+
     sector: ClientSector
     items: List[IntelligenceItem] = field(default_factory=list)
     summary: str = ""
@@ -50,26 +52,65 @@ class BaseProcessor:
 
     # Keywords for relevance scoring
     RELEVANCE_KEYWORDS = {
-        'aviation_direct': [
-            'aviation', 'aircraft', 'flight', 'pilot', 'airline', 'airport',
-            'FAA', 'EASA', 'ICAO', 'air travel', 'business jet', 'FBO'
+        "aviation_direct": [
+            "aviation",
+            "aircraft",
+            "flight",
+            "pilot",
+            "airline",
+            "airport",
+            "FAA",
+            "EASA",
+            "ICAO",
+            "air travel",
+            "business jet",
+            "FBO",
         ],
-        'aviation_indirect': [
-            'travel', 'mobility', 'transportation', 'logistics', 'customs',
-            'visa', 'border', 'immigration', 'security', 'fuel prices'
+        "aviation_indirect": [
+            "travel",
+            "mobility",
+            "transportation",
+            "logistics",
+            "customs",
+            "visa",
+            "border",
+            "immigration",
+            "security",
+            "fuel prices",
         ],
-        'business_impact': [
-            'corporate', 'executive', 'business travel', 'global business',
-            'international', 'cross-border', 'multinational', 'supply chain'
+        "business_impact": [
+            "corporate",
+            "executive",
+            "business travel",
+            "global business",
+            "international",
+            "cross-border",
+            "multinational",
+            "supply chain",
         ],
-        'risk_indicators': [
-            'risk', 'threat', 'instability', 'conflict', 'sanctions', 'crisis',
-            'disruption', 'uncertainty', 'volatility', 'tension'
+        "risk_indicators": [
+            "risk",
+            "threat",
+            "instability",
+            "conflict",
+            "sanctions",
+            "crisis",
+            "disruption",
+            "uncertainty",
+            "volatility",
+            "tension",
         ],
-        'opportunity_indicators': [
-            'growth', 'expansion', 'opportunity', 'emerging', 'recovery',
-            'improvement', 'investment', 'development', 'innovation'
-        ]
+        "opportunity_indicators": [
+            "growth",
+            "expansion",
+            "opportunity",
+            "emerging",
+            "recovery",
+            "improvement",
+            "investment",
+            "development",
+            "innovation",
+        ],
     }
 
     def calculate_base_relevance(self, text: str) -> float:
@@ -78,25 +119,30 @@ class BaseProcessor:
         text_lower = text.lower()
 
         # Direct aviation relevance (highest weight)
-        aviation_matches = sum(1 for kw in self.RELEVANCE_KEYWORDS['aviation_direct']
-                               if kw in text_lower)
+        aviation_matches = sum(
+            1 for kw in self.RELEVANCE_KEYWORDS["aviation_direct"] if kw in text_lower
+        )
         score += min(aviation_matches * 0.15, 0.4)
 
         # Indirect aviation relevance
-        indirect_matches = sum(1 for kw in self.RELEVANCE_KEYWORDS['aviation_indirect']
-                               if kw in text_lower)
+        indirect_matches = sum(
+            1 for kw in self.RELEVANCE_KEYWORDS["aviation_indirect"] if kw in text_lower
+        )
         score += min(indirect_matches * 0.1, 0.2)
 
         # Business impact relevance
-        business_matches = sum(1 for kw in self.RELEVANCE_KEYWORDS['business_impact']
-                               if kw in text_lower)
+        business_matches = sum(
+            1 for kw in self.RELEVANCE_KEYWORDS["business_impact"] if kw in text_lower
+        )
         score += min(business_matches * 0.08, 0.2)
 
         # Risk/opportunity indicators
-        risk_matches = sum(1 for kw in self.RELEVANCE_KEYWORDS['risk_indicators']
-                           if kw in text_lower)
-        opportunity_matches = sum(1 for kw in self.RELEVANCE_KEYWORDS['opportunity_indicators']
-                                  if kw in text_lower)
+        risk_matches = sum(
+            1 for kw in self.RELEVANCE_KEYWORDS["risk_indicators"] if kw in text_lower
+        )
+        opportunity_matches = sum(
+            1 for kw in self.RELEVANCE_KEYWORDS["opportunity_indicators"] if kw in text_lower
+        )
         score += min((risk_matches + opportunity_matches) * 0.05, 0.2)
 
         return min(score, 1.0)

@@ -18,10 +18,7 @@ class ContentExtractor:
     other analytical content from raw intelligence data.
     """
 
-    def extract_analytical_insights(
-        self,
-        items: List[IntelligenceItem]
-    ) -> Dict[str, List[str]]:
+    def extract_analytical_insights(self, items: List[IntelligenceItem]) -> Dict[str, List[str]]:
         """
         Extract analytical insights from intelligence items.
 
@@ -33,11 +30,7 @@ class ContentExtractor:
         watch_factors: List[str] = []
 
         # Sort items by relevance
-        sorted_items = sorted(
-            items,
-            key=lambda x: x.relevance_score,
-            reverse=True
-        )
+        sorted_items = sorted(items, key=lambda x: x.relevance_score, reverse=True)
 
         # Extract insights from top items
         for item in sorted_items[:10]:
@@ -59,18 +52,21 @@ class ContentExtractor:
 
     def _is_bottom_line_worthy(self, item: IntelligenceItem) -> bool:
         """Check if item is significant enough for bottom line"""
-        return (
-            item.relevance_score >= 0.85 and
-            item.confidence >= 0.8
-        )
+        return item.relevance_score >= 0.85 and item.confidence >= 0.8
 
     def _is_watch_factor(self, item: IntelligenceItem) -> bool:
         """Check if item should be categorized as watch factor"""
         watch_keywords = [
-            'monitor', 'watch', 'emerging', 'developing',
-            'potential', 'risk', 'uncertainty', 'volatile'
+            "monitor",
+            "watch",
+            "emerging",
+            "developing",
+            "potential",
+            "risk",
+            "uncertainty",
+            "volatile",
         ]
-        content = (item.processed_content + ' ' + item.so_what_statement).lower()
+        content = (item.processed_content + " " + item.so_what_statement).lower()
         return any(kw in content for kw in watch_keywords)
 
     def extract_theme(self, text: str, so_what: str) -> str:
@@ -116,14 +112,14 @@ class ContentExtractor:
         if item.so_what_statement:
             statement = item.so_what_statement.strip()
             # Ensure it ends properly
-            if not statement.endswith(('.', '!', '?')):
-                statement += '.'
+            if not statement.endswith((".", "!", "?")):
+                statement += "."
             return statement
 
         # Fallback to processed content summary
         content = item.processed_content[:200]
         if len(item.processed_content) > 200:
-            content = content.rsplit(' ', 1)[0] + '...'
+            content = content.rsplit(" ", 1)[0] + "..."
         return content
 
     def craft_key_finding_statement(self, item: IntelligenceItem) -> str:
@@ -166,8 +162,8 @@ class ContentExtractor:
             Tuple of (header, description, bullets)
         """
         # Try to split on colon
-        if ':' in finding_text:
-            parts = finding_text.split(':', 1)
+        if ":" in finding_text:
+            parts = finding_text.split(":", 1)
             header = parts[0].strip()
             description = parts[1].strip() if len(parts) > 1 else ""
         else:
@@ -189,8 +185,8 @@ class ContentExtractor:
         Returns:
             Tuple of (title, description, bullets)
         """
-        if ':' in factor_text:
-            parts = factor_text.split(':', 1)
+        if ":" in factor_text:
+            parts = factor_text.split(":", 1)
             title = parts[0].strip()
             description = parts[1].strip() if len(parts) > 1 else ""
         else:
@@ -202,10 +198,7 @@ class ContentExtractor:
         return title, description, bullets
 
     def _generate_contextual_bullets(
-        self,
-        text_lower: str,
-        subheader: str,
-        count: int
+        self, text_lower: str, subheader: str, count: int
     ) -> List[str]:
         """
         Generate contextual bullet points.
@@ -250,15 +243,15 @@ class ContentExtractor:
             return ""
 
         # Remove bold markers
-        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
+        text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
         # Remove italic markers
-        text = re.sub(r'\*([^*]+)\*', r'\1', text)
+        text = re.sub(r"\*([^*]+)\*", r"\1", text)
         # Remove headers
-        text = re.sub(r'^#+\s*', '', text, flags=re.MULTILINE)
+        text = re.sub(r"^#+\s*", "", text, flags=re.MULTILINE)
         # Remove bullet markers
-        text = re.sub(r'^\s*[-*•]\s*', '', text, flags=re.MULTILINE)
+        text = re.sub(r"^\s*[-*•]\s*", "", text, flags=re.MULTILINE)
         # Clean extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
 
         return text
 
@@ -267,12 +260,12 @@ class ContentExtractor:
         category = item.category.lower()
 
         indicator_map = {
-            'inflation': 'CPI Inflation',
-            'interest': 'Interest Rate',
-            'fuel': 'Jet Fuel Price',
-            'gdp': 'GDP Growth',
-            'employment': 'Employment',
-            'confidence': 'Consumer Confidence',
+            "inflation": "CPI Inflation",
+            "interest": "Interest Rate",
+            "fuel": "Jet Fuel Price",
+            "gdp": "GDP Growth",
+            "employment": "Employment",
+            "confidence": "Consumer Confidence",
         }
 
         for key, name in indicator_map.items():
@@ -286,17 +279,17 @@ class ContentExtractor:
         content = item.processed_content
 
         # Look for percentage patterns
-        percent_match = re.search(r'(\d+\.?\d*)\s*%', content)
+        percent_match = re.search(r"(\d+\.?\d*)\s*%", content)
         if percent_match:
             return f"{percent_match.group(1)}%"
 
         # Look for dollar patterns
-        dollar_match = re.search(r'\$(\d+\.?\d*)', content)
+        dollar_match = re.search(r"\$(\d+\.?\d*)", content)
         if dollar_match:
             return f"${dollar_match.group(1)}"
 
         # Look for any number
-        num_match = re.search(r'(\d+\.?\d*)', content)
+        num_match = re.search(r"(\d+\.?\d*)", content)
         if num_match:
             return num_match.group(1)
 
@@ -304,10 +297,10 @@ class ContentExtractor:
 
     def determine_trend(self, item: IntelligenceItem) -> str:
         """Determine trend direction from item"""
-        content = (item.processed_content + ' ' + item.so_what_statement).lower()
+        content = (item.processed_content + " " + item.so_what_statement).lower()
 
-        up_words = ['increase', 'rise', 'grew', 'higher', 'up', 'gain']
-        down_words = ['decrease', 'fall', 'decline', 'lower', 'down', 'drop']
+        up_words = ["increase", "rise", "grew", "higher", "up", "gain"]
+        down_words = ["decrease", "fall", "decline", "lower", "down", "drop"]
 
         if any(word in content for word in up_words):
             return "↑"
@@ -322,7 +315,7 @@ class ContentExtractor:
             # Truncate to reasonable length
             impact = item.so_what_statement[:100]
             if len(item.so_what_statement) > 100:
-                impact = impact.rsplit(' ', 1)[0] + '...'
+                impact = impact.rsplit(" ", 1)[0] + "..."
             return impact
 
         return "Monitor for operational impact"

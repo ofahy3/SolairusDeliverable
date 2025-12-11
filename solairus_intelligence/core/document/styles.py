@@ -50,6 +50,7 @@ SPACING: Dict[str, int] = {
 @dataclass
 class FontConfig:
     """Font configuration for document elements"""
+
     name: str = "Calibri"
     heading_size: int = 14
     subheading_size: int = 12
@@ -76,7 +77,7 @@ class ErgoStyles:
 
     def _setup_normal_style(self, doc: Document) -> None:
         """Configure the Normal style"""
-        style = doc.styles['Normal']
+        style = doc.styles["Normal"]
         font = style.font
         font.name = self.font_config.name
         font.size = Pt(self.font_config.body_size)
@@ -85,27 +86,17 @@ class ErgoStyles:
     def _create_heading_styles(self, doc: Document) -> None:
         """Create custom heading styles"""
         self._create_custom_heading_style(
-            doc, 'Section Heading',
-            self.font_config.heading_size,
-            bold=True
+            doc, "Section Heading", self.font_config.heading_size, bold=True
         )
         self._create_custom_heading_style(
-            doc, 'Subsection Heading',
-            self.font_config.subheading_size,
-            bold=True
+            doc, "Subsection Heading", self.font_config.subheading_size, bold=True
         )
 
-    def _create_custom_heading_style(
-        self,
-        doc: Document,
-        name: str,
-        size: int,
-        bold: bool
-    ) -> None:
+    def _create_custom_heading_style(self, doc: Document, name: str, size: int, bold: bool) -> None:
         """Create a custom heading style"""
         try:
             style = doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
-            style.base_style = doc.styles['Normal']
+            style.base_style = doc.styles["Normal"]
             font = style.font
             font.name = self.font_config.name
             font.size = Pt(size)

@@ -20,11 +20,7 @@ class TestAIConfig:
 
     def test_config_creation(self):
         """Test creating AI config"""
-        config = AIConfig(
-            api_key="test_key",
-            model="claude-opus-4-5-20251101",
-            enabled=True
-        )
+        config = AIConfig(api_key="test_key", model="claude-opus-4-5-20251101", enabled=True)
 
         assert config.api_key == "test_key"
         assert config.enabled is True
@@ -50,51 +46,39 @@ class TestAIUsageTracker:
         """Test tracker initializes with zeros"""
         summary = tracker.get_summary()
 
-        assert summary['total_requests'] == 0
-        assert summary['successful_requests'] == 0
-        assert summary['total_input_tokens'] == 0
-        assert summary['total_output_tokens'] == 0
+        assert summary["total_requests"] == 0
+        assert summary["successful_requests"] == 0
+        assert summary["total_input_tokens"] == 0
+        assert summary["total_output_tokens"] == 0
 
     def test_record_request(self, tracker):
         """Test recording a request"""
-        tracker.log_request(
-            input_tokens=100,
-            output_tokens=50,
-            success=True
-        )
+        tracker.log_request(input_tokens=100, output_tokens=50, success=True)
 
         summary = tracker.get_summary()
 
-        assert summary['total_requests'] == 1
-        assert summary['successful_requests'] == 1
-        assert summary['total_input_tokens'] == 100
-        assert summary['total_output_tokens'] == 50
+        assert summary["total_requests"] == 1
+        assert summary["successful_requests"] == 1
+        assert summary["total_input_tokens"] == 100
+        assert summary["total_output_tokens"] == 50
 
     def test_record_failed_request(self, tracker):
         """Test recording a failed request"""
-        tracker.log_request(
-            input_tokens=100,
-            output_tokens=0,
-            success=False
-        )
+        tracker.log_request(input_tokens=100, output_tokens=0, success=False)
 
         summary = tracker.get_summary()
 
-        assert summary['total_requests'] == 1
-        assert summary['successful_requests'] == 0
-        assert summary['failed_requests'] == 1
+        assert summary["total_requests"] == 1
+        assert summary["successful_requests"] == 0
+        assert summary["failed_requests"] == 1
 
     def test_cost_calculation(self, tracker):
         """Test cost calculation"""
-        tracker.log_request(
-            input_tokens=1000,
-            output_tokens=500,
-            success=True
-        )
+        tracker.log_request(input_tokens=1000, output_tokens=500, success=True)
 
         summary = tracker.get_summary()
 
-        assert summary['total_cost_usd'] > 0
+        assert summary["total_cost_usd"] > 0
 
 
 class TestPIISanitizer:
@@ -164,15 +148,13 @@ class TestFactValidator:
                 category="economic",
                 relevance_score=0.9,
                 so_what_statement="Higher costs expected",
-                affected_sectors=[]
+                affected_sectors=[],
             )
         ]
 
         ai_text = "Inflation at 3.5% creates cost pressures"
 
-        is_valid, unsupported = validator.validate_ai_output(
-            ai_text, source_items, strict=False
-        )
+        is_valid, unsupported = validator.validate_ai_output(ai_text, source_items, strict=False)
 
         # Should be valid since claim is supported
         assert is_valid or len(unsupported) == 0
@@ -221,8 +203,8 @@ class TestSecureAIGenerator:
 
         summary = generator.get_usage_summary()
 
-        assert 'total_requests' in summary
-        assert 'total_cost_usd' in summary
+        assert "total_requests" in summary
+        assert "total_cost_usd" in summary
 
 
 class TestExecutiveSummaryParsing:

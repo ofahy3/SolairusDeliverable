@@ -21,9 +21,9 @@ class IntelligenceMerger:
 
     # Source weights for composite scoring
     SOURCE_WEIGHTS = {
-        'ergomind': 1.15,  # 15% boost for narrative leadership
-        'gta': 1.0,        # Neutral - valuable supporting data
-        'fred': 0.95       # Slight reduction to prevent top-score saturation
+        "ergomind": 1.15,  # 15% boost for narrative leadership
+        "gta": 1.0,  # Neutral - valuable supporting data
+        "fred": 0.95,  # Slight reduction to prevent top-score saturation
     }
 
     def merge_sources(self, *source_lists: List[IntelligenceItem]) -> List[IntelligenceItem]:
@@ -53,7 +53,7 @@ class IntelligenceMerger:
             if item.source_type == "gta" and item.date_implemented:
                 try:
                     impl_date = datetime.fromisoformat(
-                        item.date_implemented.replace('Z', '+00:00').replace('T', ' ')[:10]
+                        item.date_implemented.replace("Z", "+00:00").replace("T", " ")[:10]
                     )
                     if impl_date < six_months_ago:
                         continue
@@ -74,7 +74,7 @@ class IntelligenceMerger:
         freshness_factor = 1.0
         if item.source_type == "gta" and item.date_implemented:
             try:
-                impl_date = datetime.fromisoformat(item.date_implemented.replace('Z', '+00:00'))
+                impl_date = datetime.fromisoformat(item.date_implemented.replace("Z", "+00:00"))
                 days_old = (datetime.now() - impl_date.replace(tzinfo=None)).days
                 freshness_factor = 1.0 if days_old < 90 else 0.9
             except (ValueError, TypeError):
@@ -111,10 +111,14 @@ class IntelligenceMerger:
 
     def _calculate_similarity(self, content1: str, content2: str) -> float:
         """Calculate keyword-based similarity between two content strings"""
-        stop_words = {'the', 'and', 'for', 'this', 'that', 'with', 'from', 'have', 'will', 'are'}
+        stop_words = {"the", "and", "for", "this", "that", "with", "from", "have", "will", "are"}
 
-        words1 = set(w.lower() for w in content1.split() if len(w) > 3 and w.lower() not in stop_words)
-        words2 = set(w.lower() for w in content2.split() if len(w) > 3 and w.lower() not in stop_words)
+        words1 = set(
+            w.lower() for w in content1.split() if len(w) > 3 and w.lower() not in stop_words
+        )
+        words2 = set(
+            w.lower() for w in content2.split() if len(w) > 3 and w.lower() not in stop_words
+        )
 
         if not words1 or not words2:
             return 0.0
@@ -131,29 +135,37 @@ class IntelligenceMerger:
         - GTA > FRED > ErgoMind for trade policy
         - ErgoMind leads for narrative/geopolitical analysis
         """
-        economic_keywords = ['inflation', 'interest rate', 'gdp', 'cpi', 'federal reserve', 'treasury', 'mortgage']
-        trade_keywords = ['tariff', 'sanction', 'export control', 'trade barrier', 'intervention']
+        economic_keywords = [
+            "inflation",
+            "interest rate",
+            "gdp",
+            "cpi",
+            "federal reserve",
+            "treasury",
+            "mortgage",
+        ]
+        trade_keywords = ["tariff", "sanction", "export control", "trade barrier", "intervention"]
 
         prioritized_items: List[IntelligenceItem] = []
-        topic_seen: Dict[str, set[str]] = {'economic': set(), 'trade': set()}
+        topic_seen: Dict[str, set[str]] = {"economic": set(), "trade": set()}
 
         # First pass: Add high-priority sources for each topic
         for item in items:
             content_lower = item.processed_content.lower()
 
             if any(kw in content_lower for kw in economic_keywords):
-                topic_key = 'economic_' + content_lower[:50]
-                if topic_key not in topic_seen['economic']:
-                    if item.source_type == 'fred':
+                topic_key = "economic_" + content_lower[:50]
+                if topic_key not in topic_seen["economic"]:
+                    if item.source_type == "fred":
                         prioritized_items.append(item)
-                        topic_seen['economic'].add(topic_key)
+                        topic_seen["economic"].add(topic_key)
 
             elif any(kw in content_lower for kw in trade_keywords):
-                topic_key = 'trade_' + content_lower[:50]
-                if topic_key not in topic_seen['trade']:
-                    if item.source_type == 'gta':
+                topic_key = "trade_" + content_lower[:50]
+                if topic_key not in topic_seen["trade"]:
+                    if item.source_type == "gta":
                         prioritized_items.append(item)
-                        topic_seen['trade'].add(topic_key)
+                        topic_seen["trade"].add(topic_key)
 
             else:
                 prioritized_items.append(item)
@@ -165,13 +177,16 @@ class IntelligenceMerger:
 
         return prioritized_items
 
-    def organize_by_sector(self, items: List[IntelligenceItem]) -> Dict[ClientSector, SectorIntelligence]:
+    def organize_by_sector(
+        self, items: List[IntelligenceItem]
+    ) -> Dict[ClientSector, SectorIntelligence]:
         """Organize intelligence items by client sector"""
         sector_intel = {}
 
         for sector in ClientSector:
             sector_items = [
-                item for item in items
+                item
+                for item in items
                 if sector in item.affected_sectors or ClientSector.GENERAL in item.affected_sectors
             ]
 
@@ -187,7 +202,7 @@ class IntelligenceMerger:
                     items=sector_items,
                     summary=summary,
                     key_risks=risks,
-                    key_opportunities=opportunities
+                    key_opportunities=opportunities,
                 )
 
         return sector_intel
@@ -203,8 +218,18 @@ class IntelligenceMerger:
 
     def _extract_risks(self, items: List[IntelligenceItem]) -> List[str]:
         """Extract key risks from intelligence items"""
-        risk_keywords = ['risk', 'threat', 'instability', 'conflict', 'sanctions', 'crisis',
-                         'disruption', 'uncertainty', 'volatility', 'tension']
+        risk_keywords = [
+            "risk",
+            "threat",
+            "instability",
+            "conflict",
+            "sanctions",
+            "crisis",
+            "disruption",
+            "uncertainty",
+            "volatility",
+            "tension",
+        ]
         risks = []
 
         for item in items:
@@ -217,8 +242,17 @@ class IntelligenceMerger:
 
     def _extract_opportunities(self, items: List[IntelligenceItem]) -> List[str]:
         """Extract key opportunities from intelligence items"""
-        opportunity_keywords = ['growth', 'expansion', 'opportunity', 'emerging', 'recovery',
-                                'improvement', 'investment', 'development', 'innovation']
+        opportunity_keywords = [
+            "growth",
+            "expansion",
+            "opportunity",
+            "emerging",
+            "recovery",
+            "improvement",
+            "investment",
+            "development",
+            "innovation",
+        ]
         opportunities = []
 
         for item in items:

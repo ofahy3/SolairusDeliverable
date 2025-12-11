@@ -85,11 +85,7 @@ class TestFontConfig:
 
     def test_custom_config(self):
         """Test custom font configuration"""
-        config = FontConfig(
-            name="Arial",
-            heading_size=16,
-            body_size=11
-        )
+        config = FontConfig(name="Arial", heading_size=16, body_size=11)
 
         assert config.name == "Arial"
         assert config.heading_size == 16
@@ -124,7 +120,7 @@ class TestErgoStyles:
         styles.apply_to_document(doc)
 
         # Check Normal style was modified
-        normal = doc.styles['Normal']
+        normal = doc.styles["Normal"]
         assert normal.font.name == "Calibri"
 
     def test_get_color(self, styles):
