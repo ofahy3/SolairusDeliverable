@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock, AsyncMock
 
-from solairus_intelligence import generate_report, generate_report_sync, ReportConfig
+from solairus_intelligence import generate_report, generate_report_sync
 
 
 class TestEndToEndPipeline:
@@ -72,14 +72,9 @@ class TestEndToEndPipeline:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
 
-            # Mock at the api module level where it's imported
             with patch('solairus_intelligence.api.SolairusIntelligenceGenerator') as MockGen:
                 mock_generator = MagicMock()
-
-                # Mock the generate_monthly_report method
                 mock_doc_path = str(output_dir / "Intelligence_Report_December_2024.docx")
-
-                # Create a dummy file for the test
                 Path(mock_doc_path).touch()
 
                 mock_generator.generate_monthly_report = AsyncMock(
@@ -95,14 +90,8 @@ class TestEndToEndPipeline:
                 )
                 MockGen.return_value = mock_generator
 
-                # Call the public API
-                result = await generate_report(
-                    month="December 2024",
-                    test_mode=True,
-                    output_dir=output_dir
-                )
+                result = await generate_report(month="December 2024", test_mode=True)
 
-                # Verify results
                 assert result is not None
                 assert isinstance(result, Path)
 
@@ -122,18 +111,11 @@ class TestEndToEndPipeline:
                 Path(mock_doc_path).touch()
 
                 mock_generator.generate_monthly_report = AsyncMock(
-                    return_value=(
-                        mock_doc_path,
-                        {"success": True, "errors": []}
-                    )
+                    return_value=(mock_doc_path, {"success": True, "errors": []})
                 )
                 MockGen.return_value = mock_generator
 
-                result = generate_report_sync(
-                    month="December 2024",
-                    test_mode=True,
-                    output_dir=output_dir
-                )
+                result = generate_report_sync(month="December 2024", test_mode=True)
 
                 assert result is not None
                 assert isinstance(result, Path)
@@ -175,28 +157,3 @@ class TestErrorHandling:
 
             with pytest.raises(RuntimeError):
                 await generate_report(test_mode=True)
-
-
-class TestReportConfig:
-    """Test ReportConfig validation"""
-
-    def test_default_config(self):
-        """Test default configuration"""
-        config = ReportConfig()
-
-        assert config.month is None
-        assert config.sources == ["ergomind", "gta", "fred"]
-        assert config.output_format == "docx"
-        assert config.test_mode is False
-
-    def test_custom_config(self):
-        """Test custom configuration"""
-        config = ReportConfig(
-            month="January 2025",
-            sources=["ergomind", "gta"],
-            test_mode=True
-        )
-
-        assert config.month == "January 2025"
-        assert config.sources == ["ergomind", "gta"]
-        assert config.test_mode is True

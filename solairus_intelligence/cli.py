@@ -40,15 +40,13 @@ class SolairusIntelligenceGenerator:
         
     async def generate_monthly_report(
         self,
-        focus_areas: Optional[List[str]] = None,
         test_mode: bool = False
     ) -> Tuple[str, Dict[str, Any]]:
         """
-        Generate a complete monthly intelligence report
+        Generate a complete monthly intelligence report.
 
         Args:
-            focus_areas: Optional list of specific areas to focus on
-            test_mode: If True, uses limited queries for testing
+            test_mode: If True, uses limited queries for testing.
 
         Returns:
             Tuple of (filepath, status_dict)
@@ -328,19 +326,14 @@ class SolairusIntelligenceGenerator:
 async def main():
     """Main entry point for the application"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='Generate Solairus Intelligence Report')
     parser.add_argument('--test', action='store_true', help='Run in test mode with limited queries')
-    parser.add_argument('--focus', nargs='+', help='Focus areas for intelligence gathering')
-    
+
     args = parser.parse_args()
-    
-    # Create and run generator
+
     generator = SolairusIntelligenceGenerator()
-    filepath, status = await generator.generate_monthly_report(
-        focus_areas=args.focus,
-        test_mode=args.test
-    )
+    filepath, status = await generator.generate_monthly_report(test_mode=args.test)
     
     if status['success']:
         print(f"\n✅ Report successfully generated!")

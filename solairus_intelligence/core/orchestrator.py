@@ -376,61 +376,6 @@ class QueryOrchestrator:
         )
         return unique_items
 
-    async def generate_focused_queries(
-        self, focus_areas: Optional[List[str]] = None
-    ) -> List[QueryTemplate]:
-        """
-        Generate focused queries based on specific areas of interest
-        """
-        if not focus_areas:
-            return self.query_templates
-
-        focused_templates = []
-
-        for area in focus_areas:
-            area_lower = area.lower()
-
-            # Find matching templates
-            for template in self.query_templates:
-                if area_lower in template.category.lower() or any(
-                    area_lower in q.lower() for q in [template.query] + template.follow_ups
-                ):
-                    focused_templates.append(template)
-
-        return focused_templates if focused_templates else self.query_templates
-
-    def optimize_query_order(self, templates: List[QueryTemplate]) -> List[QueryTemplate]:
-        """
-        Optimize query order to maximize information gain and minimize redundancy
-        """
-        # Group by related topics to maintain context
-        groups: Dict[str, List[QueryTemplate]] = {"regional": [], "sectoral": [], "thematic": [], "forecast": []}
-
-        for template in templates:
-            if any(
-                region in template.category for region in ["america", "europe", "asia", "middle"]
-            ):
-                groups["regional"].append(template)
-            elif any(sector.value in template.category for sector in ClientSector):
-                groups["sectoral"].append(template)
-            elif "forecast" in template.category:
-                groups["forecast"].append(template)
-            else:
-                groups["thematic"].append(template)
-
-        # Combine in logical order: thematic -> regional -> sectoral -> forecast
-        optimized = []
-        for group in ["thematic", "regional", "sectoral", "forecast"]:
-            # Sort within group by priority
-            group_templates = sorted(groups[group], key=lambda x: x.priority, reverse=True)
-            optimized.extend(group_templates)
-
-        return optimized
-
-    # =====================================================================
-    # GTA (Global Trade Alert) Intelligence Gathering Methods
-    # =====================================================================
-
     async def execute_gta_intelligence_gathering(self, days_back: int = 60) -> Dict[str, List]:
         """
         Execute GTA queries in parallel to gather trade intervention intelligence

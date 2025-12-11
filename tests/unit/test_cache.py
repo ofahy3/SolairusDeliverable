@@ -97,3 +97,183 @@ class TestResponseCache:
         cache = ResponseCache(cache_dir=temp_cache_dir, ttl_hours=48)
 
         assert cache.ttl_hours == 48
+
+
+class TestCacheKeyGeneration:
+    """Test cache key generation"""
+
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory"""
+        temp_dir = Path(tempfile.mkdtemp())
+        yield temp_dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_same_params_same_key(self, temp_cache_dir):
+        """Test same parameters produce same cache key"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        params = {"days_back": 30, "query": "test"}
+
+        cache.set("source1", params, "data1")
+        result = cache.get("source1", params)
+
+        assert result == "data1"
+
+    def test_param_order_independent(self, temp_cache_dir):
+        """Test parameter order doesn't affect cache key"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        params1 = {"a": 1, "b": 2}
+        params2 = {"b": 2, "a": 1}
+
+        cache.set("source", params1, "data")
+
+        # Should get same result regardless of param order
+        result = cache.get("source", params2)
+        assert result == "data"
+
+
+class TestCacheExpiration:
+    """Test cache expiration behavior"""
+
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory"""
+        temp_dir = Path(tempfile.mkdtemp())
+        yield temp_dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_cache_has_ttl_attribute(self, temp_cache_dir):
+        """Test cache has TTL configuration"""
+        cache = ResponseCache(cache_dir=temp_cache_dir, ttl_hours=24)
+
+        assert hasattr(cache, 'ttl_hours')
+        assert cache.ttl_hours == 24
+
+    def test_default_ttl(self, temp_cache_dir):
+        """Test default TTL is reasonable"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        # Default should be 24 hours
+        assert cache.ttl_hours >= 1
+
+
+class TestCacheDataTypes:
+    """Test caching different data types"""
+
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory"""
+        temp_dir = Path(tempfile.mkdtemp())
+        yield temp_dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_cache_dict(self, temp_cache_dir):
+        """Test caching dictionary data"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        data = {"key": "value", "nested": {"a": 1}}
+        cache.set("source", {"param": 1}, data)
+
+        result = cache.get("source", {"param": 1})
+        assert result == data
+
+    def test_cache_list(self, temp_cache_dir):
+        """Test caching list data"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        data = [1, 2, 3, {"nested": "dict"}]
+        cache.set("source", {"param": 1}, data)
+
+        result = cache.get("source", {"param": 1})
+        assert result == data
+
+    def test_cache_string(self, temp_cache_dir):
+        """Test caching string data"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        data = "simple string data"
+        cache.set("source", {"param": 1}, data)
+
+        result = cache.get("source", {"param": 1})
+        assert result == data
+
+    def test_cache_complex_nested(self, temp_cache_dir):
+        """Test caching complex nested structures"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        data = {
+            "items": [
+                {"id": 1, "values": [1, 2, 3]},
+                {"id": 2, "values": [4, 5, 6]},
+            ],
+            "metadata": {
+                "count": 2,
+                "source": "test",
+            }
+        }
+        cache.set("source", {"param": 1}, data)
+
+        result = cache.get("source", {"param": 1})
+        assert result == data
+
+
+class TestCacheClear:
+    """Test cache clearing functionality"""
+
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory"""
+        temp_dir = Path(tempfile.mkdtemp())
+        yield temp_dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_cache_has_clear_method(self, temp_cache_dir):
+        """Test cache has clear method"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        assert hasattr(cache, 'clear') or hasattr(cache, 'invalidate')
+
+    def test_overwrite_existing_cache(self, temp_cache_dir):
+        """Test overwriting existing cached data"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        cache.set("source", {"param": 1}, "old_data")
+        cache.set("source", {"param": 1}, "new_data")
+
+        result = cache.get("source", {"param": 1})
+        assert result == "new_data"
+
+
+class TestCacheMultipleSources:
+    """Test caching from multiple sources"""
+
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory"""
+        temp_dir = Path(tempfile.mkdtemp())
+        yield temp_dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_different_sources_isolated(self, temp_cache_dir):
+        """Test different sources are isolated"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        cache.set("ergomind", {"param": 1}, "ergomind_data")
+        cache.set("gta", {"param": 1}, "gta_data")
+        cache.set("fred", {"param": 1}, "fred_data")
+
+        assert cache.get("ergomind", {"param": 1}) == "ergomind_data"
+        assert cache.get("gta", {"param": 1}) == "gta_data"
+        assert cache.get("fred", {"param": 1}) == "fred_data"
+
+    def test_same_source_different_params(self, temp_cache_dir):
+        """Test same source with different params"""
+        cache = ResponseCache(cache_dir=temp_cache_dir)
+
+        cache.set("ergomind", {"days": 30}, "30_day_data")
+        cache.set("ergomind", {"days": 60}, "60_day_data")
+
+        assert cache.get("ergomind", {"days": 30}) == "30_day_data"
+        assert cache.get("ergomind", {"days": 60}) == "60_day_data"
