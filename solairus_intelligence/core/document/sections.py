@@ -4,6 +4,7 @@ Section builders for Solairus Intelligence Reports.
 Each class is responsible for building a specific section of the report.
 """
 
+import logging
 from typing import Any, Dict, List, Optional
 
 from docx import Document
@@ -35,8 +36,8 @@ class HeaderBuilder:
 
                 if Path(self.logo_path).exists():
                     doc.add_picture(str(self.logo_path), width=Inches(1.5))
-            except Exception:
-                pass  # Continue without logo
+            except (FileNotFoundError, ValueError, OSError) as e:
+                logging.debug(f"Could not add logo: {e}")  # Continue without logo
 
         # Add title
         title_para = doc.add_paragraph()

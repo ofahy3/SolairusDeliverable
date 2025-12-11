@@ -55,7 +55,7 @@ class ResponseCache:
 
         # Create hash of query params
         params_str = json.dumps(query_params, sort_keys=True)
-        params_hash = hashlib.md5(params_str.encode()).hexdigest()[:12]
+        params_hash = hashlib.md5(params_str.encode(), usedforsecurity=False).hexdigest()[:12]
 
         return f"{source}_{today}_{params_hash}"
 
