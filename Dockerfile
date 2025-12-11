@@ -22,7 +22,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY solairus_intelligence/ ./solairus_intelligence/
 COPY .env.example .env.example
-COPY README.md README.md
 
 # Create output directory with proper ownership
 RUN mkdir -p /mnt/user-data/outputs && chown -R appuser:appuser /mnt/user-data/outputs
