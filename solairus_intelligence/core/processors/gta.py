@@ -5,7 +5,7 @@ Handles processing of trade intervention data
 
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.processors.base import IntelligenceItem, BaseProcessor

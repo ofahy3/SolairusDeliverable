@@ -5,7 +5,7 @@ Extracts insights, themes, and structured content from intelligence items.
 """
 
 import re
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Dict, List, Tuple
 
 from solairus_intelligence.core.processor import IntelligenceItem
 

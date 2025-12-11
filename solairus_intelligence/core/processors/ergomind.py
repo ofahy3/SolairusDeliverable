@@ -5,7 +5,7 @@ Handles processing of ErgoMind Flashpoints Forum data
 
 import re
 import logging
-from typing import List, Dict, Optional
+from typing import List, Optional
 from dataclasses import replace
 
 from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING

@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional
 
 from solairus_intelligence.ai.fact_validator import FactValidator
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
-from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)

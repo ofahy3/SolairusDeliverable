@@ -12,7 +12,6 @@ import json
 from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
 from solairus_intelligence.core.orchestrator import QueryOrchestrator
 from solairus_intelligence.core.processors.merger import IntelligenceMerger
-from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.utils.config import get_status_file_path, ENV_CONFIG
 
@@ -292,7 +291,7 @@ class SolairusIntelligenceGenerator:
         # Display source status if available
         if 'source_status' in status:
             source_status = status['source_status']
-            print(f"\n📡 Data Sources:")
+            print("\n📡 Data Sources:")
             print(f"   ErgoMind: {'✓ Success' if source_status.get('ergomind') == 'success' else '✗ Failed'}")
             print(f"   GTA:      {'✓ Success' if source_status.get('gta') == 'success' else '✗ Failed'}")
             print(f"   FRED:     {'✓ Success' if source_status.get('fred') == 'success' else '✗ Failed'}")
@@ -300,17 +299,17 @@ class SolairusIntelligenceGenerator:
         # Display AI usage if available
         if 'ai_usage' in status and status['ai_usage'].get('total_requests', 0) > 0:
             ai_usage = status['ai_usage']
-            print(f"\n🤖 AI Enhancement:")
+            print("\n🤖 AI Enhancement:")
             print(f"   API Calls: {ai_usage['total_requests']} ({ai_usage['successful_requests']} successful)")
             print(f"   Tokens: {ai_usage['total_input_tokens']:,} in / {ai_usage['total_output_tokens']:,} out")
             print(f"   Cost: ${ai_usage['total_cost_usd']:.4f}")
 
         if status['report_path']:
-            print(f"\n📄 Report Location:")
+            print("\n📄 Report Location:")
             print(f"   {status['report_path']}")
 
         if status['errors']:
-            print(f"\n⚠️ Errors:")
+            print("\n⚠️ Errors:")
             for error in status['errors']:
                 print(f"   - {error}")
                 
@@ -337,11 +336,11 @@ async def main():
     filepath, status = await generator.generate_monthly_report(test_mode=args.test)
     
     if status['success']:
-        print(f"\n✅ Report successfully generated!")
+        print("\n✅ Report successfully generated!")
         print(f"📄 Open the report: {filepath}")
         return 0
     else:
-        print(f"\n❌ Report generation failed. Check logs for details.")
+        print("\n❌ Report generation failed. Check logs for details.")
         return 1
 
 

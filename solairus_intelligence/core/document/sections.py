@@ -15,7 +15,7 @@ from solairus_intelligence.core.processor import (
     IntelligenceItem,
     SectorIntelligence,
 )
-from solairus_intelligence.core.document.styles import ErgoStyles, ERGO_COLORS, SPACING
+from solairus_intelligence.core.document.styles import ErgoStyles, SPACING
 from solairus_intelligence.core.document.content import ContentExtractor
 
 
