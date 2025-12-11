@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import pytest
 
-from mro_intelligence.utils.retry import (
+from solairus_intelligence.utils.retry import (
     TRANSIENT_EXCEPTIONS,
     create_retry_decorator,
 )
@@ -210,7 +210,7 @@ class TestRetryableError:
 
     def test_retryable_error_creation(self):
         """Test creating RetryableError"""
-        from mro_intelligence.utils.retry import RetryableError
+        from solairus_intelligence.utils.retry import RetryableError
 
         error = RetryableError("Test error")
 
@@ -219,7 +219,7 @@ class TestRetryableError:
 
     def test_retryable_error_with_original(self):
         """Test RetryableError with original exception"""
-        from mro_intelligence.utils.retry import RetryableError
+        from solairus_intelligence.utils.retry import RetryableError
 
         original = ValueError("Original error")
         error = RetryableError("Wrapped error", original_exception=original)
@@ -233,7 +233,7 @@ class TestWithTimeout:
     @pytest.mark.asyncio
     async def test_with_timeout_success(self):
         """Test successful operation within timeout"""
-        from mro_intelligence.utils.retry import with_timeout
+        from solairus_intelligence.utils.retry import with_timeout
 
         async def quick_operation():
             return "success"
@@ -245,7 +245,7 @@ class TestWithTimeout:
     @pytest.mark.asyncio
     async def test_with_timeout_raises_on_timeout(self):
         """Test timeout raises TimeoutError"""
-        from mro_intelligence.utils.retry import with_timeout
+        from solairus_intelligence.utils.retry import with_timeout
 
         async def slow_operation():
             await asyncio.sleep(10)
@@ -262,7 +262,7 @@ class TestLogRetry:
         """Test log_retry logs correctly"""
         import logging
 
-        from mro_intelligence.utils.retry import log_retry
+        from solairus_intelligence.utils.retry import log_retry
 
         caplog.set_level(logging.WARNING)
 
@@ -278,7 +278,7 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_initialization(self):
         """Test circuit breaker initializes correctly"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=5, recovery_timeout=30.0, name="test")
 
@@ -290,7 +290,7 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_record_success(self):
         """Test circuit breaker records success"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=3)
         cb._failures = 2
@@ -303,7 +303,7 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_record_failure(self):
         """Test circuit breaker records failure"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=3)
 
@@ -319,7 +319,7 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_opens_after_threshold(self):
         """Test circuit breaker opens after threshold"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=2)
 
@@ -332,7 +332,7 @@ class TestCircuitBreaker:
         """Test circuit breaker recovers after timeout"""
         import time
 
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=1, recovery_timeout=0.1)
 
@@ -347,7 +347,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_decorator_success(self):
         """Test circuit breaker as decorator with success"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=3)
 
@@ -363,7 +363,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_decorator_failure(self):
         """Test circuit breaker as decorator with failure"""
-        from mro_intelligence.utils.retry import CircuitBreaker
+        from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=3)
 
@@ -379,7 +379,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_blocks_when_open(self):
         """Test circuit breaker blocks requests when open"""
-        from mro_intelligence.utils.retry import CircuitBreaker, RetryableError
+        from solairus_intelligence.utils.retry import CircuitBreaker, RetryableError
 
         cb = CircuitBreaker(failure_threshold=1, recovery_timeout=60)
 
@@ -404,18 +404,18 @@ class TestPreConfiguredDecorators:
 
     def test_retry_api_call_exists(self):
         """Test retry_api_call is defined"""
-        from mro_intelligence.utils.retry import retry_api_call
+        from solairus_intelligence.utils.retry import retry_api_call
 
         assert callable(retry_api_call)
 
     def test_retry_api_call_aggressive_exists(self):
         """Test retry_api_call_aggressive is defined"""
-        from mro_intelligence.utils.retry import retry_api_call_aggressive
+        from solairus_intelligence.utils.retry import retry_api_call_aggressive
 
         assert callable(retry_api_call_aggressive)
 
     def test_retry_api_call_light_exists(self):
         """Test retry_api_call_light is defined"""
-        from mro_intelligence.utils.retry import retry_api_call_light
+        from solairus_intelligence.utils.retry import retry_api_call_light
 
         assert callable(retry_api_call_light)

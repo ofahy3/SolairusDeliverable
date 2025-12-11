@@ -36,20 +36,20 @@ jobs:
           pip install -r requirements.txt
 
       - name: Check formatting with Black
-        run: black --check --line-length=100 mro_intelligence tests
+        run: black --check --line-length=100 solairus_intelligence tests
 
       - name: Check import sorting with isort
-        run: isort --check-only --profile=black --line-length=100 mro_intelligence tests
+        run: isort --check-only --profile=black --line-length=100 solairus_intelligence tests
 
       - name: Lint with flake8
-        run: flake8 mro_intelligence tests --max-line-length=100 --extend-ignore=E203,W503,E501,E402
+        run: flake8 solairus_intelligence tests --max-line-length=100 --extend-ignore=E203,W503,E501,E402
 
       - name: Type check with mypy
-        run: mypy mro_intelligence --ignore-missing-imports --no-strict-optional
+        run: mypy solairus_intelligence --ignore-missing-imports --no-strict-optional
         continue-on-error: true  # Don't fail build on type errors for now
 
       - name: Security check with bandit
-        run: bandit -r mro_intelligence -c pyproject.toml
+        run: bandit -r solairus_intelligence -c pyproject.toml
 
   test:
     name: Test
@@ -79,7 +79,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pytest tests/unit -v --cov=mro_intelligence --cov-report=xml --cov-report=term-missing
+          pytest tests/unit -v --cov=solairus_intelligence --cov-report=xml --cov-report=term-missing
         env:
           ERGOMIND_API_KEY: test_key
           ERGOMIND_USER_ID: test@test.com
@@ -89,7 +89,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          pytest tests/integration -v --cov=mro_intelligence --cov-append --cov-report=xml --cov-report=term-missing
+          pytest tests/integration -v --cov=solairus_intelligence --cov-append --cov-report=xml --cov-report=term-missing
         env:
           ERGOMIND_API_KEY: test_key
           ERGOMIND_USER_ID: test@test.com
@@ -118,7 +118,7 @@ jobs:
         with:
           context: .
           push: false
-          tags: mro-intelligence:test
+          tags: solairus-intelligence:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

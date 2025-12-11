@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mro_intelligence.utils.cache import ResponseCache
+from solairus_intelligence.utils.cache import ResponseCache
 
 
 class TestResponseCache:

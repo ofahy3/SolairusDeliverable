@@ -1,5 +1,5 @@
 """
-End-to-end test for the full MRO Intelligence pipeline.
+End-to-end test for the full Solairus Intelligence pipeline.
 
 This test verifies the complete workflow from API call to report generation,
 using mocked external services to ensure consistent testing.
@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mro_intelligence import generate_report, generate_report_sync
+from solairus_intelligence import generate_report, generate_report_sync
 
 
 class TestEndToEndPipeline:
@@ -22,15 +22,15 @@ class TestEndToEndPipeline:
         """Mock ErgoMind API response"""
         return [
             {
-                "query": "industrial geopolitical risks",
-                "response": "Rising tensions in Eastern Europe pose risks to industrial operations. "
-                "Several airlines have rerouted operationss away from conflict zones. "
+                "query": "aviation geopolitical risks",
+                "response": "Rising tensions in Eastern Europe pose risks to aviation operations. "
+                "Several airlines have rerouted flights away from conflict zones. "
                 "Insurance costs have increased by 15% for affected regions.",
                 "confidence": 0.87,
             },
             {
-                "query": "trade policy industrial",
-                "response": "New export controls on industrial components affecting supply chains. "
+                "query": "trade policy aviation",
+                "response": "New export controls on aviation components affecting supply chains. "
                 "Manufacturers report 6-month delays for critical parts.",
                 "confidence": 0.82,
             },
@@ -42,12 +42,12 @@ class TestEndToEndPipeline:
         return [
             {
                 "intervention_id": 12345,
-                "title": "Tariffs on Equipment Components",
+                "title": "Tariffs on Aircraft Components",
                 "implementing_jurisdiction": "United States",
-                "affected_products": ["equipment engines", "industrial parts"],
+                "affected_products": ["aircraft engines", "aviation parts"],
                 "announcement_date": "2024-11-15",
                 "implementation_date": "2024-12-01",
-                "description": "25% tariff on imported industrial components from certain countries",
+                "description": "25% tariff on imported aviation components from certain countries",
             }
         ]
 
@@ -70,7 +70,7 @@ class TestEndToEndPipeline:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
 
-            with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
+            with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
                 mock_generator = MagicMock()
                 mock_doc_path = str(output_dir / "Intelligence_Report_December_2024.docx")
                 Path(mock_doc_path).touch()
@@ -100,7 +100,7 @@ class TestEndToEndPipeline:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
 
-            with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
+            with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
                 mock_generator = MagicMock()
                 mock_doc_path = str(output_dir / "Intelligence_Report_December_2024.docx")
                 Path(mock_doc_path).touch()
@@ -122,7 +122,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_handles_generation_failure(self):
         """Test that failures are properly reported"""
-        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
+        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=(
@@ -140,7 +140,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_handles_empty_errors(self):
         """Test handling of failure with no error details"""
-        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
+        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=(None, {"success": False, "errors": []})

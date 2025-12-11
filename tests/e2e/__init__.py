@@ -1,1 +1,1 @@
-"""End-to-end tests for MRO Intelligence"""
+"""End-to-end tests for Solairus Intelligence"""

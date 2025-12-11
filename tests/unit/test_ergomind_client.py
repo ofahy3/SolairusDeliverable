@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mro_intelligence.clients.ergomind_client import (
+from solairus_intelligence.clients.ergomind_client import (
     ErgoMindClient,
     ErgoMindConfig,
     QueryResult,
@@ -26,14 +26,14 @@ class TestErgoMindConfig:
         assert config.api_key == "test_key"
         assert config.user_id == "test@test.com"
 
-    def test_config_validation_passes_without_api_key(self, monkeypatch):
-        """Test validation passes even without API key (uses bearer token from user_id)"""
+    def test_config_validation_fails_without_api_key(self, monkeypatch):
+        """Test validation fails when API key is missing"""
         monkeypatch.setenv("ERGOMIND_API_KEY", "")
         monkeypatch.setenv("ERGOMIND_USER_ID", "test@test.com")
 
         config = ErgoMindConfig()
-        # API key not required - authentication uses bearer token derived from user_id
-        assert config.validate() is True
+
+        assert config.validate() is False
 
     def test_config_validation_fails_without_user_id(self, monkeypatch):
         """Test validation fails when user ID is missing"""
@@ -204,14 +204,13 @@ class TestErgoMindConfigValidation:
         config = ErgoMindConfig()
         assert config.validate() is True
 
-    def test_validate_passes_with_empty_api_key(self, monkeypatch):
-        """Test validation passes with empty API key (uses bearer token from user_id)"""
+    def test_validate_empty_api_key(self, monkeypatch):
+        """Test validation fails with empty API key"""
         monkeypatch.setenv("ERGOMIND_API_KEY", "")
         monkeypatch.setenv("ERGOMIND_USER_ID", "user@example.com")
 
         config = ErgoMindConfig()
-        # API key not required - authentication uses bearer token derived from user_id
-        assert config.validate() is True
+        assert config.validate() is False
 
     def test_validate_empty_user_id(self, monkeypatch):
         """Test validation fails with empty user ID"""

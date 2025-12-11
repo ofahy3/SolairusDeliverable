@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the MRO Intelligence Report Generator will be documented in this file.
+All notable changes to the Solairus Intelligence Report Generator will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 - Two-page executive report format
-  - Page 1: Industrial-specific intelligence
+  - Page 1: Aviation-specific intelligence
   - Page 2: Client sector intelligence
 - Support for multiple client sectors
 - ErgoMind narrative leadership with GTA/FRED supporting data
@@ -87,4 +87,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.0.0]: https://github.com/mro/intelligence-report-generator/releases/tag/v1.0.0
+[1.0.0]: https://github.com/solairus/intelligence-report-generator/releases/tag/v1.0.0

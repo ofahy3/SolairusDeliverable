@@ -1,4 +1,4 @@
-# Pre-commit hooks for MRO Intelligence
+# Pre-commit hooks for Solairus Intelligence
 # Install: pip install pre-commit && pre-commit install
 
 repos:
@@ -55,7 +55,7 @@ repos:
     rev: 1.7.7
     hooks:
       - id: bandit
-        args: ['-c', 'pyproject.toml', '-r', 'mro_intelligence']
+        args: ['-c', 'pyproject.toml', '-r', 'solairus_intelligence']
         additional_dependencies: ['bandit[toml]']
 
   # Docstring formatting
@@ -64,27 +64,7 @@ repos:
     hooks:
       - id: pydocstyle
         args: ['--convention=google', '--add-ignore=D100,D104,D105,D107']
-        files: ^mro_intelligence/
-
-  # Content contamination check
-  - repo: local
-    hooks:
-      - id: no-solairus-contamination
-        name: Check for Solairus contamination
-        entry: python -m pytest tests/test_no_solairus_contamination.py -x -q
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [commit]
-
-      - id: quality-gate
-        name: Quality Gate Check (A+ Standards)
-        entry: ./scripts/quality-check.sh
-        language: script
-        pass_filenames: false
-        always_run: true
-        stages: [commit]
-        verbose: true
+        files: ^solairus_intelligence/
 
 # CI configuration
 ci:

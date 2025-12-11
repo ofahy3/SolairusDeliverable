@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mro_intelligence.web.app import (
+from solairus_intelligence.web.app import (
     SESSION_TTL_MINUTES,
     GenerationRequest,
     cleanup_expired_sessions,
@@ -73,11 +73,16 @@ class TestSessionCleanup:
 class TestGetGenerator:
     """Test generator initialization"""
 
-    def test_get_generator_returns_instance(self):
-        """Test get_generator returns a generator instance"""
-        gen = get_generator()
-        assert gen is not None
-        assert hasattr(gen, 'generate_monthly_report')
+    def test_get_generator_creates_instance(self):
+        """Test get_generator creates instance"""
+        with patch("solairus_intelligence.web.app.generator", None):
+            with patch("solairus_intelligence.web.app.SolairusIntelligenceGenerator") as MockGen:
+                mock_instance = MagicMock()
+                MockGen.return_value = mock_instance
+
+                _ = get_generator()
+
+                MockGen.assert_called_once()
 
 
 class TestGenerationRequest:
@@ -99,19 +104,19 @@ class TestAppConfiguration:
 
     def test_app_title(self):
         """Test app has correct title"""
-        from mro_intelligence.web.app import app
+        from solairus_intelligence.web.app import app
 
-        assert app.title == "MRO Intelligence Report Generator"
+        assert app.title == "Ergo Intelligence Report Generator"
 
     def test_app_version(self):
         """Test app has version"""
-        from mro_intelligence.web.app import app
+        from solairus_intelligence.web.app import app
 
         assert app.version == "1.0.0"
 
     def test_app_has_routes(self):
         """Test app has expected routes"""
-        from mro_intelligence.web.app import app
+        from solairus_intelligence.web.app import app
 
         routes = [route.path for route in app.routes]
 
@@ -127,9 +132,7 @@ class TestRunGeneration:
     @pytest.mark.asyncio
     async def test_run_generation_success(self):
         """Test successful generation updates session"""
-        import sys
-        web_module = sys.modules["mro_intelligence.web.app"]
-        from mro_intelligence.web.app import run_generation
+        from solairus_intelligence.web.app import run_generation
 
         sessions.clear()
         session_id = "test-session"
@@ -141,7 +144,7 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch.object(web_module, "get_generator") as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
             mock_gen.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/test_report.docx", {"success": True, "errors": []})
@@ -157,9 +160,7 @@ class TestRunGeneration:
     @pytest.mark.asyncio
     async def test_run_generation_failure(self):
         """Test failed generation updates session with error"""
-        import sys
-        web_module = sys.modules["mro_intelligence.web.app"]
-        from mro_intelligence.web.app import run_generation
+        from solairus_intelligence.web.app import run_generation
 
         sessions.clear()
         session_id = "test-session-fail"
@@ -171,7 +172,7 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch.object(web_module, "get_generator") as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
             mock_gen.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": False, "errors": ["API Error"]})
@@ -187,9 +188,7 @@ class TestRunGeneration:
     @pytest.mark.asyncio
     async def test_run_generation_exception(self):
         """Test exception during generation updates session"""
-        import sys
-        web_module = sys.modules["mro_intelligence.web.app"]
-        from mro_intelligence.web.app import run_generation
+        from solairus_intelligence.web.app import run_generation
 
         sessions.clear()
         session_id = "test-session-exception"
@@ -201,7 +200,7 @@ class TestRunGeneration:
             "created_at": datetime.now().isoformat(),
         }
 
-        with patch.object(web_module, "get_generator") as mock_get_gen:
+        with patch("solairus_intelligence.web.app.get_generator") as mock_get_gen:
             mock_gen = MagicMock()
             mock_gen.generate_monthly_report = AsyncMock(side_effect=Exception("Connection failed"))
             mock_get_gen.return_value = mock_gen

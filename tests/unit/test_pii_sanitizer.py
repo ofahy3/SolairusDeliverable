@@ -2,8 +2,8 @@
 Unit tests for PII sanitizer module
 """
 
-from mro_intelligence.ai.pii_sanitizer import PIISanitizer
-from mro_intelligence.config.clients import CLIENT_SECTOR_MAPPING, ClientSector
+from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
+from solairus_intelligence.config.clients import CLIENT_SECTOR_MAPPING, ClientSector
 
 
 class TestPIISanitizer:
@@ -30,7 +30,7 @@ class TestPIISanitizer:
         sanitizer = PIISanitizer()
 
         # Get a known company name from config
-        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.MANUFACTURING, {})
+        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
         companies = tech_mapping.get("companies", [])
 
         if companies:
@@ -46,11 +46,11 @@ class TestPIISanitizer:
         """Test sanitize preserves text that doesn't contain client names"""
         sanitizer = PIISanitizer()
 
-        text = "General industrial news about the industry trends."
+        text = "General aviation news about the industry trends."
         sanitized = sanitizer.sanitize_text(text)
 
         # Should be mostly unchanged
-        assert "industrial" in sanitized
+        assert "aviation" in sanitized
         assert "industry" in sanitized
 
     def test_sanitize_handles_empty_text(self):
@@ -71,7 +71,7 @@ class TestPIISanitizer:
         """Test sanitize handles multiple occurrences of client names"""
         sanitizer = PIISanitizer()
 
-        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.MANUFACTURING, {})
+        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
         companies = tech_mapping.get("companies", [])
 
         if companies:
@@ -102,7 +102,7 @@ class TestPIISanitizerReplacement:
         """Test that replacements maintain sentence readability"""
         sanitizer = PIISanitizer()
 
-        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.MANUFACTURING, {})
+        tech_mapping = CLIENT_SECTOR_MAPPING.get(ClientSector.TECHNOLOGY, {})
         companies = tech_mapping.get("companies", [])
 
         if companies:

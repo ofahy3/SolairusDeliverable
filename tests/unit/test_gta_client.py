@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mro_intelligence.clients.gta_client import GTAClient, GTAConfig, GTAIntervention
+from solairus_intelligence.clients.gta_client import GTAClient, GTAConfig, GTAIntervention
 
 
 class TestGTAConfig:
@@ -334,12 +334,12 @@ class TestGTAClient:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_industrial_sector_interventions(self, client):
-        """Test getting industrial sector interventions"""
+    async def test_get_aviation_sector_interventions(self, client):
+        """Test getting aviation sector interventions"""
         with patch.object(client, "_make_request", new_callable=AsyncMock) as mock_request:
             mock_request.return_value = []
             async with client:
-                result = await client.get_industrial_sector_interventions(days=90)
+                result = await client.get_aviation_sector_interventions(days=90)
 
         assert result == []
 

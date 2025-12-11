@@ -15,17 +15,12 @@ class TestWebIntegration:
     @pytest.fixture
     async def client(self):
         """Create async test client using ASGI transport"""
-        import sys
-        from mro_intelligence.web.app import app
-        web_module = sys.modules["mro_intelligence.web.app"]
-
         with patch.dict("os.environ", {"AI_ENABLED": "false"}):
-            with patch.object(web_module, "get_generator") as mock_get_gen:
-                mock_gen = AsyncMock()
+            with patch("solairus_intelligence.web.app.generator") as mock_gen:
                 mock_gen.generate_monthly_report = AsyncMock(
                     return_value=("/tmp/test_report.docx", {"success": True, "errors": []})
                 )
-                mock_get_gen.return_value = mock_gen
+                from solairus_intelligence.web.app import app
 
                 transport = httpx.ASGITransport(app=app)
                 async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -37,7 +32,7 @@ class TestWebIntegration:
         response = await client.get("/")
 
         assert response.status_code == 200
-        assert "MRO Intelligence" in response.text or "Report Generator" in response.text
+        assert "Ergo Intelligence Report" in response.text
 
     @pytest.mark.asyncio
     async def test_health_check(self, client):
@@ -81,7 +76,7 @@ class TestSessionManagement:
         """Test that sessions are created properly"""
         from datetime import datetime
 
-        from mro_intelligence.web.app import sessions
+        from solairus_intelligence.web.app import sessions
 
         # Clear existing sessions
         sessions.clear()
@@ -106,7 +101,7 @@ class TestSessionManagement:
         """Test that cleanup removes expired sessions"""
         from datetime import datetime, timedelta
 
-        from mro_intelligence.web.app import cleanup_expired_sessions, sessions
+        from solairus_intelligence.web.app import cleanup_expired_sessions, sessions
 
         sessions.clear()
 

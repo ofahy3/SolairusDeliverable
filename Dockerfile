@@ -1,4 +1,4 @@
-# Dockerfile for MRO Intelligence Report Generator
+# Dockerfile for Solairus Intelligence Report Generator
 
 FROM python:3.11-slim
 
@@ -20,7 +20,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY mro_intelligence/ ./mro_intelligence/
+COPY solairus_intelligence/ ./solairus_intelligence/
 COPY .env.example .env.example
 
 # Create output directory with proper ownership
@@ -41,4 +41,4 @@ ENV PYTHONPATH=/app
 EXPOSE 8080
 
 # Run the application
-CMD exec uvicorn mro_intelligence.web.app:app --host 0.0.0.0 --port ${PORT}
+CMD exec uvicorn solairus_intelligence.web.app:app --host 0.0.0.0 --port ${PORT}

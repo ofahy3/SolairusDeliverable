@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 import pytest
 
-from mro_intelligence.core.processors.base import IntelligenceItem
-from mro_intelligence.core.processors.ergomind import ErgoMindProcessor
-from mro_intelligence.core.processors.merger import IntelligenceMerger
+from solairus_intelligence.core.processors.base import IntelligenceItem
+from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
 
 
 class TestProcessorPerformance:
@@ -43,10 +43,10 @@ class TestProcessorPerformance:
             equipment. The restrictions, targeting advanced chip manufacturing technology, affect
             major suppliers including ASML, Applied Materials, and Lam Research.
 
-            Meanwhile, the industrial industry faces continued headwinds from elevated fuel costs,
-            with Gulf Coast crude oil prices hovering near $2.85 per gallon.
+            Meanwhile, the aviation industry faces continued headwinds from elevated fuel costs,
+            with Gulf Coast jet fuel prices hovering near $2.85 per gallon.
 
-            The European Union's new sustainable industrial fuel mandate requires 5% SAF blend
+            The European Union's new sustainable aviation fuel mandate requires 5% SAF blend
             by 2025, creating supply chain challenges for operators serving European destinations.
             """,
         ]
@@ -176,7 +176,7 @@ class TestMemoryUsage:
 
         for i in range(100):
             result = processor.process_intelligence(
-                f"Test text {i} with some content about industrial and finance.", "test"
+                f"Test text {i} with some content about aviation and finance.", "test"
             )
             del result
 

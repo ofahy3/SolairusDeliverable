@@ -7,12 +7,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mro_intelligence.config.clients import ClientSector
-from mro_intelligence.core.processors.base import IntelligenceItem
-from mro_intelligence.core.processors.ergomind import ErgoMindProcessor
-from mro_intelligence.core.processors.fred import FREDProcessor
-from mro_intelligence.core.processors.gta import GTAProcessor
-from mro_intelligence.core.processors.merger import IntelligenceMerger
+from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.processors.base import IntelligenceItem
+from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.fred import FREDProcessor
+from solairus_intelligence.core.processors.gta import GTAProcessor
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
 
 
 class TestErgoMindProcessorIntegration:
@@ -41,31 +41,30 @@ class TestErgoMindProcessorIntegration:
         assert result.confidence > 0
         assert len(result.so_what_statement) > 0
         assert len(result.affected_sectors) > 0
-        # Economic/interest rate news affects commercial facilities and contractors (borrowing costs)
-        assert any(
-            sector in result.affected_sectors
-            for sector in [ClientSector.COMMERCIAL_FACILITIES, ClientSector.CONTRACTORS, ClientSector.GENERAL]
+        assert (
+            ClientSector.FINANCE in result.affected_sectors
+            or ClientSector.GENERAL in result.affected_sectors
         )
 
-    def test_industrial_relevance_scoring(self, processor):
-        """Test that industrial-related content gets higher relevance scores"""
-        industrial_text = """
-        New FAA regulations require all manufacturing operators to implement enhanced
+    def test_aviation_relevance_scoring(self, processor):
+        """Test that aviation-related content gets higher relevance scores"""
+        aviation_text = """
+        New FAA regulations require all Part 135 operators to implement enhanced
         safety management systems by January 2025. The rule affects business jet
-        operators and distributors across the United States, with significant compliance
+        operators and FBOs across the United States, with significant compliance
         costs expected for smaller operators.
         """
 
-        non_industrial_text = """
+        non_aviation_text = """
         The European Central Bank maintained its current interest rate stance,
         citing stable inflation expectations across the Eurozone. Manufacturing
         indices showed modest improvement in Germany and France.
         """
 
-        industrial_result = processor.process_intelligence(industrial_text, category="regulatory")
-        non_industrial_result = processor.process_intelligence(non_industrial_text, category="economic")
+        aviation_result = processor.process_intelligence(aviation_text, category="regulatory")
+        non_aviation_result = processor.process_intelligence(non_aviation_text, category="economic")
 
-        assert industrial_result.relevance_score > non_industrial_result.relevance_score
+        assert aviation_result.relevance_score > non_aviation_result.relevance_score
 
     def test_sector_identification(self, processor):
         """Test that sectors are correctly identified from content"""
@@ -78,7 +77,7 @@ class TestErgoMindProcessorIntegration:
 
         result = processor.process_intelligence(tech_text, category="geopolitical")
 
-        assert ClientSector.MANUFACTURING in result.affected_sectors
+        assert ClientSector.TECHNOLOGY in result.affected_sectors
 
     def test_action_items_generation(self, processor):
         """Test that appropriate action items are generated"""
@@ -99,7 +98,7 @@ class TestErgoMindProcessorIntegration:
     @pytest.mark.asyncio
     async def test_async_processing(self, processor):
         """Test async processing method"""
-        raw_text = "Industrial security concerns rising in Middle East region"
+        raw_text = "Aviation security concerns rising in Middle East region"
 
         result = await processor.process_intelligence_async(raw_text, category="security")
 
@@ -153,8 +152,8 @@ class TestFREDProcessorIntegration:
     def test_fred_observation_processing(self, processor):
         """Test FRED observation processing"""
         mock_observation = MagicMock()
-        mock_observation.series_id = "DJFUELUSGULF"  # Crude oil series
-        mock_observation.series_name = "Gulf Coast Kerosene-Type Crude Oil Spot Price"
+        mock_observation.series_id = "WJFUELUSGULF"
+        mock_observation.series_name = "Gulf Coast Kerosene-Type Jet Fuel Spot Price"
         mock_observation.value = 2.85
         mock_observation.date = "2024-01-15"
         mock_observation.units = "Dollars per Gallon"
@@ -164,10 +163,12 @@ class TestFREDProcessorIntegration:
 
         assert isinstance(result, IntelligenceItem)
         assert result.source_type == "fred"
-        assert result.fred_series_id == "DJFUELUSGULF"
+        assert result.fred_series_id == "WJFUELUSGULF"
         assert result.fred_value == 2.85
-        # so_what_statement derived from the category/series context
-        assert len(result.so_what_statement) > 0
+        assert (
+            "jet fuel" in result.so_what_statement.lower()
+            or "fuel" in result.so_what_statement.lower()
+        )
 
 
 class TestMergerIntegration:
@@ -222,7 +223,7 @@ class TestMergerIntegration:
                 so_what_statement="Tech impact",
                 confidence=0.85,
                 source_type="ergomind",
-                affected_sectors=[ClientSector.MANUFACTURING],
+                affected_sectors=[ClientSector.TECHNOLOGY],
             ),
             IntelligenceItem(
                 raw_content="Finance sector news",
@@ -232,12 +233,12 @@ class TestMergerIntegration:
                 so_what_statement="Finance impact",
                 confidence=0.8,
                 source_type="ergomind",
-                affected_sectors=[ClientSector.GOVERNMENT],
+                affected_sectors=[ClientSector.FINANCE],
             ),
         ]
 
         organized = merger.organize_by_sector(items)
 
-        assert ClientSector.MANUFACTURING in organized
-        assert ClientSector.GOVERNMENT in organized
-        assert len(organized[ClientSector.MANUFACTURING].items) > 0
+        assert ClientSector.TECHNOLOGY in organized
+        assert ClientSector.FINANCE in organized
+        assert len(organized[ClientSector.TECHNOLOGY].items) > 0

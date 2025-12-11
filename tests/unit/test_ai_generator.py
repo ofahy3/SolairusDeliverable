@@ -4,14 +4,14 @@ Unit tests for AI Generator and related components
 
 import pytest
 
-from mro_intelligence.ai.fact_validator import FactValidator
-from mro_intelligence.ai.generator import (
+from solairus_intelligence.ai.fact_validator import FactValidator
+from solairus_intelligence.ai.generator import (
     AIConfig,
     AIUsageTracker,
     SecureAIGenerator,
 )
-from mro_intelligence.ai.pii_sanitizer import PIISanitizer
-from mro_intelligence.core.processor import ClientSector, IntelligenceItem
+from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
+from solairus_intelligence.core.processor import ClientSector, IntelligenceItem
 
 
 class TestAIConfig:
@@ -94,14 +94,12 @@ class TestPIISanitizer:
 
     def test_sanitize_text_with_client_name(self, sanitizer):
         """Test sanitizing text containing client company names"""
-        # For Grainger, the companies list is empty (they serve all manufacturers)
-        # so no specific company names are removed by default
+        # Using a company from the client mapping
         text = "Cisco announced new security features"
         sanitized = sanitizer.sanitize_text(text)
 
-        # With empty companies list, text passes through unchanged
-        # This is correct behavior - Grainger doesn't have specific client names to redact
-        assert sanitized == text
+        # Company name should be replaced
+        assert "Cisco" not in sanitized or "[" in sanitized
 
     def test_sanitize_text_preserves_non_client(self, sanitizer):
         """Test that non-client companies are preserved"""
@@ -223,7 +221,7 @@ class TestExecutiveSummaryParsing:
         """Test parsing bottom line section"""
         response = """
         BOTTOM LINE:
-        - Key development affecting industrial
+        - Key development affecting aviation
         - Monitor for operational impact
         """
         result = generator._parse_executive_summary_response(response)
@@ -282,7 +280,7 @@ class TestExecutiveSummaryParsing:
         WATCH FACTORS:
         [INDICATOR: Geopolitical Risk]
         [WHAT_TO_WATCH: Regional tensions escalating]
-        [WHY_IT_MATTERS: May impact industrial routes]
+        [WHY_IT_MATTERS: May impact aviation routes]
         """
         result = generator._parse_executive_summary_response(response)
 
@@ -340,7 +338,7 @@ class TestPromptConstruction:
                 relevance_score=0.9,
                 confidence=0.85,
                 so_what_statement="Monitor for supply chain impact",
-                affected_sectors=[ClientSector.MANUFACTURING],
+                affected_sectors=[ClientSector.TECHNOLOGY],
             ),
             IntelligenceItem(
                 raw_content="Economic data",
@@ -349,7 +347,7 @@ class TestPromptConstruction:
                 relevance_score=0.8,
                 confidence=0.9,
                 so_what_statement="Watch for demand changes",
-                affected_sectors=[ClientSector.GOVERNMENT],
+                affected_sectors=[ClientSector.FINANCE],
             ),
         ]
 

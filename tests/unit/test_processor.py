@@ -4,7 +4,7 @@ Unit tests for intelligence processing components
 
 import pytest
 
-from mro_intelligence.core.processor import (
+from solairus_intelligence.core.processor import (
     ClientSector,
     ErgoMindProcessor,
     FREDProcessor,
@@ -25,7 +25,7 @@ class TestIntelligenceItem:
             processed_content="Processed analysis",
             category="economic",
             relevance_score=0.85,
-            so_what_statement="Impact on industrial",
+            so_what_statement="Impact on aviation",
             affected_sectors=[ClientSector.GENERAL],
         )
 
@@ -41,7 +41,7 @@ class TestIntelligenceItem:
             category="test",
             relevance_score=0.7,
             so_what_statement="Impact",
-            affected_sectors=[ClientSector.MANUFACTURING],
+            affected_sectors=[ClientSector.TECHNOLOGY],
             source_type="gta",
             confidence=0.9,
         )
@@ -62,15 +62,15 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.8,
                 so_what_statement="Impact",
-                affected_sectors=[ClientSector.MANUFACTURING],
+                affected_sectors=[ClientSector.TECHNOLOGY],
             )
         ]
 
         sector_intel = SectorIntelligence(
-            sector=ClientSector.MANUFACTURING, items=items, summary="Technology sector update"
+            sector=ClientSector.TECHNOLOGY, items=items, summary="Technology sector update"
         )
 
-        assert sector_intel.sector == ClientSector.MANUFACTURING
+        assert sector_intel.sector == ClientSector.TECHNOLOGY
         assert len(sector_intel.items) == 1
         assert sector_intel.summary == "Technology sector update"
 
@@ -83,7 +83,7 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.9,
                 so_what_statement="Impact 1",
-                affected_sectors=[ClientSector.GOVERNMENT],
+                affected_sectors=[ClientSector.FINANCE],
             ),
             IntelligenceItem(
                 raw_content="Test 2",
@@ -91,12 +91,12 @@ class TestSectorIntelligence:
                 category="test",
                 relevance_score=0.85,
                 so_what_statement="Impact 2",
-                affected_sectors=[ClientSector.GOVERNMENT],
+                affected_sectors=[ClientSector.FINANCE],
             ),
         ]
 
         sector_intel = SectorIntelligence(
-            sector=ClientSector.GOVERNMENT, items=items, summary="Finance sector update"
+            sector=ClientSector.FINANCE, items=items, summary="Finance sector update"
         )
 
         assert len(sector_intel.items) == 2
@@ -122,7 +122,7 @@ class TestErgoMindProcessor:
         """Test basic intelligence processing"""
         content = """
         The Federal Reserve announced interest rate changes that will impact
-        corporate borrowing costs and MRO financing.
+        corporate borrowing costs and business aviation financing.
         """
 
         item = processor.process_intelligence(content, category="economic")
@@ -132,14 +132,14 @@ class TestErgoMindProcessor:
         assert item.processed_content is not None
         assert item.category == "economic"
 
-    def test_process_intelligence_industrial(self, processor):
-        """Test processing industrial-related content"""
+    def test_process_intelligence_aviation(self, processor):
+        """Test processing aviation-related content"""
         content = """
         New FAA regulations affecting business jet operations in controlled airspace.
-        Operations safety requirements updated for private industrial operators.
+        Flight safety requirements updated for private aviation operators.
         """
 
-        item = processor.process_intelligence(content, category="industrial_security")
+        item = processor.process_intelligence(content, category="aviation_security")
 
         assert item is not None
         assert item.relevance_score > 0
@@ -159,14 +159,14 @@ class TestErgoMindProcessor:
     def test_process_intelligence_relevance_scoring(self, processor):
         """Test relevance scoring for different content"""
         high_relevance_content = """
-        Industrial security threat assessment indicates increased risk for business
+        Aviation security threat assessment indicates increased risk for business
         jet operations in Middle East airspace due to ongoing conflicts.
         """
 
         low_relevance_content = "General weather patterns observed."
 
         high_item = processor.process_intelligence(
-            high_relevance_content, category="industrial_security"
+            high_relevance_content, category="aviation_security"
         )
         low_item = processor.process_intelligence(low_relevance_content, category="other")
 
@@ -189,7 +189,7 @@ class TestGTAProcessor:
 
     def test_process_intervention(self, processor):
         """Test processing GTA intervention"""
-        from mro_intelligence.clients.gta_client import GTAIntervention
+        from solairus_intelligence.clients.gta_client import GTAIntervention
 
         intervention = GTAIntervention(
             intervention_id=12345,
@@ -210,7 +210,7 @@ class TestGTAProcessor:
 
     def test_process_harmful_intervention(self, processor):
         """Test processing harmful intervention"""
-        from mro_intelligence.clients.gta_client import GTAIntervention
+        from solairus_intelligence.clients.gta_client import GTAIntervention
 
         intervention = GTAIntervention(
             intervention_id=99999,
@@ -238,7 +238,7 @@ class TestFREDProcessor:
 
     def test_process_observation(self, processor):
         """Test processing FRED observation"""
-        from mro_intelligence.clients.fred_client import FREDObservation
+        from solairus_intelligence.clients.fred_client import FREDObservation
 
         obs = FREDObservation(
             series_id="CPIAUCSL",
@@ -256,11 +256,11 @@ class TestFREDProcessor:
 
     def test_process_fuel_observation(self, processor):
         """Test processing fuel price observation"""
-        from mro_intelligence.clients.fred_client import FREDObservation
+        from solairus_intelligence.clients.fred_client import FREDObservation
 
         obs = FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="US Gulf Coast Crude Oil",
+            series_name="US Gulf Coast Jet Fuel",
             value=2.85,
             date="2024-11-01",
             units="$/Gallon",
@@ -322,7 +322,7 @@ class TestIntelligenceMerger:
             category="trade",
             relevance_score=0.9,
             so_what_statement="GTA impact",
-            affected_sectors=[ClientSector.MANUFACTURING],
+            affected_sectors=[ClientSector.TECHNOLOGY],
             source_type="gta",
         )
 
@@ -332,7 +332,7 @@ class TestIntelligenceMerger:
             category="economic",
             relevance_score=0.75,
             so_what_statement="FRED impact",
-            affected_sectors=[ClientSector.GOVERNMENT],
+            affected_sectors=[ClientSector.FINANCE],
             source_type="fred",
         )
 
@@ -393,7 +393,7 @@ class TestIntelligenceMerger:
                 category="test",
                 relevance_score=0.8,
                 so_what_statement="Test impact",
-                affected_sectors=[ClientSector.MANUFACTURING],
+                affected_sectors=[ClientSector.TECHNOLOGY],
                 source_type="ergomind",
             )
         ]
@@ -401,7 +401,7 @@ class TestIntelligenceMerger:
         sector_intel = merger.organize_by_sector(items)
 
         assert len(sector_intel) > 0
-        assert ClientSector.MANUFACTURING in sector_intel or ClientSector.GENERAL in sector_intel
+        assert ClientSector.TECHNOLOGY in sector_intel or ClientSector.GENERAL in sector_intel
 
     def test_organize_by_sector_empty(self, merger):
         """Test organizing empty list"""
@@ -417,7 +417,7 @@ class TestIntelligenceMerger:
                 category="technology",
                 relevance_score=0.9,
                 so_what_statement="Tech impact",
-                affected_sectors=[ClientSector.MANUFACTURING],
+                affected_sectors=[ClientSector.TECHNOLOGY],
                 source_type="ergomind",
             ),
             IntelligenceItem(
@@ -426,7 +426,7 @@ class TestIntelligenceMerger:
                 category="finance",
                 relevance_score=0.85,
                 so_what_statement="Finance impact",
-                affected_sectors=[ClientSector.GOVERNMENT],
+                affected_sectors=[ClientSector.FINANCE],
                 source_type="ergomind",
             ),
         ]
@@ -442,23 +442,25 @@ class TestClientSectorEnum:
 
     def test_sector_values(self):
         """Test sector enum has expected values"""
-        assert ClientSector.MANUFACTURING is not None
-        assert ClientSector.GOVERNMENT is not None
+        assert ClientSector.TECHNOLOGY is not None
+        assert ClientSector.FINANCE is not None
         assert ClientSector.GENERAL is not None
 
     def test_sector_values_are_strings(self):
         """Test sector values are strings"""
-        assert isinstance(ClientSector.MANUFACTURING.value, str)
-        assert isinstance(ClientSector.GOVERNMENT.value, str)
+        assert isinstance(ClientSector.TECHNOLOGY.value, str)
+        assert isinstance(ClientSector.FINANCE.value, str)
 
     def test_all_sectors_defined(self):
-        """Test all expected Grainger customer segments are defined"""
+        """Test all expected sectors are defined"""
         expected_sectors = [
-            "MANUFACTURING",
-            "GOVERNMENT",
-            "COMMERCIAL_FACILITIES",
-            "CONTRACTORS",
+            "TECHNOLOGY",
+            "FINANCE",
             "GENERAL",
+            "HEALTHCARE",
+            "ENERGY",
+            "ENTERTAINMENT",
+            "REAL_ESTATE",
         ]
 
         for sector_name in expected_sectors:
