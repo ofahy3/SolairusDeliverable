@@ -4,6 +4,8 @@ Intelligence Processing - Public API
 Re-exports from the processors package for backwards compatibility.
 """
 
+from typing import Any, Dict, List, cast
+
 from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
 from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
 from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
@@ -19,7 +21,7 @@ class IntelligenceProcessor:
     Coordinates ErgoMind, GTA, and FRED processors with intelligent merging.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ergomind = ErgoMindProcessor()
         self.gta = GTAProcessor()
         self.fred = FREDProcessor()
@@ -29,29 +31,47 @@ class IntelligenceProcessor:
         self.client_mapping = CLIENT_SECTOR_MAPPING
         self.relevance_keywords = self.ergomind.RELEVANCE_KEYWORDS
 
-    async def process_intelligence_async(self, raw_text: str, category: str = "general") -> IntelligenceItem:
+    async def process_intelligence_async(
+        self, raw_text: str, category: str = "general"
+    ) -> IntelligenceItem:
         """Process ErgoMind intelligence asynchronously."""
-        return await self.ergomind.process_intelligence_async(raw_text, category)
+        result = await self.ergomind.process_intelligence_async(raw_text, category)
+        return cast(IntelligenceItem, result)
 
-    def process_intelligence(self, raw_text: str, category: str = "general") -> IntelligenceItem:
+    def process_intelligence(
+        self, raw_text: str, category: str = "general"
+    ) -> IntelligenceItem:
         """Process ErgoMind intelligence synchronously."""
-        return self.ergomind.process_intelligence(raw_text, category)
+        result = self.ergomind.process_intelligence(raw_text, category)
+        return cast(IntelligenceItem, result)
 
-    def process_gta_intervention(self, intervention, category: str = "trade_intervention") -> IntelligenceItem:
+    def process_gta_intervention(
+        self, intervention: Any, category: str = "trade_intervention"
+    ) -> IntelligenceItem:
         """Convert a GTA intervention into an IntelligenceItem."""
-        return self.gta.process_intervention(intervention, category)
+        result = self.gta.process_intervention(intervention, category)
+        return cast(IntelligenceItem, result)
 
-    def process_fred_observation(self, observation, category: str) -> IntelligenceItem:
+    def process_fred_observation(
+        self, observation: Any, category: str
+    ) -> IntelligenceItem:
         """Convert FRED economic data into an IntelligenceItem."""
-        return self.fred.process_observation(observation, category)
+        result = self.fred.process_observation(observation, category)
+        return cast(IntelligenceItem, result)
 
-    def merge_intelligence_sources(self, *source_lists) -> list:
+    def merge_intelligence_sources(
+        self, *source_lists: List[IntelligenceItem]
+    ) -> List[IntelligenceItem]:
         """Merge multiple intelligence sources with deduplication."""
-        return self.merger.merge_sources(*source_lists)
+        result = self.merger.merge_sources(*source_lists)
+        return cast(List[IntelligenceItem], result)
 
-    def organize_by_sector(self, items: list) -> dict:
+    def organize_by_sector(
+        self, items: List[IntelligenceItem]
+    ) -> Dict[ClientSector, SectorIntelligence]:
         """Organize intelligence items by client sector."""
-        return self.merger.organize_by_sector(items)
+        result = self.merger.organize_by_sector(items)
+        return cast(Dict[ClientSector, SectorIntelligence], result)
 
 
 __all__ = [

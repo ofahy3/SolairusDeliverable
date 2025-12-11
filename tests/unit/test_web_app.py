@@ -22,14 +22,12 @@ class TestSessionCleanup:
         """Test cleanup removes expired sessions"""
         sessions.clear()
 
-        # Create expired session
         expired_time = (datetime.now() - timedelta(minutes=SESSION_TTL_MINUTES + 10)).isoformat()
         sessions["expired-session"] = {
             "created_at": expired_time,
             "in_progress": False,
         }
 
-        # Create valid session
         valid_time = datetime.now().isoformat()
         sessions["valid-session"] = {
             "created_at": valid_time,
@@ -60,7 +58,6 @@ class TestSessionCleanup:
         """Test cleanup enforces max sessions limit"""
         sessions.clear()
 
-        # Create many sessions
         for i in range(150):
             sessions[f"session-{i}"] = {
                 "created_at": datetime.now().isoformat(),
@@ -69,7 +66,6 @@ class TestSessionCleanup:
 
         cleanup_expired_sessions()
 
-        # Should be limited to MAX_SESSIONS (100)
         assert len(sessions) <= 100
 
 
@@ -94,19 +90,12 @@ class TestGenerationRequest:
     def test_default_values(self):
         """Test default request values"""
         request = GenerationRequest()
-
         assert request.test_mode is False
-        assert request.focus_areas is None
 
     def test_custom_values(self):
         """Test custom request values"""
-        request = GenerationRequest(
-            test_mode=True,
-            focus_areas=["aviation", "technology"]
-        )
-
+        request = GenerationRequest(test_mode=True)
         assert request.test_mode is True
-        assert request.focus_areas == ["aviation", "technology"]
 
 
 class TestAppConfiguration:
@@ -158,7 +147,7 @@ class TestRunGeneration:
             )
             mock_get_gen.return_value = mock_gen
 
-            await run_generation(session_id, test_mode=True, focus_areas=None)
+            await run_generation(session_id, test_mode=True)
 
             assert sessions[session_id]["in_progress"] is False
             assert sessions[session_id]["last_report"] == "/tmp/test_report.docx"
@@ -186,7 +175,7 @@ class TestRunGeneration:
             )
             mock_get_gen.return_value = mock_gen
 
-            await run_generation(session_id, test_mode=True, focus_areas=None)
+            await run_generation(session_id, test_mode=True)
 
             assert sessions[session_id]["in_progress"] is False
             assert sessions[session_id]["error"] is not None
@@ -214,7 +203,7 @@ class TestRunGeneration:
             )
             mock_get_gen.return_value = mock_gen
 
-            await run_generation(session_id, test_mode=True, focus_areas=None)
+            await run_generation(session_id, test_mode=True)
 
             assert sessions[session_id]["in_progress"] is False
             assert sessions[session_id]["error"] == "Connection failed"

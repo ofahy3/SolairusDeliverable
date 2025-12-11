@@ -133,7 +133,6 @@ class GenerationRequest(BaseModel):
     """Request model for report generation"""
 
     test_mode: bool = False
-    focus_areas: Optional[List[str]] = None
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -158,7 +157,7 @@ async def generate_report(request: GenerationRequest, background_tasks: Backgrou
     }
 
     # Start generation in background
-    background_tasks.add_task(run_generation, session_id, request.test_mode, request.focus_areas)
+    background_tasks.add_task(run_generation, session_id, request.test_mode)
 
     return {
         "message": "Report generation started",
@@ -166,13 +165,12 @@ async def generate_report(request: GenerationRequest, background_tasks: Backgrou
         "session_id": session_id,
     }
 
-async def run_generation(session_id: str, test_mode: bool, focus_areas: Optional[List[str]]):
+
+async def run_generation(session_id: str, test_mode: bool):
     """Run the report generation process for a specific session"""
     try:
         gen = get_generator()
-        filepath, status = await gen.generate_monthly_report(
-            focus_areas=focus_areas, test_mode=test_mode
-        )
+        filepath, status = await gen.generate_monthly_report(test_mode=test_mode)
 
         if status["success"]:
             sessions[session_id]["last_report"] = filepath

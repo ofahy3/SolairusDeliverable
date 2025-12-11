@@ -57,7 +57,8 @@ class IntelligenceMerger:
                     )
                     if impl_date < six_months_ago:
                         continue
-                except:
+                except (ValueError, TypeError):
+                    # Date parsing failed - include item anyway
                     pass
 
             filtered.append(item)
@@ -76,15 +77,15 @@ class IntelligenceMerger:
                 impl_date = datetime.fromisoformat(item.date_implemented.replace('Z', '+00:00'))
                 days_old = (datetime.now() - impl_date.replace(tzinfo=None)).days
                 freshness_factor = 1.0 if days_old < 90 else 0.9
-            except:
-                pass
+            except (ValueError, TypeError):
+                pass  # Use default freshness_factor
         elif item.source_type == "fred" and item.fred_observation_date:
             try:
                 obs_date = datetime.fromisoformat(item.fred_observation_date[:10])
                 days_old = (datetime.now() - obs_date).days
                 freshness_factor = 1.0 if days_old < 60 else 0.95
-            except:
-                pass
+            except (ValueError, TypeError):
+                pass  # Use default freshness_factor
 
         return base_score * freshness_factor * source_weight
 
