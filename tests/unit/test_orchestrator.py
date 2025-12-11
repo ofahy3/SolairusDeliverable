@@ -209,8 +209,8 @@ class TestProcessAndFilterResults:
         mock_result = MagicMock()
         mock_result.success = True
         mock_result.response = (
-            "This is a comprehensive analysis of geopolitical developments affecting aviation security. "
-            * 5
+            "This is a comprehensive analysis of geopolitical developments "
+            "affecting aviation security. " * 5
         )
         mock_result.confidence_score = 0.9
         mock_result.sources = ["source1"]
@@ -245,9 +245,9 @@ class TestProcessAndFilterResults:
         mock_result = MagicMock()
         mock_result.success = True
         mock_result.response = """Key developments:
-1. First major development with significant implications for global trade that spans multiple regions and sectors in detail.
-2. Second development affecting technology sector with detailed analysis of semiconductor supply chains and export controls.
-3. Third development impacting financial markets with extensive coverage of banking regulations and compliance requirements."""
+1. First major development with significant implications for global trade.
+2. Second development affecting technology sector with supply chain analysis.
+3. Third development impacting financial markets and banking regulations."""
         mock_result.confidence_score = 0.85
         mock_result.sources = ["source1"]
 

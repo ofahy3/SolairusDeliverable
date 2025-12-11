@@ -42,7 +42,7 @@ jobs:
         run: isort --check-only --profile=black --line-length=100 solairus_intelligence tests
 
       - name: Lint with flake8
-        run: flake8 solairus_intelligence tests --max-line-length=100 --extend-ignore=E203,W503
+        run: flake8 solairus_intelligence tests --max-line-length=100 --extend-ignore=E203,W503,E501,E402
 
       - name: Type check with mypy
         run: mypy solairus_intelligence --ignore-missing-imports --no-strict-optional

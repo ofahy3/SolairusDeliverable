@@ -92,7 +92,7 @@ class TestSessionManagement:
         }
 
         assert test_session_id in sessions
-        assert sessions[test_session_id]["in_progress"] == False
+        assert sessions[test_session_id]["in_progress"] is False
 
         # Clean up
         sessions.clear()
