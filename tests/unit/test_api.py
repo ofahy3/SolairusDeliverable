@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from solairus_intelligence.api import generate_report, generate_report_sync
+from mro_intelligence.api import generate_report, generate_report_sync
 
 
 class TestGenerateReport:
@@ -14,7 +14,7 @@ class TestGenerateReport:
     @pytest.mark.asyncio
     async def test_generate_report_returns_path(self):
         """Test generate_report returns a Path object"""
-        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
+        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": True, "errors": []})
@@ -29,7 +29,7 @@ class TestGenerateReport:
     @pytest.mark.asyncio
     async def test_generate_report_default_month(self):
         """Test generate_report uses current month when not specified"""
-        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
+        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": True, "errors": []})
@@ -43,7 +43,7 @@ class TestGenerateReport:
     @pytest.mark.asyncio
     async def test_generate_report_raises_on_failure(self):
         """Test generate_report raises RuntimeError on failure"""
-        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
+        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": False, "errors": ["Test error"]})
@@ -59,7 +59,7 @@ class TestGenerateReportSync:
 
     def test_sync_wrapper_returns_path(self):
         """Test sync wrapper returns correct result"""
-        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
+        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": True, "errors": []})
@@ -73,7 +73,7 @@ class TestGenerateReportSync:
 
     def test_sync_wrapper_raises_on_failure(self):
         """Test sync wrapper raises on failure"""
-        with patch("solairus_intelligence.api.SolairusIntelligenceGenerator") as MockGen:
+        with patch("mro_intelligence.api.MROIntelligenceGenerator") as MockGen:
             mock_generator = MagicMock()
             mock_generator.generate_monthly_report = AsyncMock(
                 return_value=("/tmp/report.docx", {"success": False, "errors": ["Failed"]})
@@ -89,14 +89,14 @@ class TestPublicAPIExports:
 
     def test_imports_from_package(self):
         """Test imports from package root"""
-        from solairus_intelligence import generate_report, generate_report_sync
+        from mro_intelligence import generate_report, generate_report_sync
 
         assert callable(generate_report)
         assert callable(generate_report_sync)
 
     def test_version_exported(self):
         """Test version is exported"""
-        from solairus_intelligence import __version__
+        from mro_intelligence import __version__
 
         assert isinstance(__version__, str)
         assert len(__version__) > 0

@@ -5,7 +5,7 @@ Additional tests for coverage improvement
 import pytest
 
 # Test AI Generator additional coverage
-from solairus_intelligence.ai.generator import AIConfig, AIUsageTracker, SecureAIGenerator
+from mro_intelligence.ai.generator import AIConfig, AIUsageTracker, SecureAIGenerator
 
 
 class TestAIGeneratorAdditional:
@@ -60,10 +60,10 @@ class TestUsageTrackerAdditional:
         assert "total_cost_usd" in summary
 
 
-from solairus_intelligence.config.clients import ClientSector
+from mro_intelligence.config.clients import ClientSector
 
 # Test processor module additional coverage
-from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
+from mro_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
 
 
 class TestIntelligenceItemAdditional:
@@ -77,7 +77,7 @@ class TestIntelligenceItemAdditional:
             category="economic",
             relevance_score=0.9,
             so_what_statement="This is important",
-            affected_sectors=[ClientSector.TECHNOLOGY, ClientSector.FINANCE],
+            affected_sectors=[ClientSector.MANUFACTURING, ClientSector.GOVERNMENT],
             confidence=0.95,
             source_type="ergomind",
             action_items=["Action 1", "Action 2"],
@@ -108,7 +108,7 @@ class TestSectorIntelligenceAdditional:
     def test_sector_intelligence_empty(self):
         """Test sector intelligence with no items"""
         intel = SectorIntelligence(
-            sector=ClientSector.TECHNOLOGY,
+            sector=ClientSector.MANUFACTURING,
             items=[],
             summary="",
         )
@@ -125,11 +125,11 @@ class TestSectorIntelligenceAdditional:
                 category="tech",
                 relevance_score=0.8,
                 so_what_statement="Impact 1",
-                affected_sectors=[ClientSector.TECHNOLOGY],
+                affected_sectors=[ClientSector.MANUFACTURING],
             )
         ]
         intel = SectorIntelligence(
-            sector=ClientSector.TECHNOLOGY,
+            sector=ClientSector.MANUFACTURING,
             items=items,
             summary="Tech sector summary",
             key_risks=["Risk 1"],
@@ -143,15 +143,15 @@ class TestSectorIntelligenceAdditional:
 
 
 # Test CLI module
-from solairus_intelligence.cli import SolairusIntelligenceGenerator
+from mro_intelligence.cli import MROIntelligenceGenerator
 
 
 class TestCLIAdditional:
     """Additional CLI tests"""
 
     def test_generator_initialization(self):
-        """Test SolairusIntelligenceGenerator initializes"""
-        gen = SolairusIntelligenceGenerator()
+        """Test MROIntelligenceGenerator initializes"""
+        gen = MROIntelligenceGenerator()
         assert gen is not None
         assert gen.client is not None
         assert gen.orchestrator is not None
@@ -160,18 +160,18 @@ class TestCLIAdditional:
 
     def test_generator_has_generate_method(self):
         """Test generator has generate method"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
         assert hasattr(gen, "generate_monthly_report")
         assert callable(gen.generate_monthly_report)
 
     def test_generator_initial_status(self):
         """Test generator initial status is None"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
         assert gen.last_run_status is None
 
 
 # Test config module additional coverage
-from solairus_intelligence.utils.config import (
+from mro_intelligence.utils.config import (
     ENV_CONFIG,
     EnvironmentConfig,
     get_config,
@@ -200,7 +200,7 @@ class TestConfigAdditional:
 
 
 # Test orchestrator module additional coverage
-from solairus_intelligence.core.orchestrator import QueryTemplate
+from mro_intelligence.core.orchestrator import QueryTemplate
 
 
 class TestQueryTemplateAdditional:
@@ -210,14 +210,14 @@ class TestQueryTemplateAdditional:
         """Test query template categories"""
         assert QueryTemplate is not None
 
-    def test_create_aviation_template(self):
-        """Test creating aviation template"""
+    def test_create_industrial_template(self):
+        """Test creating industrial template"""
         template = QueryTemplate(
-            category="aviation",
-            query="aviation safety",
+            category="industrial",
+            query="industrial safety",
             priority=1,
         )
-        assert template.category == "aviation"
+        assert template.category == "industrial"
         assert template.priority == 1
 
     def test_create_economic_template(self):
@@ -231,7 +231,7 @@ class TestQueryTemplateAdditional:
 
 
 # Test FRED client additional coverage
-from solairus_intelligence.clients.fred_client import FREDClient, FREDConfig, FREDObservation
+from mro_intelligence.clients.fred_client import FREDClient, FREDConfig, FREDObservation
 
 
 class TestFREDClientAdditional:
@@ -267,7 +267,7 @@ class TestFREDClientAdditional:
 
 
 # Test ergomind client additional coverage
-from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
+from mro_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
 
 
 class TestErgoMindClientAdditional:

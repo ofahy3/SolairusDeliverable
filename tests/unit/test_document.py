@@ -8,23 +8,21 @@ import pytest
 from docx import Document as DocxDocument
 from docx.shared import RGBColor
 
-from solairus_intelligence.config.clients import ClientSector
-from solairus_intelligence.core.document.content import ContentExtractor
-from solairus_intelligence.core.document.generator import DocumentGenerator
-from solairus_intelligence.core.document.sections import (
+from mro_intelligence.config.clients import ClientSector
+from mro_intelligence.core.document.content import ContentExtractor
+from mro_intelligence.core.document.generator import DocumentGenerator
+from mro_intelligence.core.document.sections import (
     EconomicIndicatorsBuilder,
     ExecutiveSummaryBuilder,
     HeaderBuilder,
-    RegionalAssessmentBuilder,
-    SectorSectionBuilder,
 )
-from solairus_intelligence.core.document.styles import (
+from mro_intelligence.core.document.styles import (
     ERGO_COLORS,
     SPACING,
     ErgoStyles,
     FontConfig,
 )
-from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
+from mro_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
 
 
 class TestErgoColors:
@@ -422,130 +420,6 @@ class TestEconomicIndicatorsBuilder:
         assert len(doc.tables) > 0
 
 
-class TestRegionalAssessmentBuilder:
-    """Test RegionalAssessmentBuilder class"""
-
-    @pytest.fixture
-    def styles(self):
-        return ErgoStyles()
-
-    @pytest.fixture
-    def extractor(self):
-        return ContentExtractor()
-
-    @pytest.fixture
-    def builder(self, styles, extractor):
-        return RegionalAssessmentBuilder(styles, extractor)
-
-    def test_builder_initialization(self, builder):
-        """Test regional assessment builder initializes correctly"""
-        assert builder is not None
-        assert builder.styles is not None
-
-    def test_add_regional_assessment_empty(self, builder):
-        """Test adding regional assessment with no items"""
-        doc = DocxDocument()
-        builder.add_regional_assessment(doc, [])
-        # No content added
-        assert len(doc.paragraphs) == 0
-
-    def test_add_regional_assessment_with_items(self, builder):
-        """Test adding regional assessment with items"""
-        doc = DocxDocument()
-        items = [
-            IntelligenceItem(
-                raw_content="Europe trade update",
-                processed_content="European markets showing growth",
-                category="trade",
-                relevance_score=0.8,
-                so_what_statement="EU impact",
-                affected_sectors=[ClientSector.GENERAL],
-            )
-        ]
-        builder.add_regional_assessment(doc, items)
-        assert len(doc.paragraphs) > 0
-
-    def test_detect_region_europe(self, builder):
-        """Test detecting Europe region"""
-        item = IntelligenceItem(
-            raw_content="EU policy",
-            processed_content="European Union update",
-            category="policy",
-            relevance_score=0.8,
-            so_what_statement="Impact",
-            affected_sectors=[ClientSector.GENERAL],
-        )
-        region = builder._detect_region(item)
-        assert region == "Europe"
-
-    def test_detect_region_asia(self, builder):
-        """Test detecting Asia region"""
-        item = IntelligenceItem(
-            raw_content="China trade",
-            processed_content="Chinese markets",
-            category="trade",
-            relevance_score=0.8,
-            so_what_statement="Impact",
-            affected_sectors=[ClientSector.GENERAL],
-        )
-        region = builder._detect_region(item)
-        assert region == "Asia-Pacific"
-
-    def test_detect_region_global(self, builder):
-        """Test detecting Global region"""
-        item = IntelligenceItem(
-            raw_content="test",
-            processed_content="General update",
-            category="general",
-            relevance_score=0.8,
-            so_what_statement="Impact",
-            affected_sectors=[ClientSector.GENERAL],
-        )
-        region = builder._detect_region(item)
-        assert region == "Global"
-
-
-class TestSectorSectionBuilder:
-    """Test SectorSectionBuilder class"""
-
-    @pytest.fixture
-    def styles(self):
-        return ErgoStyles()
-
-    @pytest.fixture
-    def extractor(self):
-        return ContentExtractor()
-
-    @pytest.fixture
-    def builder(self, styles, extractor):
-        return SectorSectionBuilder(styles, extractor)
-
-    def test_builder_initialization(self, builder):
-        """Test sector section builder initializes correctly"""
-        assert builder is not None
-        assert builder.styles is not None
-
-    def test_add_sector_section(self, builder):
-        """Test adding sector section"""
-        doc = DocxDocument()
-        intelligence = SectorIntelligence(
-            sector=ClientSector.TECHNOLOGY,
-            items=[
-                IntelligenceItem(
-                    raw_content="test",
-                    processed_content="Tech sector update",
-                    category="technology",
-                    relevance_score=0.8,
-                    so_what_statement="Impact on tech sector",
-                    affected_sectors=[ClientSector.TECHNOLOGY],
-                )
-            ],
-            summary="Technology sector summary",
-        )
-        builder.add_sector_section(doc, ClientSector.TECHNOLOGY, intelligence)
-        assert len(doc.paragraphs) > 0
-
-
 class TestDocumentGenerator:
     """Test DocumentGenerator class"""
 
@@ -565,8 +439,8 @@ class TestDocumentGenerator:
         assert generator.header_builder is not None
         assert generator.exec_summary_builder is not None
         assert generator.econ_indicators_builder is not None
-        assert generator.regional_builder is not None
-        assert generator.sector_builder is not None
+        assert generator.sector_demand_builder is not None
+        assert generator.risks_opps_builder is not None
 
     def test_generator_has_create_report(self, generator):
         """Test generator has create_report method"""

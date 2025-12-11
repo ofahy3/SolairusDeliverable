@@ -1,6 +1,6 @@
-# Solairus Intelligence Report Generation - Style & Formatting Requirements
+# MRO Intelligence Report Generation - Style & Formatting Requirements
 
-Use the following rules when generating the monthly Solairus Intelligence Report. These rules ensure the output matches the quality standards expected by the client and eliminates the need for manual analyst revision.
+Use the following rules when generating the monthly MRO Intelligence Report. These rules ensure the output matches the quality standards expected by the client and eliminates the need for manual analyst revision.
 
 ---
 
@@ -8,7 +8,7 @@ Use the following rules when generating the monthly Solairus Intelligence Report
 
 **All major section headers must be bold:**
 - **EXECUTIVE SUMMARY**
-- **ECONOMIC INDICATORS FOR BUSINESS AVIATION**
+- **ECONOMIC INDICATORS FOR BUSINESS INDUSTRIAL**
 
 **Subsection titles must use Title Case:**
 - **Taiwan Strait Escalation Risk**
@@ -27,7 +27,7 @@ The Bottom Line section must be:
 
 **Example structure:**
 ```
-**Ergo assesses that a Taiwan Strait blockade would trigger immediate closure of Taiwan FIR and adjacent corridors,** forcing rapid rerouting of Northeast Asia-Southeast Asia and Asia-Australia traffic, while Middle East and European operations face persistent flight planning friction from tactical airspace adjustments and rising regulatory overhead.
+**Ergo assesses that a Taiwan Strait blockade would trigger immediate closure of Taiwan FIR and adjacent corridors,** forcing rapid rerouting of Northeast Asia-Southeast Asia and Asia-Australia traffic, while Middle East and European operations face persistent operations planning friction from tactical airspace adjustments and rising regulatory overhead.
 ```
 
 **Avoid:**
@@ -49,13 +49,13 @@ Each Key Finding subsection must follow this pattern:
 
 **Example:**
 ```
-**Sustained or increasing Chinese coercion against Taiwan remains the most probable near-term trajectory,** with blockade scenarios presenting the highest operational disruption risk. In the event of a full blockade, China would destroy ROC air force capabilities and establish multi-ring blockade operations, ceasing Taiwan Strait traffic entirely and forcing vessels and aircraft onto longer Pacific routes. Ergo assesses three implications for Solairus:
+**Sustained or increasing Chinese coercion against Taiwan remains the most probable near-term trajectory,** with blockade scenarios presenting the highest operational disruption risk. In the event of a full blockade, China would destroy ROC air force capabilities and establish multi-ring blockade operations, ceasing Taiwan Strait traffic entirely and forcing vessels and equipment onto longer Pacific routes. Ergo assesses three implications for Grainger:
 ```
 
 ### Transition Sentences (Required)
 Before each bullet list, include a client-specific transition:
-- "Ergo assesses three implications for Solairus:"
-- "Two trends Ergo is monitoring for Solairus:"
+- "Ergo assesses three implications for Grainger:"
+- "Two trends Ergo is monitoring for Grainger:"
 
 ---
 
@@ -111,7 +111,7 @@ Do NOT include internal Ergo scenario codenames or probability percentages in cl
 ## 7. Economic Indicators Table
 
 **Indicator names must include units:**
-- Jet Fuel (USD/gal)
+- Crude Oil (USD/gal)
 - Crude Oil (USD/bbl)
 
 **Be specific with indicator names:**
@@ -146,8 +146,8 @@ If no -> exclude from Bottom Line.
 - "In the unlikely event of a full blockade..."
 
 **3. Use contingency framing, not preparation imperatives:**
-- "...would add significant flight time" (conditional consequence)
-- NOT "Flight departments require pre-planned aircraft relocations" (implies imminent action needed)
+- "...would add significant operations time" (conditional consequence)
+- NOT "Operations departments require pre-planned equipment relocations" (implies imminent action needed)
 
 **4. Reserve "prepare for" and "require" language for likely scenarios:**
 - High-probability events: "Operators should plan for short-notice restrictions"
@@ -167,9 +167,9 @@ If no -> exclude from Bottom Line.
 ## 10. Content Focus Rules
 
 **Include only operationally relevant content for the client:**
-- The client is a business aviation operator
+- The client is a MRO operator
 - Focus on: airspace access, route planning, fuel costs, regulatory compliance, client travel patterns
-- Exclude: tangential policy topics, export controls (unless affecting aviation), detailed diplomatic analysis
+- Exclude: tangential policy topics, export controls (unless affecting industrial), detailed diplomatic analysis
 
 ---
 
@@ -187,6 +187,6 @@ Before finalizing the report, verify:
 - [ ] No internal scenario names or probability percentages appear
 - [ ] Economic indicators include units (USD/gal, USD/bbl)
 - [ ] No semicolons within bullet points - use periods instead
-- [ ] All content is directly relevant to business aviation operations
+- [ ] All content is directly relevant to MRO operations
 - [ ] **Low-probability scenarios are explicitly flagged as unlikely** (not presented as baseline expectations)
 - [ ] **"Prepare for" / "require" language is reserved for likely scenarios** (use conditional framing for tail risks)

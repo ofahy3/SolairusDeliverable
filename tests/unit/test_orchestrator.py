@@ -6,11 +6,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from solairus_intelligence.core.orchestrator import (
+from mro_intelligence.core.orchestrator import (
     QueryOrchestrator,
     QueryTemplate,
 )
-from solairus_intelligence.core.processor import ClientSector
+from mro_intelligence.core.processor import ClientSector
 
 
 class TestQueryTemplate:
@@ -23,7 +23,7 @@ class TestQueryTemplate:
             query="What are the latest developments?",
             follow_ups=["Follow up 1", "Follow up 2"],
             priority=8,
-            sectors=[ClientSector.TECHNOLOGY],
+            sectors=[ClientSector.MANUFACTURING],
         )
 
         assert template.category == "test_category"
@@ -72,15 +72,15 @@ class TestQueryOrchestrator:
             assert len(template.query) > 10  # Meaningful query
             assert 1 <= template.priority <= 10
 
-    def test_aviation_templates_exist(self, orchestrator):
-        """Test aviation-related templates exist"""
-        aviation_templates = [
+    def test_industrial_templates_exist(self, orchestrator):
+        """Test industrial-related templates exist"""
+        industrial_templates = [
             t
             for t in orchestrator.query_templates
-            if "aviation" in t.category.lower() or "aviation" in t.query.lower()
+            if "industrial" in t.category.lower() or "industrial" in t.query.lower()
         ]
 
-        assert len(aviation_templates) > 0
+        assert len(industrial_templates) > 0
 
     def test_processor_initialized(self, orchestrator):
         """Test processor is initialized"""
@@ -210,12 +210,12 @@ class TestProcessAndFilterResults:
         mock_result.success = True
         mock_result.response = (
             "This is a comprehensive analysis of geopolitical developments "
-            "affecting aviation security. " * 5
+            "affecting industrial security. " * 5
         )
         mock_result.confidence_score = 0.9
         mock_result.sources = ["source1"]
 
-        raw_results = {"aviation_security": [mock_result]}
+        raw_results = {"industrial_security": [mock_result]}
 
         items = await orchestrator.process_and_filter_results(raw_results)
 
@@ -290,7 +290,7 @@ class TestProcessAndFilterResults:
         mock_result.confidence_score = 0.0
         mock_result.sources = []
 
-        raw_results = {"aviation_security": [mock_result]}
+        raw_results = {"industrial_security": [mock_result]}
 
         items = await orchestrator.process_and_filter_results(raw_results)
 
@@ -307,7 +307,7 @@ class TestProcessGTAResults:
     @pytest.mark.asyncio
     async def test_process_gta_with_interventions(self, orchestrator):
         """Test processing GTA interventions"""
-        from solairus_intelligence.clients.gta_client import GTAIntervention
+        from mro_intelligence.clients.gta_client import GTAIntervention
 
         intervention = GTAIntervention(
             intervention_id=12345,
@@ -329,7 +329,7 @@ class TestProcessGTAResults:
     @pytest.mark.asyncio
     async def test_process_gta_removes_duplicates(self, orchestrator):
         """Test GTA duplicate removal by intervention ID"""
-        from solairus_intelligence.clients.gta_client import GTAIntervention
+        from mro_intelligence.clients.gta_client import GTAIntervention
 
         # Same intervention ID
         intervention1 = GTAIntervention(
@@ -363,7 +363,7 @@ class TestProcessGTAResults:
     @pytest.mark.asyncio
     async def test_process_gta_filters_low_relevance(self, orchestrator):
         """Test GTA filters low relevance items"""
-        from solairus_intelligence.clients.gta_client import GTAIntervention
+        from mro_intelligence.clients.gta_client import GTAIntervention
 
         intervention = GTAIntervention(
             intervention_id=99999,
@@ -394,7 +394,7 @@ class TestProcessFREDResults:
     @pytest.mark.asyncio
     async def test_process_fred_with_observations(self, orchestrator):
         """Test processing FRED observations"""
-        from solairus_intelligence.clients.fred_client import FREDObservation
+        from mro_intelligence.clients.fred_client import FREDObservation
 
         observation = FREDObservation(
             series_id="CPIAUCSL",
@@ -415,7 +415,7 @@ class TestProcessFREDResults:
     @pytest.mark.asyncio
     async def test_process_fred_multiple_categories(self, orchestrator):
         """Test processing multiple FRED categories"""
-        from solairus_intelligence.clients.fred_client import FREDObservation
+        from mro_intelligence.clients.fred_client import FREDObservation
 
         inflation_obs = FREDObservation(
             series_id="CPIAUCSL",
@@ -427,7 +427,7 @@ class TestProcessFREDResults:
         )
         fuel_obs = FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="Jet Fuel",
+            series_name="Crude Oil",
             value=2.85,
             date="2024-11-01",
             units="$/Gallon",
@@ -451,16 +451,16 @@ class TestQueryTemplateCategories:
     def orchestrator(self):
         return QueryOrchestrator()
 
-    def test_has_regional_templates(self, orchestrator):
-        """Test regional templates exist"""
-        regional_categories = ["north_america", "europe", "asia_pacific", "middle_east"]
-        for category in regional_categories:
+    def test_has_grainger_priority_templates(self, orchestrator):
+        """Test Grainger priority templates exist (Jenna's explicit questions)"""
+        priority_categories = ["tariffs_mro_impact", "us_mro_outlook", "steel_mro_demand", "pricing_strategy"]
+        for category in priority_categories:
             templates = [t for t in orchestrator.query_templates if t.category == category]
             assert len(templates) > 0, f"Missing template for {category}"
 
     def test_has_sector_templates(self, orchestrator):
-        """Test sector templates exist"""
-        sector_categories = ["technology_sector", "financial_sector"]
+        """Test Grainger customer segment templates exist"""
+        sector_categories = ["manufacturing_demand", "government_spending", "contractor_activity"]
         for category in sector_categories:
             templates = [t for t in orchestrator.query_templates if t.category == category]
             assert len(templates) > 0, f"Missing template for {category}"

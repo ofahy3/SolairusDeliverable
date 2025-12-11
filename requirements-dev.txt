@@ -1,4 +1,4 @@
-# Development Dependencies for Solairus Intelligence Report Generator
+# Development Dependencies for MRO Intelligence Report Generator
 
 # Testing
 pytest>=7.0.0

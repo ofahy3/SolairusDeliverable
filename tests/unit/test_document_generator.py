@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from solairus_intelligence.core.document.generator import DocumentGenerator
-from solairus_intelligence.core.processor import (
+from mro_intelligence.core.document.generator import DocumentGenerator
+from mro_intelligence.core.processor import (
     ClientSector,
     IntelligenceItem,
     SectorIntelligence,
@@ -43,7 +43,7 @@ class TestDocumentGenerator:
                 relevance_score=0.78,
                 confidence=0.85,
                 so_what_statement="Supply chain impacts for tech clients",
-                affected_sectors=[ClientSector.TECHNOLOGY],
+                affected_sectors=[ClientSector.MANUFACTURING],
                 source_type="gta",
             ),
         ]
@@ -57,8 +57,8 @@ class TestDocumentGenerator:
                 items=[sample_items[0]],
                 summary="Economic indicators show pressure",
             ),
-            ClientSector.TECHNOLOGY: SectorIntelligence(
-                sector=ClientSector.TECHNOLOGY,
+            ClientSector.MANUFACTURING: SectorIntelligence(
+                sector=ClientSector.MANUFACTURING,
                 items=[sample_items[1]],
                 summary="Tech sector faces trade restrictions",
             ),
@@ -67,7 +67,8 @@ class TestDocumentGenerator:
     def test_generator_initialization(self, generator):
         """Test generator initializes correctly"""
         assert generator is not None
-        assert generator.ergo_colors is not None
+        assert generator.styles is not None
+        assert generator.content_extractor is not None
 
     def test_create_report(self, generator, sample_items, sample_sector_intel):
         """Test report creation"""

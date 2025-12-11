@@ -1,4 +1,4 @@
-# Solairus Intelligence Report Generator - Requirements
+# MRO Intelligence Report Generator - Requirements
 
 # Core dependencies
 fastapi==0.104.1

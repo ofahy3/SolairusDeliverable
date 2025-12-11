@@ -1,344 +1,207 @@
-# Solairus Intelligence Report Generator
+# Grainger MRO Intelligence Report Generator
 
-## 🎯 Overview
+## Overview
 
-An elegant, professional tool that generates monthly intelligence reports for Solairus Aviation by integrating three complementary intelligence sources:
+Generates biweekly MRO (Maintenance, Repair & Operations) market intelligence reports for W.W. Grainger by integrating three intelligence sources:
 
-- **ErgoMind Flashpoints Forum**: Narrative intelligence and geopolitical analysis
-- **Global Trade Alert (GTA)**: Concrete trade policy and tariff data
-- **Federal Reserve Economic Data (FRED)**: Economic indicators and market metrics
+- **ErgoMind Flashpoints Forum**: Geopolitical analysis and narrative intelligence
+- **Global Trade Alert (GTA)**: Trade policy, tariffs, and supply chain data
+- **FRED (Federal Reserve Economic Data)**: Economic indicators for industrial activity
 
-The system produces a two-page executive report:
+The system produces a **3-page executive report** translating global events into MRO market implications for Grainger's key sectors: Manufacturing, Construction, Energy, Transportation/Logistics, and Agriculture.
 
-- **Page 1**: Aviation-specific intelligence relevant to Solairus operations
-- **Page 2**: Client-sector intelligence tailored to their diverse client base
+---
 
-## ✨ Features
+## Quick Start
 
-- **Intelligent Query Orchestration**: Strategic queries designed to extract maximum value from Flashpoints Forum
-- **"So What" Analysis**: Every piece of intelligence includes actionable insights
-- **Sector Personalization**: Intelligence categorized by client industry (Technology, Finance, Real Estate, Entertainment)
-- **Professional Output**: Beautiful DOCX reports optimized for Google Docs
-- **Quality Assurance**: Built-in relevance scoring and confidence metrics
-- **Simple Interface**: One-click report generation via web UI
+### 1. Install Dependencies
 
-## 🏗️ Architecture
-
-```
-┌───────────────────────────────────────────────────┐
-│          Web Interface (FastAPI)                   │
-│        Simple, elegant control panel               │
-└───────────────────┬───────────────────────────────┘
-                    │
-┌───────────────────▼───────────────────────────────┐
-│         Multi-Source Intelligence Pipeline         │
-│  • Query Orchestrator (Parallel source gathering)  │
-│  • ErgoMind Client (Narrative intelligence)        │
-│  • GTA Client (Trade policy data)                  │
-│  • FRED Client (Economic indicators)               │
-│  • Intelligence Processor (Merge & "So What")      │
-│  • Document Generator (Professional DOCX)          │
-└────────────────────────────────────────────────────┘
-```
-
-### Intelligence Sources
-
-1. **ErgoMind Flashpoints Forum** (Primary narrative source)
-   - Geopolitical analysis and expert insights
-   - Strategic intelligence on global events
-   - Aviation-specific threat assessments
-
-2. **Global Trade Alert (GTA)** (Trade data provider)
-   - Tariff changes and trade barriers
-   - Export controls and sanctions
-   - Country-specific trade policies
-
-3. **Federal Reserve Economic Data (FRED)** (Economic metrics)
-   - Jet fuel prices (WJFUELUSGULF)
-   - Interest rates (Federal Funds, 10-Year Treasury)
-   - Inflation indicators (CPI, Core CPI)
-   - GDP growth and employment data
-
-## 📋 Requirements
-
-- Python 3.11+
-- **ErgoMind API access**: Provides narrative intelligence structure
-- **Global Trade Alert (GTA) API key**: Get free key from [Global Trade Alert](https://www.globaltradealert.org/)
-- **Federal Reserve Economic Data (FRED) API key**: Get free key from [FRED API](https://fred.stlouisfed.org/docs/api/api_key.html)
-- 2GB RAM minimum
-- Internet connection for API queries
-
-## 🚀 Quick Start
-
-### Local Development
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/ofahy3/SolairusDeliverable.git
-cd solairus-intelligence
-```
-
-2. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Set up environment variables**
-```bash
-# Copy example environment file
-cp .env.example .env
+### 2. Configure API Keys
 
-# Edit .env and add your API keys:
-# - ERGOMIND_API_KEY
-# - GTA_API_KEY (get from https://www.globaltradealert.org/)
-# - FRED_API_KEY (get from https://fred.stlouisfed.org/docs/api/api_key.html)
-```
-
-Note: The system will work without GTA/FRED API keys but will only use ErgoMind data.
-
-4. **Run the web application**
-```bash
-python3 -m solairus_intelligence.web.app
-```
-
-5. **Open your browser**
-Navigate to `http://localhost:8080`
-
-6. **Generate a report**
-- Click "Generate Intelligence Report"
-- Use "Test Mode" for faster generation with limited queries
-- Wait for processing (1-5 minutes depending on mode)
-- Download the generated DOCX file
-
-### Command Line Usage
-
-For direct command-line generation:
+Create a `.env` file in the project root:
 
 ```bash
-# Full production report
-python3 -m solairus_intelligence.cli
-
-# Test mode (limited queries)
-python3 -m solairus_intelligence.cli --test
-
-# Focus on specific areas
-python3 -m solairus_intelligence.cli --focus technology finance
-```
-
-## ☁️ Google Cloud Deployment
-
-### Prerequisites
-- Google Cloud account
-- `gcloud` CLI installed and configured
-- Cloud Run API enabled
-
-### Deployment Steps
-
-1. **Build the container**
-```bash
-docker build -t solairus-intelligence .
-```
-
-2. **Tag for Google Container Registry**
-```bash
-docker tag solairus-intelligence gcr.io/[YOUR-PROJECT-ID]/solairus-intelligence
-```
-
-3. **Push to GCR**
-```bash
-docker push gcr.io/[YOUR-PROJECT-ID]/solairus-intelligence
-```
-
-4. **Deploy to Cloud Run**
-```bash
-gcloud run deploy solairus-intelligence \
-  --image gcr.io/[YOUR-PROJECT-ID]/solairus-intelligence \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --memory 2Gi \
-  --timeout 600
-```
-
-### Using Cloud Build (Recommended)
-
-Create `cloudbuild.yaml`:
-
-```yaml
-steps:
-  # Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/solairus-intelligence', '.']
-
-  # Push to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/solairus-intelligence']
-
-  # Deploy to Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'solairus-intelligence'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/solairus-intelligence'
-      - '--region'
-      - 'us-central1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--memory'
-      - '2Gi'
-      - '--timeout'
-      - '600'
-```
-
-Then deploy with:
-```bash
-gcloud builds submit --config cloudbuild.yaml
-```
-
-## 📊 Report Structure
-
-### Page 1: Solairus Business Intelligence
-- **Executive Summary**: Top 4 critical findings
-- **Geopolitical Developments**: Impact on aviation operations
-- **Economic Indicators**: Business aviation demand signals
-- **Regional Risk Assessments**: North America, Europe, Asia-Pacific, Middle East
-- **Regulatory Horizon**: Upcoming compliance requirements
-
-### Page 2: Client Sector Intelligence
-- **Technology Sector**: Silicon Valley dynamics, export controls, data sovereignty
-- **Financial Sector**: Market volatility, M&A activity, regulatory changes
-- **Real Estate Sector**: Construction costs, development trends, interest rate impacts
-- **Entertainment Sector**: Content regulation, production incentives, talent mobility
-
-## 🔧 Configuration
-
-### Configuring API Credentials
-
-All API credentials are configured via environment variables in your `.env` file:
-
-```bash
-# ErgoMind API
-ERGOMIND_API_KEY=your_api_key
+# Required - ErgoMind access
+ERGOMIND_API_KEY=your_ergomind_key
 ERGOMIND_USER_ID=your_user_id
 
-# Global Trade Alert
-GTA_API_KEY=your_gta_key
+# Required - Economic data
+FRED_API_KEY=your_fred_key          # Get free: https://fred.stlouisfed.org/docs/api/api_key.html
 
-# FRED Economic Data
-FRED_API_KEY=your_fred_key
+# Optional - Trade policy data
+GTA_API_KEY=your_gta_key            # Get from: https://www.globaltradealert.org/
 
-# Claude AI (optional)
+# Optional - AI-enhanced summaries
 ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
-See `.env.example` for a complete template with all available options.
+### 3. Generate a Report
 
-### Adding Client Sectors
-
-Edit `solairus_intelligence/core/processor.py` to add new sectors:
-```python
-ClientSector.NEW_SECTOR: {
-    'companies': ['Company1', 'Company2'],
-    'keywords': ['relevant', 'keywords'],
-    'geopolitical_triggers': ['specific', 'triggers']
-}
+**Test mode** (faster, limited queries - use for testing):
+```bash
+python3 -m mro_intelligence.cli --test
 ```
 
-### Customizing Queries
-
-Edit `solairus_intelligence/core/orchestrator.py` to modify or add query templates:
-```python
-QueryTemplate(
-    category="your_category",
-    query="Your strategic query for ErgoMind?",
-    follow_ups=["Follow-up question 1", "Follow-up question 2"],
-    priority=8,  # 1-10 scale
-    sectors=[ClientSector.RELEVANT_SECTOR]
-)
+**Full report** (production quality):
+```bash
+python3 -m mro_intelligence.cli
 ```
 
-## 📈 Quality Metrics
+### 4. Find Your Report
 
-The system tracks quality through:
-- **Relevance Score**: How applicable to Solairus (0-1)
-- **Confidence Score**: Quality of ErgoMind response (0-1)
-- **"So What" Coverage**: Percentage with actionable insights
-- **Sector Coverage**: Number of client sectors addressed
-- **Action Items**: Percentage with concrete next steps
+Reports are saved to:
+```
+outputs/MRO_Intelligence_Report_[Month]_[Timestamp].docx
+```
 
-Target: <25% rewrite rate (core success metric)
-
-## 🐛 Troubleshooting
-
-### ErgoMind Connection Issues
-- Verify API key is correct
-- Check network connectivity
-- Review logs for WebSocket errors
-- Test mode bypasses most queries
-
-### Report Generation Fails
-- Check `outputs/last_run_status.json` for details
-- Ensure sufficient memory (2GB+)
-- Verify all Python dependencies installed
-
-### Poor Quality Output
-- Review query templates for relevance
-- Adjust relevance scoring thresholds
-- Ensure ErgoMind is returning quality data
-- Check confidence scores in logs
-
-## 🔄 Monthly Workflow
-
-1. **First Monday of Month**: Generate report
-2. **Review Output**: Check quality metrics
-3. **Upload to Google Docs**: Direct DOCX import
-4. **Manual Review**: Fact-check and polish
-5. **Deliver to Solairus**: Final formatted report
-
-## 📝 Development Notes
-
-- **Test Mode**: Uses only high-priority queries (3 instead of 15+)
-- **Rate Limiting**: 2-3 second delays between ErgoMind queries
-- **Retry Logic**: Exponential backoff for failed queries
-- **Caching**: Responses cached to prevent duplicate queries
-- **Error Handling**: Comprehensive logging at each stage
-
-## 🎨 Design Principles
-
-Following "Stop Coding and Start Planning" methodology:
-- **Prototype First**: Test ErgoMind integration before building
-- **Iterate on Quality**: Multiple processing passes for relevance
-- **Simple Over Complex**: Vanilla JavaScript, standard Python
-- **Reliability First**: Extensive error handling over features
-- **Professional Output**: Focus on document quality over UI polish
-
-## 📧 Support
-
-For issues or questions:
-- Check logs in `outputs/`
-- Review ErgoMind connection status
-- Verify API credentials
-- Test with limited queries first
-
-## 🚀 Future Enhancements
-
-- [ ] Client-specific report generation
-- [ ] Historical trend analysis
-- [ ] Automated scheduling (cron/Cloud Scheduler)
-- [ ] Multi-format export (PDF, HTML)
-- [ ] Enhanced visualizations
-- [ ] Collaborative review features
-- [ ] Integration with Google Docs API
-- [ ] Advanced caching strategies
-
-## 📜 License
-
-Proprietary - Solairus Aviation Internal Use Only
+Example: `outputs/MRO_Intelligence_Report_December_2024_20241211_143022.docx`
 
 ---
 
-**Built with craftsmanship for Solairus Aviation**
-*Powered by ErgoMind Flashpoints Forum*
+## Report Structure (3 Pages)
+
+### Page 1: Executive Summary & Macro Outlook
+- **Introduction**: Context on Ergo Flashpoints Forum data (last 3 months)
+- **Executive Summary**: Top 4-5 key findings with MRO market implications
+- **US Economic Outlook**: GDP, industrial production, manufacturing trends
+- **Key Economic Indicators Table**: FRED data with MRO relevance column
+
+### Page 2: Sector Demand Analysis
+- **Manufacturing Sector**: Production trends, capex investment, automation
+- **Construction Sector**: Building activity, infrastructure spending, permits
+- **Energy Sector**: Oil/gas activity, utility maintenance, renewables
+- **"So What for Grainger" Callouts**: Blue boxes explaining business implications
+
+### Page 3: Risks & Opportunities
+- **Trade Policy Impacts**: Tariffs, supply chain shifts, reshoring trends
+- **Regional Considerations**: US domestic and USMCA region focus
+- **90-Day Outlook**: Near-term actionable intelligence
+- **Recommended Actions**: Concrete next steps for MRO positioning
+
+---
+
+## Biweekly Workflow
+
+### Every 2 Weeks (Per Grainger Cadence)
+
+**Step 1: Generate Report**
+```bash
+python3 -m mro_intelligence.cli
+```
+Wait 3-5 minutes for completion.
+
+**Step 2: Review Quality Metrics**
+Check the console output for:
+- Total intelligence items processed
+- Relevance scores (target: >0.6 average)
+- Sector coverage (should include Manufacturing, Construction, Energy)
+
+**Step 3: Upload to Google Docs**
+- Open the `.docx` file in Google Docs
+- Formatting should preserve automatically
+- Review for any formatting issues
+
+**Step 4: Internal Review**
+- Send to Haden/Client Solutions for review
+- Address any feedback or clarifications
+- Verify all "So What" statements are actionable
+
+**Step 5: Deliver to Grainger**
+- Send final report to Jenna at Grainger
+- Note any particularly significant findings in the email
+
+---
+
+## Command Line Options
+
+```bash
+# Full production report
+python3 -m mro_intelligence.cli
+
+# Test mode (faster, fewer queries)
+python3 -m mro_intelligence.cli --test
+
+# Focus on specific sectors
+python3 -m mro_intelligence.cli --focus manufacturing construction
+
+# Specify output directory
+python3 -m mro_intelligence.cli --output /path/to/output
+```
+
+---
+
+## FRED Indicators Tracked
+
+| Category | Indicators |
+|----------|------------|
+| Industrial Activity | INDPRO, IPMAN, CMRMTSPL, DGORDER |
+| Construction | TLRESCONS, TLNRESCONS, HOUST, PERMIT |
+| Business Conditions | UNRATE, PCEPILFE, FEDFUNDS, T10Y2Y |
+| Commodities | PPIACO, WPU101, DCOILWTICO |
+
+---
+
+## Troubleshooting
+
+### "Failed to connect to ErgoMind"
+- Verify `ERGOMIND_API_KEY` and `ERGOMIND_USER_ID` in `.env`
+- Check network connectivity
+- Try test mode first: `python3 -m mro_intelligence.cli --test`
+
+### Report generation hangs
+- ErgoMind queries take 2-5 minutes total
+- Check logs in console for progress
+- If stuck >10 minutes, cancel and retry
+
+### Empty or low-quality output
+- Verify all API keys are set correctly
+- Check `outputs/last_run_status.json` for errors
+- Ensure FRED_API_KEY is valid (most reliable data source)
+
+### DOCX formatting issues in Google Docs
+- The report is optimized for Google Docs import
+- If tables break, try reducing browser zoom
+- Headers and "So What" boxes should render correctly
+
+### "CONTAMINATION DETECTED" error
+- The system blocks any content from prior client projects
+- This is a safety feature - do not bypass
+- Check source data for unexpected content
+
+---
+
+## Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `config/grainger_profile.py` | Grainger-specific settings (lookback, relevance filters) |
+| `config/content_blocklist.py` | Blocked terms/patterns for content isolation |
+| `mro_intelligence/config/clients.py` | MRO sector definitions and keywords |
+| `mro_intelligence/clients/fred_client.py` | FRED indicator configuration |
+
+---
+
+## Quality Targets
+
+- **Relevance Score**: >0.6 average (items below 0.6 filtered out)
+- **Sector Coverage**: All 5 MRO sectors represented
+- **"So What" Coverage**: 100% of items have actionable insights
+- **Rewrite Rate**: <25% (reports should need minimal editing)
+
+---
+
+## Support
+
+For issues:
+1. Check logs in console output
+2. Review `outputs/last_run_status.json`
+3. Verify API credentials in `.env`
+4. Run tests: `python3 -m pytest tests/test_mro_queries.py -v`
+
+---
+
+**Built for Grainger** | Powered by ErgoMind Flashpoints Forum

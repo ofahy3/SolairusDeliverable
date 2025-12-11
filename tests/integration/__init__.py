@@ -1,1 +1,1 @@
-"""Integration tests for Solairus Intelligence"""
+"""Integration tests for MRO Intelligence"""

@@ -4,8 +4,8 @@ Unit tests for FRED Processor module
 
 import pytest
 
-from solairus_intelligence.clients.fred_client import FREDObservation
-from solairus_intelligence.core.processors.fred import FREDProcessor
+from mro_intelligence.clients.fred_client import FREDObservation
+from mro_intelligence.core.processors.fred import FREDProcessor
 
 
 class TestFREDProcessor:
@@ -33,7 +33,7 @@ class TestFREDProcessor:
         """Create fuel price observation"""
         return FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="US Gulf Coast Kerosene-Type Jet Fuel",
+            series_name="US Gulf Coast Kerosene-Type Crude Oil",
             value=2.85,
             date="2024-11-01",
             units="Dollars per Gallon",
@@ -82,7 +82,7 @@ class TestProcessObservation:
         """Test processing fuel price data"""
         obs = FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="Jet Fuel Price",
+            series_name="Crude Oil Price",
             value=2.85,
             date="2024-11-01",
             units="Dollars per Gallon",
@@ -178,7 +178,7 @@ class TestSoWhatGeneration:
         """Test fuel So What is generated"""
         obs = FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="Jet Fuel Price",
+            series_name="Crude Oil Price",
             value=3.50,
             date="2024-11-01",
             units="Dollars per Gallon",
@@ -258,7 +258,7 @@ class TestContentFormatting:
         """Test processed content includes relevant data"""
         obs = FREDObservation(
             series_id="DJFUELUSGULF",
-            series_name="US Gulf Coast Jet Fuel",
+            series_name="US Gulf Coast Crude Oil",
             value=2.85,
             date="2024-11-01",
             units="$/Gallon",

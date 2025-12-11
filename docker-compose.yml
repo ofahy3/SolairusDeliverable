@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: solairus-intelligence-web
+    container_name: mro-intelligence-web
     ports:
       - "8080:8080"
     env_file:
@@ -17,7 +17,7 @@ services:
       # Mount outputs directory for local development
       - ./outputs:/mnt/user-data/outputs
       # Optional: Mount source code for development (hot reload)
-      # - ./solairus_intelligence:/app/solairus_intelligence
+      # - ./mro_intelligence:/app/mro_intelligence
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -31,7 +31,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: solairus-intelligence-dev
+    container_name: mro-intelligence-dev
     ports:
       - "8080:8080"
     env_file:
@@ -41,12 +41,12 @@ services:
       - PORT=8080
       - ENVIRONMENT=development
     volumes:
-      - ./solairus_intelligence:/app/solairus_intelligence
+      - ./mro_intelligence:/app/mro_intelligence
       - ./outputs:/mnt/user-data/outputs
-    command: uvicorn solairus_intelligence.web.app:app --reload --host 0.0.0.0 --port 8080
+    command: uvicorn mro_intelligence.web.app:app --reload --host 0.0.0.0 --port 8080
     profiles:
       - dev
 
 networks:
   default:
-    name: solairus-intelligence-network
+    name: mro-intelligence-network

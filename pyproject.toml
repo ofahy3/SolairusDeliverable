@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "solairus-intelligence"
+name = "grainger-mro-intelligence"
 version = "1.0.0"
-description = "Intelligence report generator for Solairus Aviation integrating ErgoMind, GTA, and FRED data sources with AI-enhanced content generation"
+description = "MRO Market Intelligence Report Generator for Grainger - integrating ErgoMind, GTA, and FRED data sources with AI-enhanced content generation"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "Proprietary"}
 authors = [
-    {name = "Solairus Aviation", email = "info@solairusaviation.com"}
+    {name = "Grainger Intelligence Team", email = "intelligence@grainger.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -47,17 +47,17 @@ dev = [
 ]
 
 [project.scripts]
-solairus-intelligence = "solairus_intelligence.cli:main"
-solairus-web = "solairus_intelligence.web.app:main"
+mro-intelligence = "mro_intelligence.cli:main"
+mro-web = "mro_intelligence.web.app:main"
 
 [project.urls]
-Homepage = "https://www.solairusaviation.com"
-Documentation = "https://github.com/solairus/intelligence-report-generator"
-Repository = "https://github.com/solairus/intelligence-report-generator"
+Homepage = "https://www.grainger.com"
+Documentation = "https://github.com/grainger/mro-intelligence-report-generator"
+Repository = "https://github.com/grainger/mro-intelligence-report-generator"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["solairus_intelligence*"]
+include = ["mro_intelligence*"]
 exclude = ["tests*"]
 
 [tool.black]
@@ -94,7 +94,7 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=solairus_intelligence",
+    "--cov=mro_intelligence",
     "--cov-report=html",
     "--cov-report=term-missing:skip-covered",
     "-v"
@@ -106,7 +106,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["solairus_intelligence"]
+source = ["mro_intelligence"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
@@ -145,4 +145,4 @@ skips = ["B101"]  # Allow assert statements in tests
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["solairus_intelligence"]
+known_first_party = ["mro_intelligence"]

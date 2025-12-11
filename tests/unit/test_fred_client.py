@@ -4,7 +4,7 @@ Unit tests for FRED (Federal Reserve Economic Data) client
 
 import pytest
 
-from solairus_intelligence.clients.fred_client import (
+from mro_intelligence.clients.fred_client import (
     FREDClient,
     FREDConfig,
     FREDObservation,
@@ -136,7 +136,7 @@ class TestFREDClientMethods:
         assert hasattr(client, "test_connection")
         assert hasattr(client, "get_inflation_indicators")
         assert hasattr(client, "get_interest_rate_data")
-        assert hasattr(client, "get_aviation_fuel_costs")
+        assert hasattr(client, "get_industrial_fuel_costs")
 
     @pytest.mark.asyncio
     async def test_context_manager_creates_session(self, client):

@@ -96,8 +96,8 @@ No changes required for developers. The system automatically:
 The application now logs environment information on startup:
 
 ```
-INFO:config:Environment detected: Local environment on Darwin | Output: /Users/mac-54/Desktop/solairus-intelligence/outputs
-INFO:main:Initialized with: Local environment on Darwin | Output: /Users/mac-54/Desktop/solairus-intelligence/outputs
+INFO:config:Environment detected: Local environment on Darwin | Output: /Users/mac-54/Desktop/mro-intelligence/outputs
+INFO:main:Initialized with: Local environment on Darwin | Output: /Users/mac-54/Desktop/mro-intelligence/outputs
 ```
 
 This helps verify correct configuration and troubleshoot any issues.

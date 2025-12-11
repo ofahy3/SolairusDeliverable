@@ -1,10 +1,10 @@
 """
-Shared pytest fixtures for Solairus Intelligence tests
+Shared pytest fixtures for MRO Intelligence tests
 """
 
 import pytest
 
-from solairus_intelligence.core.processor import ClientSector, IntelligenceItem
+from mro_intelligence.core.processor import ClientSector, IntelligenceItem
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def sample_intelligence_item():
         category="economic",
         relevance_score=0.85,
         confidence=0.9,
-        so_what_statement="Higher operating costs expected for aviation sector",
+        so_what_statement="Higher operating costs expected for industrial sector",
         affected_sectors=[ClientSector.GENERAL],
         source_type="fred",
         sources=[],
@@ -37,7 +37,7 @@ def sample_intelligence_items():
             relevance_score=0.88,
             confidence=0.85,
             so_what_statement="Supply chain risks for tech clients",
-            affected_sectors=[ClientSector.TECHNOLOGY],
+            affected_sectors=[ClientSector.MANUFACTURING],
             source_type="ergomind",
             sources=["Source A", "Source B"],
             action_items=["Monitor tech sector impacts"],

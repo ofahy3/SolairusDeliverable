@@ -1,8 +1,8 @@
-# Solairus-ErgoMind Intelligence Tool: Implementation Strategy
+# Grainger-ErgoMind Intelligence Tool: Implementation Strategy
 
 ## Core Insight
 **ErgoMind = Flashpoints Forum geopolitical/economic intelligence**
-This fundamentally changes our approach. We're not pulling general business news, but specialized geopolitical and economic forecasting that must be translated into actionable aviation and client-specific insights.
+This fundamentally changes our approach. We're not pulling general business news, but specialized geopolitical and economic forecasting that must be translated into actionable industrial and client-specific insights.
 
 ## Architecture Decision: Maximum Reliability, Minimum Complexity
 
@@ -41,12 +41,12 @@ class IntelligenceProcessor:
         insight = self.extract_key_finding(raw_intelligence)
         
         # 2. Assess relevance
-        solairus_impact = self.analyze_aviation_impact(insight)
+        mro_impact = self.analyze_industrial_impact(insight)
         client_impacts = self.analyze_client_impacts(insight)
         
         # 3. Generate actionable takeaway
-        if solairus_impact.score > 0.7:
-            return self.craft_solairus_narrative(insight, solairus_impact)
+        if mro_impact.score > 0.7:
+            return self.craft_mro_narrative(insight, mro_impact)
         elif max(client_impacts.scores) > 0.7:
             return self.craft_client_narrative(insight, client_impacts)
         else:
@@ -61,20 +61,20 @@ Since ErgoMind can be buggy with WebSocket, we'll use a robust retry pattern:
 ```python
 QUERY_TEMPLATES = {
     'geopolitical_overview': [
-        "What were the most significant geopolitical developments in the past month that could impact international business aviation?",
+        "What were the most significant geopolitical developments in the past month that could impact international MRO?",
         "Summarize recent changes in international relations affecting cross-border corporate travel",
-        "What emerging geopolitical risks should aviation operators monitor?"
+        "What emerging geopolitical risks should industrial operators monitor?"
     ],
     
     'economic_trends': [
         "What economic indicators from the past month signal changes in corporate travel demand?",
-        "Summarize recent central bank decisions and their impact on business aviation",
+        "Summarize recent central bank decisions and their impact on MRO",
         "What sectors showed the strongest growth or decline in the past month?"
     ],
     
     'regional_analysis': {
         'north_america': "Key political and economic developments in North America this month",
-        'europe': "European regulatory and economic changes affecting aviation",
+        'europe': "European regulatory and economic changes affecting industrial",
         'asia_pacific': "Asia-Pacific geopolitical shifts impacting business travel",
         'middle_east': "Middle East stability and economic developments"
     },
@@ -133,7 +133,7 @@ CLIENT_CATEGORIES = {
 
 ## Document Structure
 
-### Page 1: Solairus Business Intelligence
+### Page 1: MRO Market Intelligence
 ```
 FLASHPOINTS FORUM INTELLIGENCE BRIEF
 [Month Year]
@@ -141,11 +141,11 @@ FLASHPOINTS FORUM INTELLIGENCE BRIEF
 EXECUTIVE SUMMARY
 [3-4 bullet points of highest impact findings]
 
-GEOPOLITICAL DEVELOPMENTS IMPACTING AVIATION
-• [Finding + "So What" for Solairus]
+GEOPOLITICAL DEVELOPMENTS IMPACTING INDUSTRIAL
+• [Finding + "So What" for Grainger]
 • [Supporting data/context]
 
-ECONOMIC INDICATORS FOR BUSINESS AVIATION
+ECONOMIC INDICATORS FOR BUSINESS INDUSTRIAL
 • [Trend + operational implications]
 • [Forecast and recommendations]
 
@@ -156,7 +156,7 @@ Asia-Pacific: [Key developments]
 Middle East: [Key developments]
 
 REGULATORY HORIZON
-[Upcoming changes Solairus should prepare for]
+[Upcoming changes Grainger should prepare for]
 ```
 
 ### Page 2: Client Intelligence Matrix

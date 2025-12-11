@@ -1,6 +1,6 @@
-# Solairus Intelligence Documentation
+# MRO Intelligence Documentation
 
-This directory contains comprehensive documentation for the Solairus Intelligence Report Generator.
+This directory contains comprehensive documentation for the MRO Intelligence Report Generator.
 
 ## Documentation Structure
 
@@ -28,19 +28,19 @@ pre-commit install
 pytest
 
 # Run linting
-black solairus_intelligence tests
-flake8 solairus_intelligence tests
-mypy solairus_intelligence
+black mro_intelligence tests
+flake8 mro_intelligence tests
+mypy mro_intelligence
 ```
 
 ### Running the Application
 
 ```bash
 # CLI mode (test)
-python -m solairus_intelligence.cli --test
+python -m mro_intelligence.cli --test
 
 # Web interface
-uvicorn solairus_intelligence.web.app:app --reload
+uvicorn mro_intelligence.web.app:app --reload
 ```
 
 ## Architecture Overview
@@ -55,4 +55,4 @@ The system is organized into several key modules:
 
 ## Support
 
-For questions or issues, contact the Solairus Aviation development team.
+For questions or issues, contact the Grainger development team.

@@ -6,15 +6,15 @@ from datetime import datetime
 
 import pytest
 
-from solairus_intelligence.cli import SolairusIntelligenceGenerator
+from mro_intelligence.cli import MROIntelligenceGenerator
 
 
-class TestSolairusIntelligenceGenerator:
+class TestMROIntelligenceGenerator:
     """Test suite for the main CLI generator"""
 
     def test_generator_initialization(self):
         """Test generator initializes correctly"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
 
         assert gen is not None
         assert hasattr(gen, "orchestrator")
@@ -24,14 +24,14 @@ class TestSolairusIntelligenceGenerator:
 
     def test_generator_has_required_methods(self):
         """Test generator has required interface methods"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
 
         assert hasattr(gen, "generate_monthly_report")
         assert callable(gen.generate_monthly_report)
 
     def test_generator_has_last_run_status(self):
         """Test generator tracks last run status"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
 
         assert hasattr(gen, "last_run_status")
 
@@ -67,16 +67,16 @@ class TestCLIConfiguration:
 
     def test_default_config(self):
         """Test generator uses default config when none provided"""
-        gen = SolairusIntelligenceGenerator()
+        gen = MROIntelligenceGenerator()
 
         assert gen.config is not None
 
     def test_custom_config(self):
         """Test generator accepts custom config"""
-        from solairus_intelligence.clients.ergomind_client import ErgoMindConfig
+        from mro_intelligence.clients.ergomind_client import ErgoMindConfig
 
         custom_config = ErgoMindConfig()
-        gen = SolairusIntelligenceGenerator(config=custom_config)
+        gen = MROIntelligenceGenerator(config=custom_config)
 
         assert gen.config is custom_config
 
@@ -86,12 +86,12 @@ class TestQualityAssessment:
 
     @pytest.fixture
     def generator(self):
-        return SolairusIntelligenceGenerator()
+        return MROIntelligenceGenerator()
 
     @pytest.fixture
     def sample_items(self):
-        from solairus_intelligence.config.clients import ClientSector
-        from solairus_intelligence.core.processor import IntelligenceItem
+        from mro_intelligence.config.clients import ClientSector
+        from mro_intelligence.core.processor import IntelligenceItem
 
         return [
             IntelligenceItem(
@@ -111,7 +111,7 @@ class TestQualityAssessment:
                 relevance_score=0.8,
                 confidence=0.9,
                 so_what_statement="Budget implications",
-                affected_sectors=[ClientSector.FINANCE],
+                affected_sectors=[ClientSector.GOVERNMENT],
                 action_items=["Check costs"],
             ),
             IntelligenceItem(
@@ -121,7 +121,7 @@ class TestQualityAssessment:
                 relevance_score=0.75,
                 confidence=0.8,
                 so_what_statement="Supply chain impact",
-                affected_sectors=[ClientSector.TECHNOLOGY],
+                affected_sectors=[ClientSector.MANUFACTURING],
                 action_items=["Monitor supply"],
             ),
             IntelligenceItem(
@@ -131,7 +131,7 @@ class TestQualityAssessment:
                 relevance_score=0.85,
                 confidence=0.88,
                 so_what_statement="Compliance review needed",
-                affected_sectors=[ClientSector.HEALTHCARE],
+                affected_sectors=[ClientSector.COMMERCIAL_FACILITIES],
                 action_items=["Legal review"],
             ),
             IntelligenceItem(
@@ -148,8 +148,8 @@ class TestQualityAssessment:
 
     @pytest.fixture
     def sample_sector_intel(self, sample_items):
-        from solairus_intelligence.config.clients import ClientSector
-        from solairus_intelligence.core.processor import SectorIntelligence
+        from mro_intelligence.config.clients import ClientSector
+        from mro_intelligence.core.processor import SectorIntelligence
 
         return {
             ClientSector.GENERAL: SectorIntelligence(
@@ -157,18 +157,18 @@ class TestQualityAssessment:
                 items=[sample_items[0], sample_items[4]],
                 summary="General sector summary",
             ),
-            ClientSector.FINANCE: SectorIntelligence(
-                sector=ClientSector.FINANCE,
+            ClientSector.GOVERNMENT: SectorIntelligence(
+                sector=ClientSector.GOVERNMENT,
                 items=[sample_items[1]],
                 summary="Finance sector summary",
             ),
-            ClientSector.TECHNOLOGY: SectorIntelligence(
-                sector=ClientSector.TECHNOLOGY,
+            ClientSector.MANUFACTURING: SectorIntelligence(
+                sector=ClientSector.MANUFACTURING,
                 items=[sample_items[2]],
                 summary="Technology sector summary",
             ),
-            ClientSector.HEALTHCARE: SectorIntelligence(
-                sector=ClientSector.HEALTHCARE,
+            ClientSector.COMMERCIAL_FACILITIES: SectorIntelligence(
+                sector=ClientSector.COMMERCIAL_FACILITIES,
                 items=[sample_items[3]],
                 summary="Healthcare sector summary",
             ),
@@ -209,7 +209,7 @@ class TestStatusManagement:
 
     @pytest.fixture
     def generator(self):
-        return SolairusIntelligenceGenerator()
+        return MROIntelligenceGenerator()
 
     def test_status_initialization(self, generator):
         """Test initial status is None"""
@@ -220,7 +220,7 @@ class TestStatusManagement:
         # Mock the status file path
         status_file = tmp_path / "status.json"
         monkeypatch.setattr(
-            "solairus_intelligence.cli.get_status_file_path", lambda: str(status_file)
+            "mro_intelligence.cli.get_status_file_path", lambda: str(status_file)
         )
 
         status = {
@@ -247,7 +247,7 @@ class TestPrintSummary:
 
     @pytest.fixture
     def generator(self):
-        return SolairusIntelligenceGenerator()
+        return MROIntelligenceGenerator()
 
     def test_print_summary_success(self, generator, capsys):
         """Test printing summary for successful run"""

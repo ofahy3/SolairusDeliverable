@@ -4,11 +4,11 @@ Unit tests for AI modules (fact_validator, generator, pii_sanitizer)
 
 import pytest
 
-from solairus_intelligence.ai.fact_validator import FactValidator
-from solairus_intelligence.ai.generator import AIConfig, AIUsageTracker, SecureAIGenerator
-from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
-from solairus_intelligence.config.clients import ClientSector
-from solairus_intelligence.core.processor import IntelligenceItem
+from mro_intelligence.ai.fact_validator import FactValidator
+from mro_intelligence.ai.generator import AIConfig, AIUsageTracker, SecureAIGenerator
+from mro_intelligence.ai.pii_sanitizer import PIISanitizer
+from mro_intelligence.config.clients import ClientSector
+from mro_intelligence.core.processor import IntelligenceItem
 
 
 class TestFactValidator:
@@ -278,7 +278,7 @@ class TestPIISanitizer:
         """Test sanitization preserves text structure"""
         text = """
         Key findings:
-        1. First point about aviation
+        1. First point about industrial
         2. Second point about markets
         """
 
@@ -313,7 +313,7 @@ class TestPIISanitizer:
                 category="economic",
                 relevance_score=0.8,
                 so_what_statement="Impact 1",
-                affected_sectors=[ClientSector.TECHNOLOGY],
+                affected_sectors=[ClientSector.MANUFACTURING],
             ),
             IntelligenceItem(
                 raw_content="Test content 2",
@@ -321,7 +321,7 @@ class TestPIISanitizer:
                 category="trade",
                 relevance_score=0.7,
                 so_what_statement="Impact 2",
-                affected_sectors=[ClientSector.FINANCE],
+                affected_sectors=[ClientSector.GOVERNMENT],
             ),
         ]
 

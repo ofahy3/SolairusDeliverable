@@ -4,9 +4,9 @@ Unit tests for document content extraction module
 
 import pytest
 
-from solairus_intelligence.config.clients import ClientSector
-from solairus_intelligence.core.document.content import ContentExtractor
-from solairus_intelligence.core.processor import IntelligenceItem
+from mro_intelligence.config.clients import ClientSector
+from mro_intelligence.core.document.content import ContentExtractor
+from mro_intelligence.core.processor import IntelligenceItem
 
 
 class TestContentExtractor:
@@ -23,7 +23,7 @@ class TestContentExtractor:
         return [
             IntelligenceItem(
                 raw_content="Raw geopolitical content",
-                processed_content="Rising tensions in Eastern Europe affecting aviation routes",
+                processed_content="Rising tensions in Eastern Europe affecting industrial routes",
                 category="geopolitical",
                 relevance_score=0.9,
                 confidence=0.85,
@@ -37,11 +37,11 @@ class TestContentExtractor:
                 relevance_score=0.75,
                 confidence=0.92,
                 so_what_statement="Budget for higher operating costs",
-                affected_sectors=[ClientSector.FINANCE],
+                affected_sectors=[ClientSector.GOVERNMENT],
             ),
             IntelligenceItem(
                 raw_content="Raw trade content",
-                processed_content="New tariffs on aviation parts announced",
+                processed_content="New tariffs on industrial parts announced",
                 category="trade",
                 relevance_score=0.65,
                 confidence=0.78,

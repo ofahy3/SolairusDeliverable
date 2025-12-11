@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from solairus_intelligence.utils.config import (
+from mro_intelligence.utils.config import (
     ENV_CONFIG,
     EnvironmentConfig,
     get_output_dir,

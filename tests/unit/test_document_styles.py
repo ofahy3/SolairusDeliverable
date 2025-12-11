@@ -6,7 +6,7 @@ import pytest
 from docx import Document
 from docx.shared import RGBColor
 
-from solairus_intelligence.core.document.styles import (
+from mro_intelligence.core.document.styles import (
     ERGO_COLORS,
     SPACING,
     ErgoStyles,
