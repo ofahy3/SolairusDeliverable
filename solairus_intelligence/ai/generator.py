@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from solairus_intelligence.ai.fact_validator import FactValidator
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
+from solairus_intelligence.config.report_style import REPORT_STYLE_SYSTEM_MESSAGE
 from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)
@@ -312,87 +313,83 @@ class SecureAIGenerator:
 
         intelligence_block = "\n".join(items_text)
 
-        prompt = f"""You are writing the Executive Summary for a monthly intelligence report for Solairus Aviation, a business aviation operator serving high-net-worth clients in technology, finance, real estate, and entertainment sectors.
+        prompt = f"""{REPORT_STYLE_SYSTEM_MESSAGE}
+
+You are writing the Executive Summary for a monthly intelligence report for Solairus Aviation, a business aviation operator serving high-net-worth clients in technology, finance, real estate, and entertainment sectors.
 
 INTELLIGENCE ITEMS (Top 20 by relevance):
 {intelligence_block}
 
 TASK: Generate an Executive Summary with these three sections:
 
-1. BOTTOM LINE (2 items max): Immediate threats or critical developments requiring urgent action
-   - Focus on sanctions, export controls, airspace restrictions, compliance risks
-   - Lead with analytical judgment, support with evidence
-   - Example: "Ergo assesses that [specific development] creates [specific risk] for [affected clients]."
+1. BOTTOM LINE: A SINGLE UNIFIED PARAGRAPH (not bullet points)
+   - Lead with bold assessment ending at natural break: **Ergo assesses that X,** followed by synthesis
+   - Synthesize ALL major regional themes (Asia, Middle East, Europe) into ONE cohesive paragraph
+   - CRITICAL: Only include topics that will have corresponding Key Findings sections
+   - Do NOT include tangential topics like export controls unless directly aviation-relevant
 
-2. KEY FINDINGS (3-5 items): Each finding must have a SUBHEADER, main paragraph, and supporting bullets
-   - Subheader: Short thematic title (e.g., "US-China relations", "Sanctions & compliance risk")
-   - Content: 2-3 sentence paragraph with analytical judgment and evidence
-   - Bullets: 2-3 supporting points with operational implications
-   - Include probability language: "likely", "probable", "expects"
-   - Example format:
-     [SUBHEADER: US-China strategic truce]
-     [CONTENT: Ergo assesses the October 30 strategic truce will hold through Q1 2026. This stabilizes cross-Pacific routing but underlying export controls remain in force.]
-     [BULLET: Technology sector clients face heightened compliance requirements.]
-     [BULLET: Routing adjustments may be required for Asia-Pacific destinations.]
+2. KEY FINDINGS (3-5 sections): Each finding needs proper structure
+   - SUBHEADER: Title Case theme title (e.g., **Taiwan Strait Escalation Risk**)
+   - LEAD SENTENCE: Bold the core assessment WITHOUT "Ergo assesses that" prefix
+   - TRANSITION: Include "Ergo assesses X implications for Solairus:" before bullets
+   - BULLETS: Use dash format with bold lead phrase + period:
+     -   **Route disruption.** Description of impact...
 
-3. WATCH FACTORS (at least 3 items): Forward-looking indicators formatted for table display
-   - Each factor must have: INDICATOR (short name), WHAT TO WATCH (specific metric/event), WHY IT MATTERS (aviation impact)
-   - Example format:
-     [INDICATOR: Supply Chain Decoupling]
-     [WHAT: US-China supply chain separation velocity]
-     [WHY: Accelerating separation drives increased site visit requirements for tech clients]
+3. WATCH FACTORS (at least 3 items): Forward-looking indicators
+   - INDICATOR: Short name with units where applicable
+   - WHAT TO WATCH: Specific metric or event
+   - WHY IT MATTERS: Aviation operational impact
 
-STYLE REQUIREMENTS (Ergo Analytical Voice):
-- Lead with judgment, support with evidence
-- Use authoritative analytical language: "Ergo assesses...", "Ergo expects...", "Ergo believes..."
-- Include specific numbers, dates, timeframes from the intelligence items
-- Focus on business aviation operational implications
-- Active voice, declarative statements
-- Professional, analytical tone (not casual)
+RISK CALIBRATION (CRITICAL):
+- Lead with MOST PROBABLE trajectory, not worst case
+- Explicitly flag unlikely scenarios: "While unlikely...", "In the unlikely event..."
+- Use conditional framing for tail risks: "would result in" not "requires preparation for"
+- Reserve "prepare for" and "require" language for LIKELY scenarios only
+- Do NOT present worst-case scenarios as baseline planning assumptions
 
 STRICT RULES:
 - Only use facts from the intelligence items provided above
-- Do not invent data, predictions, dates, or percentages not in the source items
-- If specific information is missing, use general analytical language without fabricating details
-- Do not use first-person language ("I think", "I believe")
-- Maintain professional aviation industry terminology
+- Do not invent data, predictions, dates, or percentages not in source items
+- Remove internal scenario names ("Strait Jacket", "Tinderboxed", etc.)
+- Remove probability percentages like "(55% probability as of...)"
+- Use periods within bullets, not semicolons
+- Vary sentence structure - don't start every sentence with "Ergo assesses"
 
 FORMAT YOUR RESPONSE EXACTLY AS:
 
 BOTTOM LINE:
-- [Statement 1]
-- [Statement 2]
+**[Bold lead assessment ending at comma or period,]** followed by synthesized paragraph covering all themes that will appear in Key Findings below.
 
 KEY FINDINGS:
 
-[SUBHEADER: Theme title 1]
-[CONTENT: Main analytical paragraph for finding 1]
-[BULLET: Supporting point 1]
-[BULLET: Supporting point 2]
+[SUBHEADER: Theme Title In Title Case]
+**[Bold lead assessment without "Ergo assesses that" prefix.]** Supporting analysis with evidence. Ergo assesses X implications for Solairus:
+[BULLET: **Lead phrase.** Supporting detail with periods not semicolons.]
+[BULLET: **Lead phrase.** Supporting detail.]
 
-[SUBHEADER: Theme title 2]
-[CONTENT: Main analytical paragraph for finding 2]
-[BULLET: Supporting point 1]
-[BULLET: Supporting point 2]
+[SUBHEADER: Second Theme Title]
+**[Bold lead assessment.]** Supporting analysis. Two trends Ergo is monitoring for Solairus:
+[BULLET: **Lead phrase.** Supporting detail.]
+[BULLET: **Lead phrase.** Supporting detail.]
 
-[SUBHEADER: Theme title 3]
-[CONTENT: Main analytical paragraph for finding 3]
-[BULLET: Supporting point 1]
-[BULLET: Supporting point 2]
+[SUBHEADER: Third Theme Title]
+**[Bold lead assessment.]** Supporting analysis. Ergo assesses X implications:
+[BULLET: **Lead phrase.** Supporting detail.]
+[BULLET: **Lead phrase.** Supporting detail.]
 
 WATCH FACTORS:
 
-[INDICATOR: Short indicator name 1]
-[WHAT: What to watch for factor 1]
-[WHY: Why it matters for aviation 1]
+[INDICATOR: Short indicator name with units]
+[WHAT: What to watch - specific metric or event]
+[WHY: Why it matters for aviation operations]
 
-[INDICATOR: Short indicator name 2]
-[WHAT: What to watch for factor 2]
-[WHY: Why it matters for aviation 2]
+[INDICATOR: Second indicator]
+[WHAT: What to watch]
+[WHY: Why it matters]
 
-[INDICATOR: Short indicator name 3]
-[WHAT: What to watch for factor 3]
-[WHY: Why it matters for aviation 3]
+[INDICATOR: Third indicator]
+[WHAT: What to watch]
+[WHY: Why it matters]
 """
 
         return prompt
