@@ -6,19 +6,22 @@ Tests the complete flow from raw data to processed intelligence
 import pytest
 from unittest.mock import MagicMock, patch
 
-from solairus_intelligence.core.processor import IntelligenceProcessor
+from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.gta import GTAProcessor
+from solairus_intelligence.core.processors.fred import FREDProcessor
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
 from solairus_intelligence.core.processors.base import IntelligenceItem
 from solairus_intelligence.config.clients import ClientSector
 
 
-class TestProcessorIntegration:
-    """Integration tests for the complete processor pipeline"""
+class TestErgoMindProcessorIntegration:
+    """Integration tests for the complete ErgoMind processor pipeline"""
 
     @pytest.fixture
     def processor(self):
         """Create a processor with AI disabled for testing"""
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
+            return ErgoMindProcessor()
 
     def test_ergomind_processing_pipeline(self, processor):
         """Test complete ErgoMind processing from raw text to IntelligenceItem"""
@@ -86,6 +89,17 @@ class TestProcessorIntegration:
         assert any('compliance' in action.lower() or 'review' in action.lower()
                    for action in result.action_items)
 
+    @pytest.mark.asyncio
+    async def test_async_processing(self, processor):
+        """Test async processing method"""
+        raw_text = "Aviation security concerns rising in Middle East region"
+
+        result = await processor.process_intelligence_async(raw_text, category="security")
+
+        assert isinstance(result, IntelligenceItem)
+        assert result.source_type == "ergomind"
+        assert len(result.so_what_statement) > 0
+
 
 class TestGTAProcessorIntegration:
     """Integration tests for GTA processing"""
@@ -93,11 +107,10 @@ class TestGTAProcessorIntegration:
     @pytest.fixture
     def processor(self):
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
+            return GTAProcessor()
 
     def test_gta_intervention_processing(self, processor):
         """Test GTA intervention processing"""
-        # Create a mock GTA intervention
         mock_intervention = MagicMock()
         mock_intervention.intervention_id = 12345
         mock_intervention.description = "Export restrictions on semiconductor equipment"
@@ -111,7 +124,7 @@ class TestGTAProcessorIntegration:
         mock_intervention.get_implementing_countries = MagicMock(return_value=["United States"])
         mock_intervention.get_affected_countries = MagicMock(return_value=["China"])
 
-        result = processor.process_gta_intervention(mock_intervention)
+        result = processor.process_intervention(mock_intervention)
 
         assert isinstance(result, IntelligenceItem)
         assert result.source_type == "gta"
@@ -126,7 +139,7 @@ class TestFREDProcessorIntegration:
     @pytest.fixture
     def processor(self):
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
+            return FREDProcessor()
 
     def test_fred_observation_processing(self, processor):
         """Test FRED observation processing"""
@@ -138,7 +151,7 @@ class TestFREDProcessorIntegration:
         mock_observation.units = "Dollars per Gallon"
         mock_observation.category = "fuel_costs"
 
-        result = processor.process_fred_observation(mock_observation, "fuel_costs")
+        result = processor.process_observation(mock_observation, "fuel_costs")
 
         assert isinstance(result, IntelligenceItem)
         assert result.source_type == "fred"
@@ -151,11 +164,10 @@ class TestMergerIntegration:
     """Integration tests for intelligence merging"""
 
     @pytest.fixture
-    def processor(self):
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
+    def merger(self):
+        return IntelligenceMerger()
 
-    def test_multi_source_merge(self, processor):
+    def test_multi_source_merge(self, merger):
         """Test merging intelligence from multiple sources"""
         ergomind_items = [
             IntelligenceItem(
@@ -183,14 +195,13 @@ class TestMergerIntegration:
             )
         ]
 
-        merged = processor.merge_intelligence_sources(ergomind_items, fred_items)
+        merged = merger.merge_sources(ergomind_items, fred_items)
 
         assert len(merged) >= 1
-        # Verify both source types are represented
         source_types = set(item.source_type for item in merged)
         assert len(source_types) >= 1
 
-    def test_sector_organization(self, processor):
+    def test_sector_organization(self, merger):
         """Test organizing items by sector"""
         items = [
             IntelligenceItem(
@@ -215,28 +226,8 @@ class TestMergerIntegration:
             )
         ]
 
-        organized = processor.organize_by_sector(items)
+        organized = merger.organize_by_sector(items)
 
         assert ClientSector.TECHNOLOGY in organized
         assert ClientSector.FINANCE in organized
         assert len(organized[ClientSector.TECHNOLOGY].items) > 0
-
-
-class TestAsyncProcessing:
-    """Tests for async processing capabilities"""
-
-    @pytest.fixture
-    def processor(self):
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
-
-    @pytest.mark.asyncio
-    async def test_async_processing(self, processor):
-        """Test async processing method"""
-        raw_text = "Aviation security concerns rising in Middle East region"
-
-        result = await processor.process_intelligence_async(raw_text, category="security")
-
-        assert isinstance(result, IntelligenceItem)
-        assert result.source_type == "ergomind"
-        assert len(result.so_what_statement) > 0

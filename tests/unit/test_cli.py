@@ -20,7 +20,7 @@ class TestSolairusIntelligenceGenerator:
         assert gen is not None
         assert hasattr(gen, 'orchestrator')
         assert hasattr(gen, 'generator')  # DocumentGenerator is named 'generator'
-        assert hasattr(gen, 'processor')
+        assert hasattr(gen, 'merger')
         assert hasattr(gen, 'client')
 
     def test_generator_has_required_methods(self):

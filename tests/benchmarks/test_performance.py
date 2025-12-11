@@ -8,9 +8,9 @@ import time
 import pytest
 from unittest.mock import patch
 
-from solairus_intelligence.core.processor import IntelligenceProcessor
-from solairus_intelligence.core.processors.base import IntelligenceItem
 from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
+from solairus_intelligence.core.processors.base import IntelligenceItem
 from solairus_intelligence.config.clients import ClientSector
 
 
@@ -18,16 +18,15 @@ class TestProcessorPerformance:
     """Performance benchmarks for the processor"""
 
     @pytest.fixture
-    def processor(self):
-        """Create a processor with AI disabled for consistent benchmarks"""
-        with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            return IntelligenceProcessor()
-
-    @pytest.fixture
     def ergomind_processor(self):
         """Create an ErgoMind processor for detailed tests"""
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
             return ErgoMindProcessor()
+
+    @pytest.fixture
+    def merger(self):
+        """Create a merger instance"""
+        return IntelligenceMerger()
 
     @pytest.fixture
     def sample_texts(self):
@@ -52,25 +51,25 @@ class TestProcessorPerformance:
             """
         ]
 
-    def test_single_processing_latency(self, processor, sample_texts):
+    def test_single_processing_latency(self, ergomind_processor, sample_texts):
         """Measure latency for processing a single intelligence item"""
         medium_text = sample_texts[1]
 
         start = time.perf_counter()
-        result = processor.process_intelligence(medium_text, "economic")
+        result = ergomind_processor.process_intelligence(medium_text, "economic")
         elapsed = time.perf_counter() - start
 
         assert isinstance(result, IntelligenceItem)
         assert elapsed < 1.0, f"Single processing took {elapsed:.3f}s (should be < 1s)"
 
-    def test_batch_processing_throughput(self, processor, sample_texts):
+    def test_batch_processing_throughput(self, ergomind_processor, sample_texts):
         """Measure throughput for batch processing"""
         batch_size = 50
         texts = sample_texts * (batch_size // len(sample_texts) + 1)
         texts = texts[:batch_size]
 
         start = time.perf_counter()
-        results = [processor.process_intelligence(text, "general") for text in texts]
+        results = [ergomind_processor.process_intelligence(text, "general") for text in texts]
         elapsed = time.perf_counter() - start
 
         throughput = batch_size / elapsed
@@ -104,7 +103,7 @@ class TestProcessorPerformance:
         avg_time = (elapsed / iterations) * 1000
         assert avg_time < 10, f"Sector identification took {avg_time:.2f}ms (should be < 10ms)"
 
-    def test_merge_performance(self, processor):
+    def test_merge_performance(self, merger):
         """Measure performance of merging multiple sources"""
         ergomind_items = [
             IntelligenceItem(
@@ -148,7 +147,7 @@ class TestProcessorPerformance:
         iterations = 50
         start = time.perf_counter()
         for _ in range(iterations):
-            processor.merge_intelligence_sources(ergomind_items, gta_items, fred_items)
+            merger.merge_sources(ergomind_items, gta_items, fred_items)
         elapsed = time.perf_counter() - start
 
         avg_time = (elapsed / iterations) * 1000
@@ -163,7 +162,7 @@ class TestMemoryUsage:
         import sys
 
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            processor = IntelligenceProcessor()
+            processor = ErgoMindProcessor()
 
         base_size = sys.getsizeof(processor)
         assert base_size < 1_000_000, f"Processor base size {base_size} bytes too large"
@@ -173,7 +172,7 @@ class TestMemoryUsage:
         import gc
 
         with patch.dict('os.environ', {'AI_ENABLED': 'false'}):
-            processor = IntelligenceProcessor()
+            processor = ErgoMindProcessor()
 
         for i in range(100):
             result = processor.process_intelligence(

@@ -13,11 +13,11 @@ from solairus_intelligence.clients.ergomind_client import (
     ErgoMindClient,
     QueryResult,
 )
-from solairus_intelligence.core.processor import (
-    ClientSector,
-    IntelligenceItem,
-    IntelligenceProcessor,
-)
+from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.processors.base import IntelligenceItem
+from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.gta import GTAProcessor
+from solairus_intelligence.core.processors.fred import FREDProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,9 @@ class QueryOrchestrator:
 
     def __init__(self, client: Optional[ErgoMindClient] = None):
         self.client = client or ErgoMindClient()
-        self.processor = IntelligenceProcessor()
+        self.ergomind_processor = ErgoMindProcessor()
+        self.gta_processor = GTAProcessor()
+        self.fred_processor = FREDProcessor()
         self.query_templates = self._initialize_query_templates()
 
     def _initialize_query_templates(self) -> List[QueryTemplate]:
@@ -343,7 +345,7 @@ class QueryOrchestrator:
                     # Process each section as a separate intelligence item
                     for section in sections:
                         if len(section.strip()) > 100:  # Minimum content length
-                            item = self.processor.process_intelligence(
+                            item = self.ergomind_processor.process_intelligence(
                                 section.strip(), category=category
                             )
                             item.sources = result.sources
@@ -451,7 +453,7 @@ class QueryOrchestrator:
             for intervention in interventions:
                 try:
                     # Use intelligence processor to convert GTA intervention
-                    item = self.processor.process_gta_intervention(intervention, category=category)
+                    item = self.gta_processor.process_intervention(intervention, category=category)
 
                     # Apply relevance filtering (stricter threshold to exclude stale data)
                     if item.relevance_score > 0.4:
@@ -573,7 +575,7 @@ class QueryOrchestrator:
             for observation in observations:
                 try:
                     # Process each FRED observation into an IntelligenceItem
-                    item = self.processor.process_fred_observation(observation, category)
+                    item = self.fred_processor.process_observation(observation, category)
                     processed_items.append(item)
                     logger.debug(
                         f"Processed FRED {category}: {observation.series_name} = {observation.value}"

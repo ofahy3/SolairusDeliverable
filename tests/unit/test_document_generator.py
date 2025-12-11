@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 from datetime import datetime
 
-from solairus_intelligence.core.document_generator import DocumentGenerator
+from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.core.processor import (
     IntelligenceItem,
     SectorIntelligence,

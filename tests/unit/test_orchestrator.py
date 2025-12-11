@@ -85,7 +85,7 @@ class TestQueryOrchestrator:
 
     def test_processor_initialized(self, orchestrator):
         """Test processor is initialized"""
-        assert orchestrator.processor is not None
+        assert orchestrator.ergomind_processor is not None
 
 
 class TestQueryOrchestratorMethods:

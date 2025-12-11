@@ -1,109 +1,17 @@
 """
-Unit tests for IntelligenceProcessor
+Unit tests for intelligence processing components
 """
 
 import pytest
 from solairus_intelligence.core.processor import (
-    IntelligenceProcessor,
     IntelligenceItem,
     SectorIntelligence,
-    ClientSector
+    ClientSector,
+    ErgoMindProcessor,
+    GTAProcessor,
+    FREDProcessor,
+    IntelligenceMerger,
 )
-
-
-class TestIntelligenceProcessor:
-    """Test suite for IntelligenceProcessor"""
-
-    def test_processor_initialization(self):
-        """Test that processor initializes correctly"""
-        processor = IntelligenceProcessor()
-        assert processor is not None
-        assert hasattr(processor, 'client_mapping')
-        assert ClientSector.TECHNOLOGY in processor.client_mapping
-
-    def test_relevance_keywords_loaded(self):
-        """Test that relevance keywords are loaded"""
-        processor = IntelligenceProcessor()
-
-        assert hasattr(processor, 'relevance_keywords')
-        assert len(processor.relevance_keywords) > 0
-
-    def test_client_mapping_structure(self):
-        """Test client mapping has expected structure"""
-        processor = IntelligenceProcessor()
-
-        # Should have technology sector
-        assert ClientSector.TECHNOLOGY in processor.client_mapping
-        tech_mapping = processor.client_mapping[ClientSector.TECHNOLOGY]
-        assert 'companies' in tech_mapping or isinstance(tech_mapping, dict)
-
-    def test_client_mapping_completeness(self):
-        """Test expected sectors are present"""
-        processor = IntelligenceProcessor()
-
-        # Technology should always be present
-        assert ClientSector.TECHNOLOGY in processor.client_mapping
-
-        # Should have multiple sectors defined
-        assert len(processor.client_mapping) >= 3
-
-    def test_merge_intelligence_sources_empty(self):
-        """Test merging empty intelligence sources"""
-        processor = IntelligenceProcessor()
-
-        merged = processor.merge_intelligence_sources([], [], [])
-
-        assert merged == []
-
-    def test_merge_intelligence_sources_single(self):
-        """Test merging single item"""
-        processor = IntelligenceProcessor()
-
-        items = [
-            IntelligenceItem(
-                raw_content="Test content",
-                processed_content="Test processed",
-                category="economic",
-                relevance_score=0.8,
-                so_what_statement="Test impact",
-                affected_sectors=[ClientSector.GENERAL],
-                source_type="ergomind"
-            )
-        ]
-
-        merged = processor.merge_intelligence_sources(items)
-
-        assert len(merged) == 1
-        assert merged[0].source_type == "ergomind"
-
-    def test_organize_by_sector(self):
-        """Test organizing intelligence by client sector"""
-        processor = IntelligenceProcessor()
-
-        items = [
-            IntelligenceItem(
-                raw_content="Test content",
-                processed_content="Test processed",
-                category="test",
-                relevance_score=0.8,
-                so_what_statement="Test impact",
-                affected_sectors=[ClientSector.TECHNOLOGY],
-                source_type="ergomind"
-            )
-        ]
-
-        sector_intel = processor.organize_by_sector(items)
-
-        assert len(sector_intel) > 0
-        assert ClientSector.TECHNOLOGY in sector_intel or ClientSector.GENERAL in sector_intel
-
-    def test_organize_by_sector_empty(self):
-        """Test organizing empty list"""
-        processor = IntelligenceProcessor()
-
-        sector_intel = processor.organize_by_sector([])
-
-        assert isinstance(sector_intel, dict)
 
 
 class TestIntelligenceItem:
@@ -208,12 +116,12 @@ class TestSectorIntelligence:
         assert sector_intel.summary is not None
 
 
-class TestProcessIntelligence:
-    """Test intelligence processing"""
+class TestErgoMindProcessor:
+    """Test ErgoMind intelligence processing"""
 
     @pytest.fixture
     def processor(self):
-        return IntelligenceProcessor()
+        return ErgoMindProcessor()
 
     def test_process_intelligence_basic(self, processor):
         """Test basic intelligence processing"""
@@ -267,15 +175,22 @@ class TestProcessIntelligence:
 
         assert high_item.relevance_score >= low_item.relevance_score
 
+    def test_relevance_keywords_loaded(self):
+        """Test that relevance keywords are loaded"""
+        processor = ErgoMindProcessor()
 
-class TestProcessGTAIntervention:
+        assert hasattr(processor, 'RELEVANCE_KEYWORDS')
+        assert len(processor.RELEVANCE_KEYWORDS) > 0
+
+
+class TestGTAProcessor:
     """Test GTA intervention processing"""
 
     @pytest.fixture
     def processor(self):
-        return IntelligenceProcessor()
+        return GTAProcessor()
 
-    def test_process_gta_intervention(self, processor):
+    def test_process_intervention(self, processor):
         """Test processing GTA intervention"""
         from solairus_intelligence.clients.gta_client import GTAIntervention
 
@@ -290,13 +205,13 @@ class TestProcessGTAIntervention:
             intervention_type_id=1,
         )
 
-        item = processor.process_gta_intervention(intervention, category="sanctions_trade")
+        item = processor.process_intervention(intervention, category="sanctions_trade")
 
         assert item is not None
         assert item.source_type == "gta"
         assert item.gta_intervention_id == 12345
 
-    def test_process_gta_harmful_intervention(self, processor):
+    def test_process_harmful_intervention(self, processor):
         """Test processing harmful intervention"""
         from solairus_intelligence.clients.gta_client import GTAIntervention
 
@@ -311,21 +226,20 @@ class TestProcessGTAIntervention:
             intervention_type_id=2,
         )
 
-        item = processor.process_gta_intervention(intervention, category="sanctions_trade")
+        item = processor.process_intervention(intervention, category="sanctions_trade")
 
         assert item is not None
-        # Harmful interventions should have higher relevance
         assert item.relevance_score > 0
 
 
-class TestProcessFREDObservation:
+class TestFREDProcessor:
     """Test FRED observation processing"""
 
     @pytest.fixture
     def processor(self):
-        return IntelligenceProcessor()
+        return FREDProcessor()
 
-    def test_process_fred_observation(self, processor):
+    def test_process_observation(self, processor):
         """Test processing FRED observation"""
         from solairus_intelligence.clients.fred_client import FREDObservation
 
@@ -338,12 +252,12 @@ class TestProcessFREDObservation:
             category="inflation",
         )
 
-        item = processor.process_fred_observation(obs, category="inflation")
+        item = processor.process_observation(obs, category="inflation")
 
         assert item is not None
         assert item.source_type == "fred"
 
-    def test_process_fred_fuel_observation(self, processor):
+    def test_process_fuel_observation(self, processor):
         """Test processing fuel price observation"""
         from solairus_intelligence.clients.fred_client import FREDObservation
 
@@ -356,20 +270,44 @@ class TestProcessFREDObservation:
             category="fuel_costs",
         )
 
-        item = processor.process_fred_observation(obs, category="fuel_costs")
+        item = processor.process_observation(obs, category="fuel_costs")
 
         assert item is not None
         assert "fuel" in item.category.lower() or "economic" in item.category.lower()
 
 
-class TestMergeIntelligenceSources:
+class TestIntelligenceMerger:
     """Test merging intelligence from multiple sources"""
 
     @pytest.fixture
-    def processor(self):
-        return IntelligenceProcessor()
+    def merger(self):
+        return IntelligenceMerger()
 
-    def test_merge_multiple_sources(self, processor):
+    def test_merge_empty_sources(self, merger):
+        """Test merging empty intelligence sources"""
+        merged = merger.merge_sources([], [], [])
+        assert merged == []
+
+    def test_merge_single_item(self, merger):
+        """Test merging single item"""
+        items = [
+            IntelligenceItem(
+                raw_content="Test content",
+                processed_content="Test processed",
+                category="economic",
+                relevance_score=0.8,
+                so_what_statement="Test impact",
+                affected_sectors=[ClientSector.GENERAL],
+                source_type="ergomind"
+            )
+        ]
+
+        merged = merger.merge_sources(items)
+
+        assert len(merged) == 1
+        assert merged[0].source_type == "ergomind"
+
+    def test_merge_multiple_sources(self, merger):
         """Test merging items from different sources"""
         ergomind_item = IntelligenceItem(
             raw_content="ErgoMind content",
@@ -401,7 +339,7 @@ class TestMergeIntelligenceSources:
             source_type="fred"
         )
 
-        merged = processor.merge_intelligence_sources([ergomind_item], [gta_item], [fred_item])
+        merged = merger.merge_sources([ergomind_item], [gta_item], [fred_item])
 
         assert len(merged) == 3
         sources = {item.source_type for item in merged}
@@ -409,8 +347,8 @@ class TestMergeIntelligenceSources:
         assert "gta" in sources
         assert "fred" in sources
 
-    def test_merge_sorts_by_relevance(self, processor):
-        """Test merged items are sorted by relevance"""
+    def test_merge_sorts_by_relevance(self, merger):
+        """Test merged items are sorted by composite score"""
         items = [
             IntelligenceItem(
                 raw_content="Low relevance",
@@ -441,25 +379,39 @@ class TestMergeIntelligenceSources:
             ),
         ]
 
-        merged = processor.merge_intelligence_sources(items)
+        merged = merger.merge_sources(items)
 
-        # Should return items
         assert isinstance(merged, list)
-        # If items returned, check they are sorted
         if len(merged) >= 2:
             assert merged[0].relevance_score >= merged[1].relevance_score
         if len(merged) >= 3:
             assert merged[1].relevance_score >= merged[2].relevance_score
 
+    def test_organize_by_sector(self, merger):
+        """Test organizing intelligence by client sector"""
+        items = [
+            IntelligenceItem(
+                raw_content="Test content",
+                processed_content="Test processed",
+                category="test",
+                relevance_score=0.8,
+                so_what_statement="Test impact",
+                affected_sectors=[ClientSector.TECHNOLOGY],
+                source_type="ergomind"
+            )
+        ]
 
-class TestOrganizeBySector:
-    """Test organizing intelligence by sector"""
+        sector_intel = merger.organize_by_sector(items)
 
-    @pytest.fixture
-    def processor(self):
-        return IntelligenceProcessor()
+        assert len(sector_intel) > 0
+        assert ClientSector.TECHNOLOGY in sector_intel or ClientSector.GENERAL in sector_intel
 
-    def test_organize_multiple_sectors(self, processor):
+    def test_organize_by_sector_empty(self, merger):
+        """Test organizing empty list"""
+        sector_intel = merger.organize_by_sector([])
+        assert isinstance(sector_intel, dict)
+
+    def test_organize_multiple_sectors(self, merger):
         """Test organizing items across multiple sectors"""
         items = [
             IntelligenceItem(
@@ -482,28 +434,10 @@ class TestOrganizeBySector:
             ),
         ]
 
-        sector_intel = processor.organize_by_sector(items)
+        sector_intel = merger.organize_by_sector(items)
 
         assert isinstance(sector_intel, dict)
-        # Should have items organized by sector
         assert len(sector_intel) > 0
-
-    def test_organize_item_multiple_sectors(self, processor):
-        """Test item affecting multiple sectors"""
-        item = IntelligenceItem(
-            raw_content="Cross-sector news",
-            processed_content="Cross-sector update",
-            category="general",
-            relevance_score=0.8,
-            so_what_statement="Multi-sector impact",
-            affected_sectors=[ClientSector.TECHNOLOGY, ClientSector.FINANCE],
-            source_type="ergomind"
-        )
-
-        sector_intel = processor.organize_by_sector([item])
-
-        # Item should appear in both sectors or in general
-        assert len(sector_intel) >= 1
 
 
 class TestClientSectorEnum:

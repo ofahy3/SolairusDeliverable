@@ -156,7 +156,7 @@ class TestCLIAdditional:
         assert gen is not None
         assert gen.client is not None
         assert gen.orchestrator is not None
-        assert gen.processor is not None
+        assert gen.merger is not None
         assert gen.generator is not None
 
     def test_generator_has_generate_method(self):

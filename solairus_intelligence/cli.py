@@ -11,8 +11,9 @@ import json
 
 from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
 from solairus_intelligence.core.orchestrator import QueryOrchestrator
-from solairus_intelligence.core.processor import IntelligenceProcessor, ClientSector
-from solairus_intelligence.core.document_generator import DocumentGenerator
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
+from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.utils.config import get_status_file_path, ENV_CONFIG
 
 # Set up logging
@@ -31,7 +32,7 @@ class SolairusIntelligenceGenerator:
         self.config = config or ErgoMindConfig()
         self.client = ErgoMindClient(self.config)
         self.orchestrator = QueryOrchestrator(self.client)
-        self.processor = IntelligenceProcessor()
+        self.merger = IntelligenceMerger()
         self.generator = DocumentGenerator()
         self.last_run_status: Optional[Dict[str, Any]] = None
 
@@ -88,7 +89,7 @@ class SolairusIntelligenceGenerator:
                 fred_items = await self.orchestrator.process_fred_results(fred_results)
 
                 # Merge all intelligence sources
-                processed_items = self.processor.merge_intelligence_sources(ergomind_items, gta_items, fred_items)
+                processed_items = self.merger.merge_sources(ergomind_items, gta_items, fred_items)
 
                 status['queries_executed'] = (
                     sum(len(v) for v in raw_results.values()) +
@@ -117,7 +118,7 @@ class SolairusIntelligenceGenerator:
                 fred_items = await self.orchestrator.process_fred_results(multi_source_results['fred'])
 
                 # Merge all intelligence sources
-                processed_items = self.processor.merge_intelligence_sources(ergomind_items, gta_items, fred_items)
+                processed_items = self.merger.merge_sources(ergomind_items, gta_items, fred_items)
 
                 status['queries_executed'] = (
                     sum(len(v) for v in multi_source_results['ergomind'].values()) +
@@ -160,7 +161,7 @@ class SolairusIntelligenceGenerator:
             
             # Step 3: Organize by sector
             logger.info("\n📊 Phase 3: Sector Organization")
-            sector_intelligence = self.processor.organize_by_sector(processed_items)
+            sector_intelligence = self.merger.organize_by_sector(processed_items)
             status['sectors_covered'] = [s.value for s in sector_intelligence.keys()]
             logger.info(f"✓ Organized intelligence for {len(sector_intelligence)} sectors")
             
