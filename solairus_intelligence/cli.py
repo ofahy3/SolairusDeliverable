@@ -4,16 +4,16 @@ Main application that orchestrates the entire intelligence gathering and report 
 """
 
 import asyncio
+import json
 import logging
 from datetime import datetime
-from typing import Optional, Dict, List, Tuple, Any
-import json
+from typing import Any, Dict, List, Optional, Tuple
 
 from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
+from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.core.orchestrator import QueryOrchestrator
 from solairus_intelligence.core.processors.merger import IntelligenceMerger
-from solairus_intelligence.core.document.generator import DocumentGenerator
-from solairus_intelligence.utils.config import get_status_file_path, ENV_CONFIG
+from solairus_intelligence.utils.config import ENV_CONFIG, get_status_file_path
 
 # Set up logging
 logging.basicConfig(

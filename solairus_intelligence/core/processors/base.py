@@ -3,7 +3,7 @@ Base classes and data structures for intelligence processing
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from solairus_intelligence.config.clients import ClientSector
 

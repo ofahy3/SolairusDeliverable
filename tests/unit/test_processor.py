@@ -3,14 +3,15 @@ Unit tests for intelligence processing components
 """
 
 import pytest
+
 from solairus_intelligence.core.processor import (
-    IntelligenceItem,
-    SectorIntelligence,
     ClientSector,
     ErgoMindProcessor,
-    GTAProcessor,
     FREDProcessor,
+    GTAProcessor,
+    IntelligenceItem,
     IntelligenceMerger,
+    SectorIntelligence,
 )
 
 

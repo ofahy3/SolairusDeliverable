@@ -2,11 +2,12 @@
 Unit tests for cache module
 """
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
 
 from solairus_intelligence.utils.cache import ResponseCache
 

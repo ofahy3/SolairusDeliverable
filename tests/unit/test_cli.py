@@ -2,10 +2,11 @@
 Unit tests for CLI module
 """
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from solairus_intelligence.cli import SolairusIntelligenceGenerator
 
@@ -91,8 +92,8 @@ class TestQualityAssessment:
 
     @pytest.fixture
     def sample_items(self):
-        from solairus_intelligence.core.processor import IntelligenceItem
         from solairus_intelligence.config.clients import ClientSector
+        from solairus_intelligence.core.processor import IntelligenceItem
 
         return [
             IntelligenceItem(

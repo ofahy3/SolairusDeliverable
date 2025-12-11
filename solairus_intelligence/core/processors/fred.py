@@ -7,7 +7,7 @@ import logging
 from typing import List
 
 from solairus_intelligence.config.clients import ClientSector
-from solairus_intelligence.core.processors.base import IntelligenceItem, BaseProcessor
+from solairus_intelligence.core.processors.base import BaseProcessor, IntelligenceItem
 
 logger = logging.getLogger(__name__)
 

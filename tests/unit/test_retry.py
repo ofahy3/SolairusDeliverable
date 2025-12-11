@@ -2,14 +2,15 @@
 Unit tests for retry module
 """
 
-import pytest
 import asyncio
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import aiohttp
+import pytest
 
 from solairus_intelligence.utils.retry import (
-    create_retry_decorator,
     TRANSIENT_EXCEPTIONS,
+    create_retry_decorator,
 )
 
 
@@ -261,6 +262,7 @@ class TestLogRetry:
     def test_log_retry(self, caplog):
         """Test log_retry logs correctly"""
         import logging
+
         from solairus_intelligence.utils.retry import log_retry
 
         caplog.set_level(logging.WARNING)
@@ -330,6 +332,7 @@ class TestCircuitBreaker:
     def test_circuit_breaker_recovery(self):
         """Test circuit breaker recovers after timeout"""
         import time
+
         from solairus_intelligence.utils.retry import CircuitBreaker
 
         cb = CircuitBreaker(failure_threshold=1, recovery_timeout=0.1)

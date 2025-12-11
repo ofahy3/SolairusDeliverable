@@ -2,16 +2,17 @@
 Unit tests for web application
 """
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from solairus_intelligence.web.app import (
-    sessions,
+    SESSION_TTL_MINUTES,
+    GenerationRequest,
     cleanup_expired_sessions,
     get_generator,
-    GenerationRequest,
-    SESSION_TTL_MINUTES,
+    sessions,
 )
 
 

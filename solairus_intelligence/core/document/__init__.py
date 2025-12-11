@@ -9,7 +9,7 @@ This package splits the document generation logic into focused modules:
 """
 
 from solairus_intelligence.core.document.generator import DocumentGenerator
-from solairus_intelligence.core.document.styles import ErgoStyles, ERGO_COLORS, SPACING
+from solairus_intelligence.core.document.styles import ERGO_COLORS, SPACING, ErgoStyles
 
 __all__ = [
     "DocumentGenerator",

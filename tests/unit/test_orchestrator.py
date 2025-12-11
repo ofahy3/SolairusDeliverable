@@ -2,8 +2,9 @@
 Unit tests for Query Orchestrator
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from solairus_intelligence.core.orchestrator import (
     QueryOrchestrator,

@@ -2,15 +2,16 @@
 Unit tests for Document Generator
 """
 
-import pytest
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pytest
 
 from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.core.processor import (
+    ClientSector,
     IntelligenceItem,
     SectorIntelligence,
-    ClientSector,
 )
 
 

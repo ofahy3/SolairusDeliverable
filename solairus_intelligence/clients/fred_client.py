@@ -7,8 +7,9 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
 import aiohttp
 import backoff
 

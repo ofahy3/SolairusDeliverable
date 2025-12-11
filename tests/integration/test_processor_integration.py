@@ -3,15 +3,16 @@ Integration tests for the Intelligence Processor pipeline
 Tests the complete flow from raw data to processed intelligence
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
-from solairus_intelligence.core.processors.gta import GTAProcessor
-from solairus_intelligence.core.processors.fred import FREDProcessor
-from solairus_intelligence.core.processors.merger import IntelligenceMerger
-from solairus_intelligence.core.processors.base import IntelligenceItem
+import pytest
+
 from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.processors.base import IntelligenceItem
+from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
+from solairus_intelligence.core.processors.fred import FREDProcessor
+from solairus_intelligence.core.processors.gta import GTAProcessor
+from solairus_intelligence.core.processors.merger import IntelligenceMerger
 
 
 class TestErgoMindProcessorIntegration:

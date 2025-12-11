@@ -2,11 +2,12 @@
 Unit tests for PII sanitizer module
 """
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
-from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
+from solairus_intelligence.config.clients import CLIENT_SECTOR_MAPPING, ClientSector
 
 
 class TestPIISanitizer:

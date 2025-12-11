@@ -5,10 +5,11 @@ This test verifies the complete workflow from API call to report generation,
 using mocked external services to ensure consistent testing.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from solairus_intelligence import generate_report, generate_report_sync
 

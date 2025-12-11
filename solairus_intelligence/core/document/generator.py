@@ -7,27 +7,26 @@ Orchestrates the document generation process using focused modules.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from docx import Document
 from docx.shared import Inches
 
+from solairus_intelligence.core.document.content import ContentExtractor
+from solairus_intelligence.core.document.sections import (
+    EconomicIndicatorsBuilder,
+    ExecutiveSummaryBuilder,
+    HeaderBuilder,
+    RegionalAssessmentBuilder,
+    SectorSectionBuilder,
+)
+from solairus_intelligence.core.document.styles import ERGO_COLORS, ErgoStyles
 from solairus_intelligence.core.processor import (
     ClientSector,
     IntelligenceItem,
     SectorIntelligence,
 )
-from solairus_intelligence.core.document.styles import ErgoStyles, ERGO_COLORS
-from solairus_intelligence.core.document.content import ContentExtractor
-from solairus_intelligence.core.document.sections import (
-    HeaderBuilder,
-    ExecutiveSummaryBuilder,
-    EconomicIndicatorsBuilder,
-    RegionalAssessmentBuilder,
-    SectorSectionBuilder,
-)
 from solairus_intelligence.utils.config import ENV_CONFIG, get_output_dir
-
 
 logger = logging.getLogger(__name__)
 

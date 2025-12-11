@@ -2,9 +2,10 @@
 Additional tests for coverage improvement
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 # Test AI Generator additional coverage
 from solairus_intelligence.ai.generator import AIConfig, AIUsageTracker, SecureAIGenerator
@@ -62,9 +63,10 @@ class TestUsageTrackerAdditional:
         assert "total_cost_usd" in summary
 
 
+from solairus_intelligence.config.clients import ClientSector
+
 # Test processor module additional coverage
 from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
-from solairus_intelligence.config.clients import ClientSector
 
 
 class TestIntelligenceItemAdditional:
@@ -173,10 +175,10 @@ class TestCLIAdditional:
 
 # Test config module additional coverage
 from solairus_intelligence.utils.config import (
-    EnvironmentConfig,
-    get_output_dir,
-    get_config,
     ENV_CONFIG,
+    EnvironmentConfig,
+    get_config,
+    get_output_dir,
 )
 
 
@@ -232,7 +234,7 @@ class TestQueryTemplateAdditional:
 
 
 # Test FRED client additional coverage
-from solairus_intelligence.clients.fred_client import FREDConfig, FREDObservation, FREDClient
+from solairus_intelligence.clients.fred_client import FREDClient, FREDConfig, FREDObservation
 
 
 class TestFREDClientAdditional:
@@ -268,7 +270,7 @@ class TestFREDClientAdditional:
 
 
 # Test ergomind client additional coverage
-from solairus_intelligence.clients.ergomind_client import ErgoMindConfig, ErgoMindClient
+from solairus_intelligence.clients.ergomind_client import ErgoMindClient, ErgoMindConfig
 
 
 class TestErgoMindClientAdditional:

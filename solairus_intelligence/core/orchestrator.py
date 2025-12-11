@@ -16,8 +16,8 @@ from solairus_intelligence.clients.ergomind_client import (
 from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.processors.base import IntelligenceItem
 from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
-from solairus_intelligence.core.processors.gta import GTAProcessor
 from solairus_intelligence.core.processors.fred import FREDProcessor
+from solairus_intelligence.core.processors.gta import GTAProcessor
 
 logger = logging.getLogger(__name__)
 

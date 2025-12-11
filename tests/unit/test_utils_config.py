@@ -2,16 +2,17 @@
 Unit tests for utils/config module
 """
 
-import pytest
 import os
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from solairus_intelligence.utils.config import (
+    ENV_CONFIG,
+    EnvironmentConfig,
     get_output_dir,
     get_status_file_path,
-    EnvironmentConfig,
-    ENV_CONFIG,
 )
 
 

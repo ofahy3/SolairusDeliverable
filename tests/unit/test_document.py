@@ -2,28 +2,29 @@
 Unit tests for document generation modules
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from docx import Document as DocxDocument
 from docx.shared import RGBColor
 
-from solairus_intelligence.core.document.styles import (
-    ERGO_COLORS,
-    SPACING,
-    FontConfig,
-    ErgoStyles,
-)
+from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.document.content import ContentExtractor
+from solairus_intelligence.core.document.generator import DocumentGenerator
 from solairus_intelligence.core.document.sections import (
-    HeaderBuilder,
-    ExecutiveSummaryBuilder,
     EconomicIndicatorsBuilder,
+    ExecutiveSummaryBuilder,
+    HeaderBuilder,
     RegionalAssessmentBuilder,
     SectorSectionBuilder,
 )
-from solairus_intelligence.core.document.generator import DocumentGenerator
+from solairus_intelligence.core.document.styles import (
+    ERGO_COLORS,
+    SPACING,
+    ErgoStyles,
+    FontConfig,
+)
 from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence
-from solairus_intelligence.config.clients import ClientSector
 
 
 class TestErgoColors:

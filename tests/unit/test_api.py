@@ -1,8 +1,9 @@
 """Unit tests for the public API module"""
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from solairus_intelligence.api import generate_report, generate_report_sync
 

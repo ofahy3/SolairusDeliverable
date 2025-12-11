@@ -5,9 +5,9 @@ Removes personally identifiable information and client-specific data before send
 
 import logging
 import re
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
-from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
+from solairus_intelligence.config.clients import CLIENT_SECTOR_MAPPING, ClientSector
 from solairus_intelligence.core.processor import IntelligenceItem
 
 logger = logging.getLogger(__name__)

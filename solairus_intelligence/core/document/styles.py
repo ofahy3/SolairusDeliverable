@@ -11,7 +11,6 @@ from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt, RGBColor
 
-
 # Ergo brand colors (full palette)
 ERGO_COLORS: Dict[str, RGBColor] = {
     # Primary colors

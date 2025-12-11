@@ -2,17 +2,18 @@
 Unit tests for AI Generator and related components
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
+from solairus_intelligence.ai.fact_validator import FactValidator
 from solairus_intelligence.ai.generator import (
-    SecureAIGenerator,
     AIConfig,
     AIUsageTracker,
+    SecureAIGenerator,
 )
 from solairus_intelligence.ai.pii_sanitizer import PIISanitizer
-from solairus_intelligence.ai.fact_validator import FactValidator
-from solairus_intelligence.core.processor import IntelligenceItem, ClientSector
+from solairus_intelligence.core.processor import ClientSector, IntelligenceItem
 
 
 class TestAIConfig:

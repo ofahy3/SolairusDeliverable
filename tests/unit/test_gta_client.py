@@ -2,11 +2,12 @@
 Unit tests for GTA client module
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from solairus_intelligence.clients.gta_client import GTAConfig, GTAIntervention, GTAClient
+import pytest
+
+from solairus_intelligence.clients.gta_client import GTAClient, GTAConfig, GTAIntervention
 
 
 class TestGTAConfig:

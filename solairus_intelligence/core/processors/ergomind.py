@@ -3,13 +3,13 @@ ErgoMind Intelligence Processor
 Handles processing of ErgoMind Flashpoints Forum data
 """
 
-import re
 import logging
-from typing import List, Optional
+import re
 from dataclasses import replace
+from typing import List, Optional
 
-from solairus_intelligence.config.clients import ClientSector, CLIENT_SECTOR_MAPPING
-from solairus_intelligence.core.processors.base import IntelligenceItem, BaseProcessor
+from solairus_intelligence.config.clients import CLIENT_SECTOR_MAPPING, ClientSector
+from solairus_intelligence.core.processors.base import BaseProcessor, IntelligenceItem
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class ErgoMindProcessor(BaseProcessor):
             from solairus_intelligence.utils.config import ENV_CONFIG
 
             if ENV_CONFIG.ai_enabled:
-                from solairus_intelligence.ai.generator import SecureAIGenerator, AIConfig
+                from solairus_intelligence.ai.generator import AIConfig, SecureAIGenerator
 
                 config = AIConfig(
                     api_key=ENV_CONFIG.anthropic_api_key, model=ENV_CONFIG.ai_model, enabled=True

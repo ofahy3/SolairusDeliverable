@@ -4,19 +4,19 @@ Section builders for Solairus Intelligence Reports.
 Each class is responsible for building a specific section of the report.
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt
 
+from solairus_intelligence.core.document.content import ContentExtractor
+from solairus_intelligence.core.document.styles import SPACING, ErgoStyles
 from solairus_intelligence.core.processor import (
     ClientSector,
     IntelligenceItem,
     SectorIntelligence,
 )
-from solairus_intelligence.core.document.styles import ErgoStyles, SPACING
-from solairus_intelligence.core.document.content import ContentExtractor
 
 
 class HeaderBuilder:

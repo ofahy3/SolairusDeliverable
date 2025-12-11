@@ -5,7 +5,7 @@ Combines and deduplicates intelligence from multiple sources
 
 import logging
 from datetime import datetime, timedelta
-from typing import List, Dict
+from typing import Dict, List
 
 from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.processors.base import IntelligenceItem, SectorIntelligence

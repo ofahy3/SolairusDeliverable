@@ -2,12 +2,13 @@
 Unit tests for FRED Processor module
 """
 
-import pytest
 from datetime import datetime
 
-from solairus_intelligence.core.processors.fred import FREDProcessor
+import pytest
+
 from solairus_intelligence.clients.fred_client import FREDObservation
 from solairus_intelligence.config.clients import ClientSector
+from solairus_intelligence.core.processors.fred import FREDProcessor
 
 
 class TestFREDProcessor:

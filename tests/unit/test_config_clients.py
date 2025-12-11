@@ -5,9 +5,9 @@ Unit tests for client configuration module
 import pytest
 
 from solairus_intelligence.config.clients import (
-    ClientSector,
     CLIENT_SECTOR_MAPPING,
     COMPANY_NAMES_BY_SECTOR,
+    ClientSector,
     get_all_company_names,
     get_companies_for_sector,
     get_sector_keywords,

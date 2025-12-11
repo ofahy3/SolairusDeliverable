@@ -6,9 +6,10 @@ Provides consistent retry behavior across all external API integrations
 import asyncio
 import logging
 from functools import wraps
-from typing import Type, Tuple, Callable, Any, Optional
-import backoff
+from typing import Any, Callable, Optional, Tuple, Type
+
 import aiohttp
+import backoff
 
 logger = logging.getLogger(__name__)
 
