@@ -4,7 +4,6 @@ Unit tests for ErgoMind client
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import aiohttp
 import pytest
 
 from solairus_intelligence.clients.ergomind_client import (

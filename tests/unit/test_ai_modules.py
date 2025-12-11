@@ -2,8 +2,6 @@
 Unit tests for AI modules (fact_validator, generator, pii_sanitizer)
 """
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 from solairus_intelligence.ai.fact_validator import FactValidator

@@ -206,8 +206,6 @@ class TestProcessAndFilterResults:
     @pytest.mark.asyncio
     async def test_process_results_with_query_result(self, orchestrator):
         """Test processing with QueryResult objects"""
-        from solairus_intelligence.clients.ergomind_client import QueryResult
-
         mock_result = MagicMock()
         mock_result.success = True
         mock_result.response = (

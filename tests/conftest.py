@@ -2,8 +2,6 @@
 Shared pytest fixtures for Solairus Intelligence tests
 """
 
-from datetime import datetime
-
 import pytest
 
 from solairus_intelligence.core.processor import ClientSector, IntelligenceItem

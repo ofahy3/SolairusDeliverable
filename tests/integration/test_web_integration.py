@@ -3,7 +3,7 @@ Integration tests for the Web API
 Tests the FastAPI endpoints and session management
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
@@ -76,7 +76,7 @@ class TestSessionManagement:
         """Test that sessions are created properly"""
         from datetime import datetime
 
-        from solairus_intelligence.web.app import cleanup_expired_sessions, sessions
+        from solairus_intelligence.web.app import sessions
 
         # Clear existing sessions
         sessions.clear()

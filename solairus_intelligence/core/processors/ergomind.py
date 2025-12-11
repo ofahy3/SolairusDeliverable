@@ -303,7 +303,7 @@ class ErgoMindProcessor(BaseProcessor):
                 import asyncio
 
                 try:
-                    loop = asyncio.get_running_loop()
+                    asyncio.get_running_loop()
                     # We're in an async context, create a task
                     import concurrent.futures
 

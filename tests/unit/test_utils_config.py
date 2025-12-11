@@ -6,8 +6,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from solairus_intelligence.utils.config import (
     ENV_CONFIG,
     EnvironmentConfig,
@@ -89,7 +87,7 @@ class TestGetStatusFilePath:
     def test_path_in_output_dir(self):
         """Test status file is in output directory"""
         status_path = get_status_file_path()
-        output_dir = get_output_dir()
+        _ = get_output_dir()  # Verify output_dir is accessible
 
         # Status file should be in or near output directory
         assert isinstance(status_path, Path)

@@ -2,7 +2,6 @@
 Unit tests for Document Generator
 """
 
-from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -89,8 +88,6 @@ class TestDocumentGenerator:
 
     def test_add_executive_summary(self, generator, sample_items):
         """Test executive summary is added to report"""
-        from docx import Document
-
         # Create a full report which includes executive summary
         doc = generator.create_report(
             sample_items,

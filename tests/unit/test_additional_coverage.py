@@ -2,9 +2,6 @@
 Additional tests for coverage improvement
 """
 
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
-
 import pytest
 
 # Test AI Generator additional coverage

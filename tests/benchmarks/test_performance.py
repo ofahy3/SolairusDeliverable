@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import pytest
 
-from solairus_intelligence.config.clients import ClientSector
 from solairus_intelligence.core.processors.base import IntelligenceItem
 from solairus_intelligence.core.processors.ergomind import ErgoMindProcessor
 from solairus_intelligence.core.processors.merger import IntelligenceMerger

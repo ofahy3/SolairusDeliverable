@@ -2,8 +2,6 @@
 Unit tests for document content extraction module
 """
 
-from datetime import datetime
-
 import pytest
 
 from solairus_intelligence.config.clients import ClientSector

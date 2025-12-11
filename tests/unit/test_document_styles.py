@@ -4,7 +4,7 @@ Unit tests for document styles module
 
 import pytest
 from docx import Document
-from docx.shared import Pt, RGBColor
+from docx.shared import RGBColor
 
 from solairus_intelligence.core.document.styles import (
     ERGO_COLORS,

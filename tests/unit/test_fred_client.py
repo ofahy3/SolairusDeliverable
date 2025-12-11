@@ -2,9 +2,6 @@
 Unit tests for FRED (Federal Reserve Economic Data) client
 """
 
-from datetime import datetime
-from unittest.mock import AsyncMock, patch
-
 import pytest
 
 from solairus_intelligence.clients.fred_client import (

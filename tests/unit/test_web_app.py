@@ -80,7 +80,7 @@ class TestGetGenerator:
                 mock_instance = MagicMock()
                 MockGen.return_value = mock_instance
 
-                result = get_generator()
+                _ = get_generator()
 
                 MockGen.assert_called_once()
 

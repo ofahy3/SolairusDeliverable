@@ -89,7 +89,7 @@ class TestResponseCache:
     def test_cache_creates_directory(self, temp_cache_dir):
         """Test cache creates cache directory if it doesn't exist"""
         new_cache_dir = temp_cache_dir / "new_cache"
-        cache = ResponseCache(cache_dir=new_cache_dir)
+        _ = ResponseCache(cache_dir=new_cache_dir)
 
         assert new_cache_dir.exists()
 

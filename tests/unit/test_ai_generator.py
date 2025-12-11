@@ -2,8 +2,6 @@
 Unit tests for AI Generator and related components
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
-
 import pytest
 
 from solairus_intelligence.ai.fact_validator import FactValidator

@@ -3,7 +3,6 @@ Unit tests for retry module
 """
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
